@@ -77,7 +77,17 @@ class NaturalHairBusinessManager {
         this.loadSettings();
         this.initializeHeaderDropdowns();
         
-        // First test the connection
+        // Detect if running on GitHub Pages (static hosting, no PHP backend)
+        const isGitHubPages = window.location.hostname.includes('github.io');
+        
+        if (isGitHubPages) {
+            console.warn('⚠️ Running on GitHub Pages (static hosting - no PHP backend available)');
+            console.warn('System will work in offline mode with localStorage only.');
+            this.showInitialHelpMessage();
+            return;
+        }
+        
+        // First test the connection (only if not on GitHub Pages)
         try {
             console.log('Testing API connection...');
             const testResult = await this.apiCall('test.php');
