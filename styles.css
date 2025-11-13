@@ -11798,6 +11798,13 @@ body {
         flex-direction: column;
     }
     
+    /* Mobile Main Content - No sidebar margin */
+    .main-content {
+        margin-left: 0;
+        padding: 0.75rem;
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    }
+    
     /* Mobile Sidebar Styling */
     .sidebar {
         width: 100%;
@@ -11809,6 +11816,7 @@ body {
         border-bottom: 2px solid rgba(59, 130, 246, 0.2);
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         padding: 0;
+        order: -1;
     }
     
     /* Mobile Sidebar Header */
@@ -11863,6 +11871,7 @@ body {
         transition: all 0.25s ease;
         background: rgba(71, 85, 105, 0.2);
         border: 1px solid rgba(59, 130, 246, 0.1);
+        color: #cbd5e1;
     }
     
     .sidebar-menu a:hover {
@@ -11921,6 +11930,7 @@ body {
         gap: 0.5rem;
         flex-direction: column;
         align-items: center;
+        margin-left: 0;
     }
     
     .header-left,
@@ -12014,6 +12024,68 @@ body {
     .section-header {
         padding: 1.5rem 1rem 1rem;
         font-size: 1.3rem;
+    }
+    
+    /* Content Sections Mobile */
+    .content-section {
+        display: none;
+        padding: 0.75rem;
+        min-height: auto;
+        background: #f8fafc;
+    }
+    
+    .content-section.active {
+        display: block;
+    }
+    
+    /* Overview Section Mobile */
+    .overview-section {
+        padding: 0.75rem 0;
+    }
+    
+    /* Product Listings Mobile */
+    .product-list,
+    .sales-list,
+    .customer-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    .product-item,
+    .sale-item,
+    .customer-item {
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 1rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    /* Tab Navigation Mobile */
+    .tab-buttons {
+        display: flex;
+        gap: 0.5rem;
+        overflow-x: auto;
+        padding: 0.75rem 0;
+        margin-bottom: 1rem;
+    }
+    
+    .tab-button {
+        padding: 0.6rem 1rem;
+        font-size: 0.85rem;
+        white-space: nowrap;
+        border-radius: 8px;
+        border: 1px solid #e2e8f0;
+        background: white;
+        cursor: pointer;
+        transition: all 0.25s ease;
+    }
+    
+    .tab-button.active {
+        background: #3b82f6;
+        color: white;
+        border-color: #3b82f6;
     }
     
     /* Notification Styles */
