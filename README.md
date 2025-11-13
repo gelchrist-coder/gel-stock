@@ -1,11 +1,10 @@
-<<<<<<< HEAD
-# J'MONIC ENTERPRISE - Business Management Dashboard
+# GEL-STOCK - Professional Inventory Management System
 
-A modern, responsive business management dashboard built with HTML, CSS, and JavaScript. This comprehensive system provides tools for inventory management, sales tracking, analytics, and business operations.
+A modern, responsive inventory management dashboard built with HTML, CSS, and JavaScript. This comprehensive system provides tools for product management, sales tracking, inventory control, and business analytics.
 
 ## 🚀 Live Demo
 
-**View the live dashboard here:** [https://gelchrist-coder.github.io/jmonic-dashboard/public/](https://gelchrist-coder.github.io/jmonic-dashboard/public/)
+**View the live dashboard here:** [https://gelchrist-coder.github.io/gel-stock/](https://gelchrist-coder.github.io/gel-stock/)
 
 ## ✨ Features
 
