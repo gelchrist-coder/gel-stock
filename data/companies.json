@@ -1,0 +1,30 @@
+[
+    {
+        "id": "cmp_1f62aa52aef0",
+        "name": "My Business",
+        "business_type": "Hair Services",
+        "city": "Accra",
+        "created_at": "2025-11-08 07:45:02"
+    },
+    {
+        "id": "cmp_e7d75c0af33f",
+        "name": "My Business",
+        "business_type": "Hair Services",
+        "city": "Accra",
+        "created_at": "2025-11-08 18:40:08"
+    },
+    {
+        "id": "cmp_6fd8ca052393",
+        "name": "HERMET CORT",
+        "business_type": "Wholesale",
+        "city": "Kumasi",
+        "created_at": "2025-11-08 19:26:44"
+    },
+    {
+        "id": "cmp_4a39e03620b0",
+        "name": "Prempeh Haven",
+        "business_type": "Wholesale",
+        "city": "Kumasi",
+        "created_at": "2025-11-08 19:45:07"
+    }
+]
