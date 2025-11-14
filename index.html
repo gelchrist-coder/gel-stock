@@ -2298,11 +2298,22 @@
     </nav>
 
     <script src="script.js"></script>
+    <script src="cloud-sync.js"></script>
 
+    <!-- Firebase SDK for Cloud Sync -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js"></script>
+    
     <script>
-        // Initialize dashboard when page loads
+        // Initialize cloud sync and dashboard
         document.addEventListener('DOMContentLoaded', function() {
             console.log('📱 Dashboard loaded');
+            
+            // Initialize cloud sync for demo mode
+            const demoMode = sessionStorage.getItem('gel_demo_mode');
+            if (demoMode === 'true' && window.CloudSync && window.CloudSync.initializeFirebaseSync) {
+                window.CloudSync.initializeFirebaseSync();
+            }
             
             // Hide all sections except the first one (overview)
             const sections = document.querySelectorAll('.content-section');

@@ -34,6 +34,32 @@ class NaturalHairBusinessManager {
         }
     }
     
+    /**
+     * Save data to localStorage and sync to cloud if available
+     * @param {string} key - Storage key
+     * @param {string} value - Data to store
+     */
+    saveToStorage(key, value) {
+        // Always save to localStorage
+        localStorage.setItem(key, value);
+        
+        // If in demo mode and cloud sync is available, sync to cloud
+        if (this.isDemoMode && window.CloudSync) {
+            try {
+                if (key === 'jmonic_products') {
+                    const products = JSON.parse(value);
+                    window.CloudSync.syncProductsToCloud(products);
+                } else if (key === 'jmonic_sales') {
+                    const sales = JSON.parse(value);
+                    window.CloudSync.syncSalesToCloud(sales);
+                }
+            } catch (error) {
+                console.warn('Cloud sync error:', error);
+                // Silently fail - local storage is still working
+            }
+        }
+    }
+    
     showLoginScreen() {
         const loginScreen = document.getElementById('loginScreen');
         if (loginScreen) {
@@ -269,7 +295,7 @@ class NaturalHairBusinessManager {
                     'fa-plus-circle'
                 );
             }
-            localStorage.setItem('jmonic_products', JSON.stringify(products));
+            this.saveToStorage('jmonic_products', JSON.stringify(products));
             
             // Log initial stock as inventory transaction for new products only
             if (existingProductIndex === -1) {
@@ -414,7 +440,7 @@ class NaturalHairBusinessManager {
             };
             
             sales.push(newSale);
-            localStorage.setItem('jmonic_sales', JSON.stringify(sales));
+            this.saveToStorage('jmonic_sales', JSON.stringify(sales));
             console.log('Sale saved with inventory update:', newSale);
             
             // Flag that charts need updating
