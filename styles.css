@@ -644,18 +644,18 @@ body {
 /* Sidebar Styles */
 .sidebar {
     width: var(--sidebar-width);
-    background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
-    border-right: 1px solid rgba(15, 23, 42, 0.3);
+    background: linear-gradient(135deg, #0f172a 0%, #1a2744 100%);
+    border-right: 1px solid rgba(59, 130, 246, 0.1);
     position: fixed;
     top: 0;
     left: 0;
     height: 100vh;
     z-index: 100;
     overflow-y: auto;
-    transition: transform 0.3s ease;
-    box-shadow: 4px 0 16px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 8px 0 32px rgba(0, 0, 0, 0.25);
     scrollbar-width: thin;
-    scrollbar-color: rgba(100, 116, 139, 0.5) transparent;
+    scrollbar-color: rgba(59, 130, 246, 0.6) transparent;
 }
 
 .sidebar::-webkit-scrollbar {
@@ -677,8 +677,8 @@ body {
 
 .sidebar-header {
     padding: 2rem 1.5rem;
-    border-bottom: 1px solid rgba(71, 85, 105, 0.3);
-    background: linear-gradient(135deg, rgba(15, 23, 42, 0.8) 0%, rgba(30, 41, 59, 0.9) 100%);
+    border-bottom: 1px solid rgba(59, 130, 246, 0.15);
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(26, 39, 68, 0.9) 100%);
     position: relative;
     overflow: hidden;
 }
@@ -686,11 +686,22 @@ body {
 .sidebar-header::before {
     content: '';
     position: absolute;
-    top: 0;
-    right: -50px;
-    width: 150px;
-    height: 150px;
-    background: radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, transparent 70%);
+    top: -50%;
+    right: -100px;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, rgba(59, 130, 246, 0.2) 0%, transparent 70%);
+    border-radius: 50%;
+}
+
+.sidebar-header::after {
+    content: '';
+    position: absolute;
+    bottom: -50%;
+    left: -50px;
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle, rgba(120, 119, 198, 0.15) 0%, transparent 70%);
     border-radius: 50%;
 }
 
@@ -726,23 +737,25 @@ body {
     display: flex;
     align-items: center;
     gap: 1rem;
-    padding: 0.95rem 1.25rem;
+    padding: 1rem 1.25rem;
     color: #cbd5e1;
     text-decoration: none;
-    border-radius: 10px;
+    border-radius: 12px;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     font-weight: 500;
     font-size: 0.95rem;
     position: relative;
     border-left: 3px solid transparent;
     margin-left: 0.5rem;
+    margin-right: 0.5rem;
 }
 
 .sidebar-menu a:hover {
-    background: rgba(59, 130, 246, 0.15);
+    background: rgba(59, 130, 246, 0.2);
     color: #93c5fd;
-    transform: translateX(4px);
+    transform: translateX(6px);
     border-left-color: #3b82f6;
+    box-shadow: inset 0 0 20px rgba(59, 130, 246, 0.1);
 }
 
 .sidebar-menu li.active a {
@@ -7740,7 +7753,7 @@ body {
         z-index: 9999;
         visibility: hidden;
         opacity: 0;
-        transition: all 0.3s ease;
+        transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
     }
     
     .mobile-sidebar.active {
@@ -7754,20 +7767,23 @@ body {
         left: 0;
         width: 100%;
         height: 100%;
-        background: rgba(0, 0, 0, 0.5);
-        backdrop-filter: blur(5px);
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(8px);
+        transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
     }
     
     .mobile-sidebar-content {
         position: absolute;
         top: 0;
         left: 0;
-        width: 280px;
+        width: 85%;
+        max-width: 320px;
         height: 100%;
-        background: white;
-        box-shadow: 4px 0 20px rgba(0, 0, 0, 0.15);
+        background: linear-gradient(135deg, #0f172a 0%, #1a2744 100%);
+        box-shadow: 8px 0 32px rgba(0, 0, 0, 0.3);
         transform: translateX(-100%);
-        transition: transform 0.3s ease;
+        transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        border-right: 1px solid rgba(59, 130, 246, 0.1);
     }
     
     .mobile-sidebar.active .mobile-sidebar-content {
@@ -7781,6 +7797,7 @@ body {
         display: flex;
         justify-content: space-between;
         align-items: center;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     }
     
     .mobile-sidebar-header h2 {
@@ -7796,28 +7813,34 @@ body {
         background: rgba(255, 255, 255, 0.2);
         border: none;
         color: white;
-        width: 35px;
-        height: 35px;
-        border-radius: 8px;
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
         display: flex;
         align-items: center;
         justify-content: center;
         cursor: pointer;
-        transition: all 0.3s ease;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        font-size: 1.2rem;
     }
     
     .close-sidebar:hover {
         background: rgba(255, 255, 255, 0.3);
+        transform: rotate(90deg);
+    }
+    
+    .close-sidebar:active {
+        transform: rotate(90deg) scale(0.95);
     }
     
     .mobile-sidebar-menu {
         list-style: none;
-        padding: 0;
+        padding: 1rem 0;
         margin: 0;
     }
     
     .mobile-sidebar-menu li {
-        border-bottom: 1px solid #f0f4f8;
+        margin: 0.5rem 0.75rem;
     }
     
     .mobile-sidebar-menu li:last-child {
@@ -7828,11 +7851,13 @@ body {
         display: flex;
         align-items: center;
         gap: 1rem;
-        padding: 1rem 1.5rem;
-        color: #4a5568;
+        padding: 1rem 1.25rem;
+        color: #cbd5e1;
         text-decoration: none;
         font-weight: 500;
-        transition: all 0.3s ease;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        border-radius: 10px;
+        border-left: 3px solid transparent;
     }
     
     .mobile-sidebar-menu li.active a,
