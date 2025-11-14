@@ -254,16 +254,44 @@
     <!-- Mobile Professional Header -->
     <header class="header professional-header d-mobile">
         <div class="header-content">
-            <button class="mobile-menu-toggle" onclick="toggleMobileSidebar()">
-                <i class="fas fa-bars"></i>
-            </button>
+            <!-- Left: User Profile -->
+            <div class="header-left mobile-user-profile">
+                <div class="mobile-user-avatar">
+                    <i class="fas fa-user-circle"></i>
+                </div>
+                <div class="mobile-user-info">
+                    <div class="mobile-user-name" id="mobileHeaderUserName">Demo User</div>
+                    <button class="mobile-profile-menu-btn" onclick="toggleMobileUserMenu()">
+                        <i class="fas fa-ellipsis-v"></i>
+                    </button>
+                    <!-- Mobile User Menu Dropdown -->
+                    <div class="mobile-user-dropdown" id="mobileUserDropdown" style="display: none;">
+                        <a href="#" onclick="navigateToSection('settings')">
+                            <i class="fas fa-cog"></i>
+                            <span>Settings</span>
+                        </a>
+                        <a href="#" onclick="logoutUser()">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>Logout</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Center: Business Name/Logo -->
             <div class="header-center">
                 <div class="header-logo">
                     <i class="fas fa-box"></i>
-                    <span>GEL-STOCK</span>
+                    <span id="mobileHeaderBusinessName">GEL-STOCK</span>
                 </div>
             </div>
-            <div class="header-right"></div>
+
+            <!-- Right: Menu Toggle -->
+            <div class="header-right">
+                <button class="mobile-menu-toggle" onclick="toggleMobileSidebar()">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
         </div>
     </header>
 

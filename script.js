@@ -170,6 +170,9 @@ class NaturalHairBusinessManager {
                 headerBusinessName.textContent = businessName;
             }
             
+            // Update mobile header
+            updateMobileHeader();
+            
             this.showLiveNotification('Success', 'Profile updated successfully', 'success', 'fa-check-circle');
         } catch (error) {
             console.error('Error updating profile:', error);
@@ -259,6 +262,9 @@ class NaturalHairBusinessManager {
         // Initialize settings first to ensure they're always available
         this.loadSettings();
         this.initializeHeaderDropdowns();
+        
+        // Update mobile header with user info
+        updateMobileHeader();
         
         // Setup cloud sync listeners for demo mode
         if (this.isDemoMode) {
@@ -7788,11 +7794,57 @@ function closeMobileSidebar() {
     }
 }
 
+// Mobile Header User Menu Toggle
+function toggleMobileUserMenu() {
+    const dropdown = document.getElementById('mobileUserDropdown');
+    if (dropdown) {
+        dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+    }
+}
+
+// Close mobile user menu when clicking outside
+document.addEventListener('click', function(e) {
+    const dropdown = document.getElementById('mobileUserDropdown');
+    const userProfile = document.querySelector('.mobile-user-profile');
+    
+    if (dropdown && userProfile && !userProfile.contains(e.target)) {
+        dropdown.style.display = 'none';
+    }
+});
+
+// Update mobile header with user info
+function updateMobileHeader() {
+    const userNameElement = document.getElementById('mobileHeaderUserName');
+    const businessNameElement = document.getElementById('mobileHeaderBusinessName');
+    
+    if (userNameElement) {
+        if (businessManager && businessManager.currentUser && businessManager.currentUser.name) {
+            userNameElement.textContent = businessManager.currentUser.name.split(' ')[0]; // First name only
+        } else {
+            userNameElement.textContent = 'Demo User';
+        }
+    }
+    
+    if (businessNameElement) {
+        if (businessManager && businessManager.currentUser && businessManager.currentUser.businessName) {
+            businessNameElement.textContent = businessManager.currentUser.businessName;
+        } else {
+            businessNameElement.textContent = 'GEL-STOCK';
+        }
+    }
+}
+
 function navigateToSection(sectionName) {
     console.log('Navigating to section:', sectionName);
     
     // Close mobile sidebar first
     closeMobileSidebar();
+    
+    // Close mobile user menu if open
+    const mobileUserDropdown = document.getElementById('mobileUserDropdown');
+    if (mobileUserDropdown) {
+        mobileUserDropdown.style.display = 'none';
+    }
     
     // Update active states in mobile sidebar
     const mobileMenuItems = document.querySelectorAll('.mobile-sidebar-menu li');
@@ -8736,6 +8788,11 @@ function handleRegistration(event) {
     // Optional: Store business info for dashboard
     sessionStorage.setItem('gel_business_name', businessName);
     
+    // Update mobile header immediately (before reload)
+    if (typeof updateMobileHeader === 'function') {
+        setTimeout(updateMobileHeader, 100);
+    }
+    
     // Show success animation
     showRegistrationSuccess();
     
@@ -8821,6 +8878,11 @@ function handleLogin(event) {
     // If remember me is checked, also store in localStorage for persistence
     if (rememberMe) {
         localStorage.setItem('gel_user_remember', JSON.stringify(user));
+    }
+    
+    // Update mobile header immediately (before reload)
+    if (typeof updateMobileHeader === 'function') {
+        setTimeout(updateMobileHeader, 100);
     }
     
     // Show success animation

@@ -8144,6 +8144,126 @@ body {
     .mobile-menu-toggle {
         display: flex !important;
     }
+    
+    /* Mobile Header User Profile */
+    .header-left {
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+    }
+    
+    .mobile-user-profile {
+        position: relative;
+    }
+    
+    .mobile-user-avatar {
+        font-size: 2rem;
+        color: white;
+        opacity: 0.9;
+        display: flex;
+        align-items: center;
+    }
+    
+    .mobile-user-info {
+        position: relative;
+    }
+    
+    .mobile-user-name {
+        font-size: 0.9rem;
+        color: white;
+        font-weight: 600;
+        text-transform: capitalize;
+    }
+    
+    .mobile-profile-menu-btn {
+        background: none;
+        border: none;
+        color: white;
+        cursor: pointer;
+        padding: 0.2rem 0.4rem;
+        font-size: 1rem;
+        transition: opacity 0.2s ease;
+        opacity: 0.8;
+    }
+    
+    .mobile-profile-menu-btn:hover {
+        opacity: 1;
+    }
+    
+    /* Mobile User Dropdown Menu */
+    .mobile-user-dropdown {
+        position: absolute;
+        top: 100%;
+        right: 0;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        min-width: 180px;
+        z-index: 1000;
+        overflow: hidden;
+        margin-top: 0.5rem;
+        animation: slideDownMenu 0.2s ease;
+    }
+    
+    @keyframes slideDownMenu {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .mobile-user-dropdown a {
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+        padding: 0.8rem 1rem;
+        color: #333;
+        text-decoration: none;
+        font-size: 0.95rem;
+        transition: background-color 0.2s ease;
+        border: none;
+        background: none;
+        cursor: pointer;
+        width: 100%;
+        text-align: left;
+    }
+    
+    .mobile-user-dropdown a:hover {
+        background-color: #f0f4ff;
+    }
+    
+    .mobile-user-dropdown a i {
+        font-size: 1rem;
+        color: #667eea;
+        width: 20px;
+    }
+    
+    .mobile-user-dropdown a span {
+        font-weight: 500;
+    }
+    
+    .mobile-user-dropdown a:last-child:hover {
+        background-color: #ffe0e0;
+    }
+    
+    .mobile-user-dropdown a:last-child i {
+        color: #dc3545;
+    }
+    
+    .professional-header .header-center {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+    }
+    
+    .professional-header .header-right {
+        display: flex;
+        align-items: center;
+    }
 }
 
 /* Enhanced Dashboard Badges */
