@@ -8073,7 +8073,7 @@ body {
     left: 0;
     right: 0;
     overflow: visible;
-    min-height: 70px;
+    min-height: 90px;
     display: flex;
     align-items: center;
     border-bottom: none;
@@ -8169,8 +8169,8 @@ body {
     }
     
     .professional-header .header-content {
-        min-height: 65px;
-        padding: 0.5rem 0.75rem;
+        min-height: 90px;
+        padding: 0.75rem 0.75rem;
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -8228,15 +8228,44 @@ body {
         align-items: center;
         flex-shrink: 0;
         padding: 0 0.4rem;
+        cursor: pointer;
+        transition: transform 0.2s ease;
+    }
+    
+    .mobile-user-avatar:hover {
+        transform: scale(1.1);
+    }
+    
+    .mobile-user-avatar:active {
+        transform: scale(0.95);
     }
     
     .mobile-user-info {
         position: relative;
         display: flex;
-        flex-direction: row;
-        align-items: center;
-        justify-content: flex-end;
-        gap: 0.4rem;
+        flex-direction: column;
+        align-items: flex-end;
+        justify-content: center;
+        gap: 0;
+    }
+    
+    .user-role-title {
+        font-size: 0.8rem;
+        color: white;
+        font-weight: 700;
+        text-transform: capitalize;
+        white-space: nowrap;
+        line-height: 1.1;
+    }
+    
+    .user-role-subtitle {
+        font-size: 0.65rem;
+        color: rgba(255, 255, 255, 0.9);
+        font-weight: 600;
+        text-transform: uppercase;
+        white-space: nowrap;
+        letter-spacing: 0.5px;
+        line-height: 1;
     }
     
     .mobile-user-name {
@@ -8282,7 +8311,7 @@ body {
     /* Mobile User Dropdown Menu */
     .mobile-user-dropdown {
         position: fixed;
-        top: 70px;
+        top: 100px;
         right: 10px;
         background: white;
         border-radius: 10px;
@@ -8374,6 +8403,26 @@ body {
     
     .header-logo i {
         font-size: 1.4rem;
+    }
+    
+    .header-title-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+    }
+    
+    .header-main-title {
+        font-size: 1.1rem;
+        font-weight: 800;
+        color: white;
+        line-height: 1.2;
+    }
+    
+    .header-subtitle {
+        font-size: 0.75rem;
+        color: rgba(255, 255, 255, 0.9);
+        font-weight: 400;
+        line-height: 1;
     }
 }
 

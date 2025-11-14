@@ -264,32 +264,33 @@
             <!-- Center: Business Name/Logo -->
             <div class="header-center">
                 <div class="header-logo">
-                    <i class="fas fa-box"></i>
-                    <span id="mobileHeaderBusinessName">GEL-STOCK</span>
+                    <i class="fas fa-chart-line"></i>
+                    <div class="header-title-group">
+                        <div class="header-main-title">J'MONIC ENTERPRISE</div>
+                        <div class="header-subtitle">Business Dashboard</div>
+                    </div>
                 </div>
             </div>
 
             <!-- Right: User Profile -->
             <div class="header-right mobile-user-profile">
                 <div class="mobile-user-info">
-                    <div class="mobile-user-name" id="mobileHeaderUserName">Demo User</div>
-                    <button class="mobile-profile-menu-btn" onclick="toggleMobileUserMenu()">
-                        <i class="fas fa-ellipsis-v"></i>
-                    </button>
-                    <!-- Mobile User Menu Dropdown -->
-                    <div class="mobile-user-dropdown" id="mobileUserDropdown" style="display: none;">
-                        <a href="#" onclick="navigateToSection('settings')">
-                            <i class="fas fa-cog"></i>
-                            <span>Settings</span>
-                        </a>
-                        <a href="#" onclick="logoutUser()">
-                            <i class="fas fa-sign-out-alt"></i>
-                            <span>Logout</span>
-                        </a>
-                    </div>
+                    <div class="user-role-title" id="mobileHeaderRole">Business Owner</div>
+                    <div class="user-role-subtitle" id="mobileHeaderRoleType">ADMINISTRATOR</div>
                 </div>
-                <div class="mobile-user-avatar">
+                <div class="mobile-user-avatar" onclick="toggleMobileUserMenu()">
                     <i class="fas fa-user-circle"></i>
+                </div>
+                <!-- Mobile User Menu Dropdown -->
+                <div class="mobile-user-dropdown" id="mobileUserDropdown" style="display: none;">
+                    <a href="#" onclick="navigateToSection('settings')">
+                        <i class="fas fa-cog"></i>
+                        <span>Settings</span>
+                    </a>
+                    <a href="#" onclick="logoutUser()">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Logout</span>
+                    </a>
                 </div>
             </div>
         </div>
@@ -364,7 +365,7 @@
         </div>
     </nav>
 
-    <div class="dashboard-container" style="margin-top: 80px;">
+    <div class="dashboard-container" style="margin-top: 100px;">
         <!-- Desktop Sidebar -->
         <nav class="sidebar desktop-only">
             <div class="sidebar-header">

@@ -7814,22 +7814,18 @@ document.addEventListener('click', function(e) {
 
 // Update mobile header with user info
 function updateMobileHeader() {
-    const userNameElement = document.getElementById('mobileHeaderUserName');
-    const businessNameElement = document.getElementById('mobileHeaderBusinessName');
+    const roleElement = document.getElementById('mobileHeaderRole');
+    const roleTypeElement = document.getElementById('mobileHeaderRoleType');
     
-    if (userNameElement) {
-        if (businessManager && businessManager.currentUser && businessManager.currentUser.name) {
-            userNameElement.textContent = businessManager.currentUser.name.split(' ')[0]; // First name only
+    if (roleElement && roleTypeElement) {
+        if (businessManager && businessManager.currentUser) {
+            const role = businessManager.currentUser.role || 'User';
+            const roleLabel = role.charAt(0).toUpperCase() + role.slice(1);
+            roleElement.textContent = roleLabel;
+            roleTypeElement.textContent = (businessManager.currentUser.role === 'owner' ? 'OWNER' : 'ADMINISTRATOR').toUpperCase();
         } else {
-            userNameElement.textContent = 'Demo User';
-        }
-    }
-    
-    if (businessNameElement) {
-        if (businessManager && businessManager.currentUser && businessManager.currentUser.businessName) {
-            businessNameElement.textContent = businessManager.currentUser.businessName;
-        } else {
-            businessNameElement.textContent = 'GEL-STOCK';
+            roleElement.textContent = 'Demo User';
+            roleTypeElement.textContent = 'DEMO';
         }
     }
 }
