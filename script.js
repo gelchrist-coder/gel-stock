@@ -60,6 +60,55 @@ class NaturalHairBusinessManager {
         }
     }
     
+    /**
+     * Setup cloud sync event listeners to update UI when data changes on other devices
+     */
+    setupCloudSyncListeners() {
+        // Listen for product changes from cloud
+        window.addEventListener('cloud-sync-products', (event) => {
+            console.log('📱 Cloud sync - Products updated from another device');
+            const products = event.detail;
+            
+            // Update local data
+            this.products = products;
+            
+            // Refresh product tables and displays
+            this.displayProducts();
+            this.displayInventory();
+            this.loadDashboardData();
+            
+            // Show notification
+            this.showLiveNotification(
+                'Data Updated',
+                'Products synced from another device',
+                'info',
+                'fa-cloud'
+            );
+        });
+        
+        // Listen for sales changes from cloud
+        window.addEventListener('cloud-sync-sales', (event) => {
+            console.log('📱 Cloud sync - Sales updated from another device');
+            const sales = event.detail;
+            
+            // Update local data
+            this.sales = sales;
+            
+            // Refresh sales tables and displays
+            this.displaySales();
+            this.loadDashboardData();
+            this.updateRecentSalesDisplay();
+            
+            // Show notification
+            this.showLiveNotification(
+                'Data Updated',
+                'Sales synced from another device',
+                'info',
+                'fa-cloud'
+            );
+        });
+    }
+    
     showLoginScreen() {
         const loginScreen = document.getElementById('loginScreen');
         if (loginScreen) {
@@ -103,6 +152,10 @@ class NaturalHairBusinessManager {
         this.loadSettings();
         this.initializeHeaderDropdowns();
         
+        // Setup cloud sync listeners for demo mode
+        if (this.isDemoMode) {
+            this.setupCloudSyncListeners();
+        }
         // Detect if running on GitHub Pages (static hosting, no PHP backend)
         const isGitHubPages = window.location.hostname.includes('github.io');
         
