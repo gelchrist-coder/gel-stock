@@ -35,6 +35,11 @@
 }
 
 @media (max-width: 768px) {
+    /* Hide Desktop Header on Mobile */
+    .professional-header.d-desktop {
+        display: none !important;
+    }
+
     /* Modernized Professional Header */
     .professional-header {
         background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
