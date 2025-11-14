@@ -8128,20 +8128,28 @@ body {
 
 /* Visibility Classes */
 .d-mobile {
-    display: none;  /* Hide mobile header by default */
+    display: block !important;  /* Show mobile header by default */
 }
 
 .desktop-only {
-    display: block !important;  /* Show desktop layout by default */
+    display: none !important;  /* Hide desktop layout by default */
 }
 
-@media (max-width: 768px) {
+@media (min-width: 769px) {
     .d-mobile {
-        display: block;
+        display: none !important;
     }
     
     .desktop-only {
-        display: none !important;
+        display: block !important;
+    }
+    
+    .professional-header {
+        margin-left: var(--sidebar-width);
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
     }
     
     .sidebar.mobile {
