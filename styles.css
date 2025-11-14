@@ -8077,6 +8077,21 @@ body {
     .sidebar.mobile {
         display: flex !important;
     }
+    
+    /* Mobile Professional Header */
+    .professional-header {
+        margin-left: 0;
+        min-height: 60px;
+    }
+    
+    .professional-header .header-content {
+        min-height: 60px;
+        padding: 0 1rem;
+    }
+    
+    .mobile-menu-toggle {
+        display: flex !important;
+    }
 }
 
 /* Enhanced Dashboard Badges */
@@ -11790,7 +11805,7 @@ body {
 @media (max-width: 768px) {
     /* Full width adjustments */
     .dashboard-container {
-        flex-direction: column-reverse;
+        flex-direction: column;
     }
     
     /* Mobile Main Content - No sidebar margin */
