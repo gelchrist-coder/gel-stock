@@ -140,6 +140,114 @@ class NaturalHairBusinessManager {
         window.location.reload();
     }
     
+    /**
+     * Update user profile
+     */
+    updateProfile() {
+        try {
+            const fullName = document.getElementById('profileFullName')?.value || '';
+            const businessName = document.getElementById('profileBusinessName')?.value || '';
+            const phone = document.getElementById('profilePhone')?.value || '';
+            const email = document.getElementById('profileEmail')?.value || '';
+            
+            if (!fullName || !businessName) {
+                this.showLiveNotification('Error', 'Full name and business name are required', 'error', 'fa-exclamation-circle');
+                return;
+            }
+            
+            // Update current user
+            this.currentUser.name = fullName;
+            this.currentUser.businessName = businessName;
+            this.currentUser.phone = phone;
+            this.currentUser.email = email;
+            
+            // Save to session storage
+            sessionStorage.setItem('gel_user', JSON.stringify(this.currentUser));
+            
+            // Update header with new business name
+            const headerBusinessName = document.getElementById('headerBusinessName');
+            if (headerBusinessName) {
+                headerBusinessName.textContent = businessName;
+            }
+            
+            this.showLiveNotification('Success', 'Profile updated successfully', 'success', 'fa-check-circle');
+        } catch (error) {
+            console.error('Error updating profile:', error);
+            this.showLiveNotification('Error', 'Failed to update profile', 'error', 'fa-exclamation-circle');
+        }
+    }
+    
+    /**
+     * Load profile data into form
+     */
+    loadProfileData() {
+        try {
+            if (this.currentUser) {
+                document.getElementById('profileFullName').value = this.currentUser.name || '';
+                document.getElementById('profileBusinessName').value = this.currentUser.businessName || '';
+                document.getElementById('profilePhone').value = this.currentUser.phone || '';
+                document.getElementById('profileEmail').value = this.currentUser.email || '';
+                document.getElementById('profileRole').value = this.currentUser.role || 'User';
+            }
+        } catch (error) {
+            console.error('Error loading profile data:', error);
+        }
+    }
+    
+    /**
+     * Show delete account confirmation
+     */
+    showDeleteAccountConfirm() {
+        const confirmed = confirm(
+            '⚠️ WARNING: This action cannot be undone!\n\n' +
+            'Are you sure you want to delete your account?\n\n' +
+            'This will permanently delete:\n' +
+            '- Your account and profile\n' +
+            '- All products and inventory\n' +
+            '- All sales records\n' +
+            '- All business data\n\n' +
+            'Type "DELETE MY ACCOUNT" to confirm:'
+        );
+        
+        if (confirmed) {
+            const userConfirmation = prompt('Type DELETE MY ACCOUNT to confirm permanent deletion:');
+            if (userConfirmation === 'DELETE MY ACCOUNT') {
+                this.deleteAccount();
+            } else {
+                this.showLiveNotification('Cancelled', 'Account deletion cancelled', 'info', 'fa-info-circle');
+            }
+        }
+    }
+    
+    /**
+     * Delete user account permanently
+     */
+    deleteAccount() {
+        try {
+            // Clear all user data
+            localStorage.clear();
+            sessionStorage.clear();
+            
+            // Reset all properties
+            this.isLoggedIn = false;
+            this.isDemoMode = false;
+            this.currentUser = null;
+            this.products = [];
+            this.sales = [];
+            
+            // Show notification and redirect to login
+            this.showLiveNotification('Account Deleted', 'Your account has been permanently deleted', 'success', 'fa-trash');
+            
+            // Redirect to login after short delay
+            setTimeout(() => {
+                window.location.reload();
+            }, 2000);
+        } catch (error) {
+            console.error('Error deleting account:', error);
+            this.showLiveNotification('Error', 'Failed to delete account', 'error', 'fa-exclamation-circle');
+        }
+    }
+    
     async initializeSystem() {
         console.log('J\'MONIC ENTERPRISE System Initializing...');
         console.log('API Base URL:', this.apiBase);
@@ -7710,6 +7818,13 @@ function navigateToSection(sectionName) {
     // Show the selected section
     if (typeof showSection === 'function') {
         showSection(sectionName);
+        
+        // Load profile data if navigating to settings
+        if (sectionName === 'settings' && businessManager) {
+            setTimeout(() => {
+                businessManager.loadProfileData();
+            }, 100);
+        }
     }
     
     // Small delay to ensure smooth transition
@@ -8774,6 +8889,22 @@ function logoutUser() {
     if (businessManager) {
         businessManager.logout();
     }
+}
+
+/**
+ * Update user profile
+ */
+function updateProfile() {
+    if (!businessManager) return;
+    businessManager.updateProfile();
+}
+
+/**
+ * Show delete account confirmation
+ */
+function showDeleteAccountConfirm() {
+    if (!businessManager) return;
+    businessManager.showDeleteAccountConfirm();
 }
 
 /**

@@ -5219,12 +5219,24 @@ body {
     min-width: 150px;
     cursor: pointer;
     transition: all 0.2s ease;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.modern-select:hover {
+    border-color: var(--primary-color);
 }
 
 .modern-select:focus {
     outline: none;
     border-color: var(--primary-color);
     box-shadow: 0 0 0 3px rgba(var(--primary-color-rgb), 0.1);
+}
+
+.modern-select[type="text"],
+.modern-select[type="email"],
+.modern-select[type="tel"] {
+    font-family: inherit;
 }
 
 /* Number Input */
@@ -9095,6 +9107,36 @@ body {
 }
 
 .btn-danger-modern:active {
+    transform: translateY(-1px);
+}
+
+/* Primary Modern Button */
+.btn-primary-modern {
+    width: 100%;
+    padding: 1rem 1.25rem;
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.625rem;
+    font-size: 0.875rem;
+    letter-spacing: -0.3px;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+    margin-top: 1rem;
+}
+
+.btn-primary-modern:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(59, 130, 246, 0.4);
+}
+
+.btn-primary-modern:active {
     transform: translateY(-1px);
 }
 
