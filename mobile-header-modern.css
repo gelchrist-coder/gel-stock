@@ -77,7 +77,7 @@
         transition: all 0.3s ease;
         border-radius: 8px;
         flex-shrink: 0;
-        order: -1;
+        order: 1;
     }
 
     .mobile-menu-toggle:active {
@@ -93,6 +93,7 @@
         align-items: center;
         justify-content: center;
         min-height: 65px;
+        order: 2;
     }
 
     .header-title-section {
@@ -126,8 +127,8 @@
         gap: 0.5rem;
         flex-shrink: 0;
         position: relative;
-        order: 3;
         padding-right: 0.5rem;
+        flex: 0 0 auto;
     }
 
     /* Mobile User Profile Button */
@@ -146,6 +147,7 @@
         font-weight: 500;
         order: 3;
         flex-shrink: 0;
+        white-space: nowrap;
     }
 
     .mobile-user-profile-btn:hover {
