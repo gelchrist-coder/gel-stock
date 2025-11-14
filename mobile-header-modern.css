@@ -1,16 +1,17 @@
-/* Modern Mobile App Header - Contemporary Design */
+/* Modern Mobile App Header - Light Professional Design */
 
 @media (max-width: 768px) {
     /* Modernized Professional Header */
     .professional-header {
-        background: linear-gradient(180deg, #1a1d29 0%, #1f2339 100%);
+        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
         min-height: 65px;
-        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
         padding: 0 1rem;
+        border-bottom: 1px solid #e5e7eb;
     }
 
     .professional-header::before {
-        background: linear-gradient(90deg, rgba(99, 102, 241, 0.08) 0%, transparent 100%);
+        background: linear-gradient(90deg, rgba(99, 102, 241, 0.05) 0%, transparent 100%);
     }
 
     /* Header Content Layout */
@@ -23,24 +24,26 @@
         min-height: 65px;
     }
 
-    /* Hamburger Menu Button - Modernized */
+    /* Hamburger Menu Button - In Header */
     .mobile-menu-toggle {
         display: flex !important;
         background: transparent;
         border: none;
-        color: #ffffff;
+        color: #1f2937;
         font-size: 1.4rem;
         cursor: pointer;
         padding: 0.6rem;
         align-items: center;
         justify-content: center;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        border-radius: 10px;
+        transition: all 0.3s ease;
+        border-radius: 8px;
         flex-shrink: 0;
+        order: -1;
     }
 
     .mobile-menu-toggle:active {
-        background: rgba(255, 255, 255, 0.15);
+        background: rgba(99, 102, 241, 0.1);
+        color: #6366f1;
         transform: scale(0.95);
     }
 
@@ -64,14 +67,14 @@
         margin: 0;
         font-size: 1.1rem;
         font-weight: 700;
-        color: #ffffff;
+        color: #1f2937;
         letter-spacing: 0.3px;
     }
 
     .header-title-section .business-info {
         margin: 0;
         font-size: 0.7rem;
-        color: rgba(255, 255, 255, 0.7);
+        color: #6b7280;
         font-weight: 400;
         letter-spacing: 0.2px;
     }
@@ -88,20 +91,21 @@
     .notification-bell {
         background: transparent;
         border: none;
-        color: rgba(255, 255, 255, 0.9);
+        color: #4b5563;
         font-size: 1.2rem;
         cursor: pointer;
         padding: 0.6rem;
         display: flex;
         align-items: center;
         justify-content: center;
-        border-radius: 10px;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        border-radius: 8px;
+        transition: all 0.3s ease;
         position: relative;
     }
 
     .notification-bell:active {
-        background: rgba(255, 255, 255, 0.15);
+        background: rgba(99, 102, 241, 0.1);
+        color: #6366f1;
         transform: scale(0.95);
     }
 
@@ -123,20 +127,21 @@
     .user-profile-btn {
         background: transparent;
         border: none;
-        color: white;
+        color: #1f2937;
         cursor: pointer;
         padding: 0.4rem 0.8rem;
         display: flex;
         align-items: center;
         gap: 0.5rem;
-        border-radius: 10px;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        border-radius: 8px;
+        transition: all 0.3s ease;
         font-size: 0.9rem;
         font-weight: 500;
     }
 
     .user-profile-btn:active {
-        background: rgba(255, 255, 255, 0.15);
+        background: rgba(99, 102, 241, 0.1);
+        color: #6366f1;
         transform: scale(0.98);
     }
 
@@ -163,7 +168,7 @@
 
     .user-profile-btn i {
         font-size: 1rem;
-        color: rgba(255, 255, 255, 0.7);
+        color: #6b7280;
     }
 
     /* Dashboard Header - Hidden on mobile */
@@ -183,7 +188,7 @@
     /* Business info styling */
     .business-name-main {
         font-size: 1.1rem;
-        color: white;
+        color: #1f2937;
         font-weight: 700;
         margin: 0;
     }
@@ -193,21 +198,21 @@
 @media (max-width: 768px) {
     /* Modern sidebar overlay */
     .mobile-sidebar-overlay {
-        background: rgba(0, 0, 0, 0.6);
-        backdrop-filter: blur(8px);
+        background: rgba(0, 0, 0, 0.4);
+        backdrop-filter: blur(4px);
     }
 
     /* Modern sidebar content */
     .mobile-sidebar-content {
-        background: linear-gradient(180deg, #ffffff 0%, #f9fafb 100%);
-        box-shadow: -4px 0 24px rgba(0, 0, 0, 0.12);
+        background: white;
+        box-shadow: 4px 0 12px rgba(0, 0, 0, 0.1);
     }
 
     /* Modern sidebar header */
     .mobile-sidebar-header {
-        background: linear-gradient(135deg, #1a1d29 0%, #1f2339 100%);
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         padding: 1.25rem 1.5rem;
-        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        border-bottom: none;
     }
 
     .mobile-sidebar-header h2 {
@@ -224,12 +229,12 @@
         color: white;
         width: 36px;
         height: 36px;
-        border-radius: 10px;
+        border-radius: 8px;
         display: flex;
         align-items: center;
         justify-content: center;
         cursor: pointer;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        transition: all 0.3s ease;
     }
 
     .close-sidebar:active {
@@ -240,10 +245,10 @@
     /* Modern menu items */
     .mobile-sidebar-menu a {
         padding: 1rem 1.5rem;
-        color: #6b7280;
+        color: #4b5563;
         font-weight: 500;
         font-size: 0.95rem;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        transition: all 0.3s ease;
         border-left: 3px solid transparent;
     }
 
@@ -254,14 +259,16 @@
     }
 
     .mobile-sidebar-menu li.active a {
-        background: rgba(99, 102, 241, 0.1);
+        background: rgba(99, 102, 241, 0.08);
         color: #6366f1;
         border-left-color: #6366f1;
     }
 
     .mobile-sidebar-menu i {
         color: inherit;
-        transition: color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        transition: color 0.3s ease;
+        width: 20px;
+        text-align: center;
     }
 
     .mobile-sidebar-menu li.active i {
