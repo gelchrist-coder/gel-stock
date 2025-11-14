@@ -856,6 +856,13 @@ body {
     min-width: 200px;
 }
 
+.header-business-name {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #0f172a;
+    letter-spacing: -0.3px;
+}
+
 .header-title-section {
     text-align: center;
 }

@@ -8693,11 +8693,16 @@ function updateUserHeaderInfo() {
         const contactInfo = user.phone || user.email || 'demo@gel-stock.com';
         document.getElementById('dropdownUserEmail').textContent = contactInfo;
         
-        // Show business name if available
+        // Show business name if available - update both header and dashboard
         if (user.businessName) {
             const businessInfo = document.getElementById('businessInfo');
             if (businessInfo) {
                 businessInfo.textContent = user.businessName;
+            }
+            // Update header business name
+            const headerBusinessName = document.getElementById('headerBusinessName');
+            if (headerBusinessName) {
+                headerBusinessName.textContent = user.businessName;
             }
         }
         
