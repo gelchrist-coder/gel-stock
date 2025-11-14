@@ -2228,6 +2228,62 @@ ${credit.payments ? credit.payments.map(p => `
         `).join('');
     }
     
+    /**
+     * Filter top products by a specific date
+     * @param {string} dateString - Date in YYYY-MM-DD format
+     */
+    filterTopProductsByDate(dateString) {
+        let sales = JSON.parse(localStorage.getItem('jmonic_sales') || '[]');
+        
+        // Filter sales by date if a date is provided
+        if (dateString) {
+            const filterDate = new Date(dateString).toDateString();
+            sales = sales.filter(sale => {
+                const saleDate = new Date(sale.date).toDateString();
+                return saleDate === filterDate;
+            });
+        }
+        
+        // Calculate top products for the filtered date
+        const productSales = {};
+        
+        sales.forEach(sale => {
+            if (sale.items && Array.isArray(sale.items)) {
+                sale.items.forEach(product => {
+                    const key = product.name || product.productName || 'Unknown';
+                    if (!productSales[key]) {
+                        productSales[key] = { name: key, units: 0, revenue: 0 };
+                    }
+                    productSales[key].units += product.quantity || 1;
+                    productSales[key].revenue += product.subtotal || (product.price * product.quantity) || 0;
+                });
+            }
+        });
+        
+        // Sort by revenue and get top 3
+        const topProducts = Object.values(productSales)
+            .sort((a, b) => b.revenue - a.revenue)
+            .slice(0, 3);
+        
+        // Update display
+        this.updateTopProductsDisplay(topProducts);
+        
+        // Show notification
+        if (dateString) {
+            const date = new Date(dateString).toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+            this.showLiveNotification(
+                'Top Products Filtered',
+                `Showing top products for ${date}`,
+                'info',
+                'fa-filter'
+            );
+        }
+    }
+    
     getSalesTargets() {
         const defaultTargets = {
             daily: 16667,

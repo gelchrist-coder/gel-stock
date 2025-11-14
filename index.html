@@ -656,8 +656,18 @@
                     <div class="sales-table-section">
                         <div class="performance-grid">
                             <div class="top-products-card">
-                                <h3>Top Selling Products</h3>
-                                <div class="product-performance-list">
+                                <div class="top-products-header">
+                                    <h3>Top Selling Products</h3>
+                                    <div class="date-filter-group">
+                                        <input 
+                                            type="date" 
+                                            id="topProductsDateFilter" 
+                                            class="date-filter-input"
+                                            onchange="businessManager.filterTopProductsByDate(this.value)"
+                                        >
+                                    </div>
+                                </div>
+                                <div class="product-performance-list" id="topProductsList">
                                     <div class="product-performance-item">
                                         <div class="product-rank">1</div>
                                         <div class="product-details">

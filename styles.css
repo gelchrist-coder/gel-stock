@@ -2844,11 +2844,42 @@ body {
     border: 1px solid var(--border-color);
 }
 
+.top-products-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+
 .top-products-card h3 {
     font-size: 1.125rem;
     font-weight: 600;
     color: var(--text-primary);
-    margin-bottom: 1.5rem;
+    margin: 0;
+}
+
+.date-filter-group {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.date-filter-input {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    font-size: 0.875rem;
+    color: var(--text-primary);
+    background: var(--card-background);
+    cursor: pointer;
+    transition: border-color 0.3s ease;
+}
+
+.date-filter-input:hover,
+.date-filter-input:focus {
+    border-color: var(--primary-color);
+    outline: none;
 }
 
 .product-list {
