@@ -807,9 +807,9 @@ body {
 .dashboard-header {
     background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
     border-bottom: 3px solid #3b82f6;
-    padding: 1.5rem 2rem;
+    padding: 0.75rem 2rem;
     height: auto;
-    min-height: 100px;
+    min-height: 60px;
     display: flex;
     flex-direction: row;
     align-items: center;
