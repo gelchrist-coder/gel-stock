@@ -807,7 +807,7 @@ body {
 /* Modern Dashboard Header */
 .dashboard-header {
     background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-    border-bottom: 3px solid #3b82f6;
+    border-bottom: 1px solid #e5e7eb;
     padding: 0.75rem 2rem;
     height: auto;
     min-height: 60px;
@@ -2459,7 +2459,7 @@ body {
 .content-section {
     display: none;
     animation: fadeIn 0.4s ease-in-out;
-    padding: 2rem;
+    padding: 1.5rem 2rem;
     min-height: 100vh;
 }
 
