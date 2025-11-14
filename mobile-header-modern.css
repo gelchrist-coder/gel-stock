@@ -1,0 +1,281 @@
+/* Modern Mobile App Header - Contemporary Design */
+
+@media (max-width: 768px) {
+    /* Modernized Professional Header */
+    .professional-header {
+        background: linear-gradient(180deg, #1a1d29 0%, #1f2339 100%);
+        min-height: 65px;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+        padding: 0 1rem;
+    }
+
+    .professional-header::before {
+        background: linear-gradient(90deg, rgba(99, 102, 241, 0.08) 0%, transparent 100%);
+    }
+
+    /* Header Content Layout */
+    .professional-header .header-content {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 0;
+        min-height: 65px;
+    }
+
+    /* Hamburger Menu Button - Modernized */
+    .mobile-menu-toggle {
+        display: flex !important;
+        background: transparent;
+        border: none;
+        color: #ffffff;
+        font-size: 1.4rem;
+        cursor: pointer;
+        padding: 0.6rem;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        border-radius: 10px;
+        flex-shrink: 0;
+    }
+
+    .mobile-menu-toggle:active {
+        background: rgba(255, 255, 255, 0.15);
+        transform: scale(0.95);
+    }
+
+    /* Header Center - Branding */
+    .header-center {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 65px;
+    }
+
+    .header-title-section {
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+    }
+
+    .header-title-section h1 {
+        margin: 0;
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #ffffff;
+        letter-spacing: 0.3px;
+    }
+
+    .header-title-section .business-info {
+        margin: 0;
+        font-size: 0.7rem;
+        color: rgba(255, 255, 255, 0.7);
+        font-weight: 400;
+        letter-spacing: 0.2px;
+    }
+
+    /* Header Right - User Profile & Notifications */
+    .header-right {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        flex-shrink: 0;
+    }
+
+    /* Notification Bell */
+    .notification-bell {
+        background: transparent;
+        border: none;
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 1.2rem;
+        cursor: pointer;
+        padding: 0.6rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 10px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+    }
+
+    .notification-bell:active {
+        background: rgba(255, 255, 255, 0.15);
+        transform: scale(0.95);
+    }
+
+    .notification-badge {
+        position: absolute;
+        top: 2px;
+        right: 2px;
+        background: #ef4444;
+        color: white;
+        font-size: 0.65rem;
+        padding: 2px 5px;
+        border-radius: 10px;
+        font-weight: 700;
+        min-width: 18px;
+        text-align: center;
+    }
+
+    /* User Profile Button */
+    .user-profile-btn {
+        background: transparent;
+        border: none;
+        color: white;
+        cursor: pointer;
+        padding: 0.4rem 0.8rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        border-radius: 10px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+
+    .user-profile-btn:active {
+        background: rgba(255, 255, 255, 0.15);
+        transform: scale(0.98);
+    }
+
+    .user-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1rem;
+        color: white;
+        flex-shrink: 0;
+    }
+
+    .user-avatar i {
+        color: white;
+    }
+
+    .user-name {
+        display: none;
+    }
+
+    .user-profile-btn i {
+        font-size: 1rem;
+        color: rgba(255, 255, 255, 0.7);
+    }
+
+    /* Dashboard Header - Hidden on mobile */
+    .dashboard-header {
+        display: none !important;
+    }
+
+    /* Hide old header layout styles */
+    .header-left {
+        display: none;
+    }
+
+    .sidebar-toggle {
+        display: none !important;
+    }
+
+    /* Business info styling */
+    .business-name-main {
+        font-size: 1.1rem;
+        color: white;
+        font-weight: 700;
+        margin: 0;
+    }
+}
+
+/* Enhanced Mobile Sidebar Styling */
+@media (max-width: 768px) {
+    /* Modern sidebar overlay */
+    .mobile-sidebar-overlay {
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(8px);
+    }
+
+    /* Modern sidebar content */
+    .mobile-sidebar-content {
+        background: linear-gradient(180deg, #ffffff 0%, #f9fafb 100%);
+        box-shadow: -4px 0 24px rgba(0, 0, 0, 0.12);
+    }
+
+    /* Modern sidebar header */
+    .mobile-sidebar-header {
+        background: linear-gradient(135deg, #1a1d29 0%, #1f2339 100%);
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .mobile-sidebar-header h2 {
+        color: white;
+        font-size: 1.2rem;
+        font-weight: 800;
+        gap: 0.75rem;
+    }
+
+    /* Modern close button */
+    .close-sidebar {
+        background: rgba(255, 255, 255, 0.2);
+        border: none;
+        color: white;
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .close-sidebar:active {
+        background: rgba(255, 255, 255, 0.3);
+        transform: scale(0.95);
+    }
+
+    /* Modern menu items */
+    .mobile-sidebar-menu a {
+        padding: 1rem 1.5rem;
+        color: #6b7280;
+        font-weight: 500;
+        font-size: 0.95rem;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        border-left: 3px solid transparent;
+    }
+
+    .mobile-sidebar-menu a:active {
+        background: rgba(99, 102, 241, 0.08);
+        color: #6366f1;
+        border-left-color: #6366f1;
+    }
+
+    .mobile-sidebar-menu li.active a {
+        background: rgba(99, 102, 241, 0.1);
+        color: #6366f1;
+        border-left-color: #6366f1;
+    }
+
+    .mobile-sidebar-menu i {
+        color: inherit;
+        transition: color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .mobile-sidebar-menu li.active i {
+        color: #6366f1;
+    }
+}
+
+/* Smooth transitions and animations */
+@media (max-width: 768px) {
+    .mobile-menu-toggle,
+    .notification-bell,
+    .user-profile-btn,
+    .close-sidebar,
+    .mobile-sidebar-menu a {
+        -webkit-tap-highlight-color: transparent;
+    }
+}
