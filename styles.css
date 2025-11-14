@@ -7091,8 +7091,8 @@ body {
 
 .table-header {
     display: grid;
-    grid-template-columns: 2fr 1fr 1fr 1.5fr 1fr;
-    gap: 1rem;
+    grid-template-columns: 1.5fr 1fr 1fr 1.2fr 0.8fr;
+    gap: 1.5rem;
     padding: 1rem;
     background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
     border-bottom: 2px solid #e2e8f0;
@@ -7111,8 +7111,8 @@ body {
 
 .table-row {
     display: grid;
-    grid-template-columns: 2fr 1fr 1fr 1.5fr 1fr;
-    gap: 1rem;
+    grid-template-columns: 1.5fr 1fr 1fr 1.2fr 0.8fr;
+    gap: 1.5rem;
     padding: 1.25rem;
     border-bottom: 1px solid #e5e7eb;
     align-items: center;
