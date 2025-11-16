@@ -8802,11 +8802,31 @@ body {
 }
 
 .theme-dark .kpi-label {
-    color: #b0b8c4;
+    color: #b0b8c4 !important;
+    font-size: 0.9rem !important;
+    font-weight: 500 !important;
 }
 
 .theme-dark .kpi-value {
-    color: #ffffff;
+    color: #ffffff !important;
+    font-size: 2.2rem !important;
+    font-weight: 800 !important;
+    line-height: 1 !important;
+}
+
+.theme-dark .kpi-change {
+    font-weight: 600;
+    font-size: 0.8rem;
+}
+
+.theme-dark .kpi-change.positive {
+    background: rgba(63, 185, 80, 0.2);
+    color: #3fb950 !important;
+}
+
+.theme-dark .kpi-change.negative {
+    background: rgba(248, 81, 73, 0.2);
+    color: #f85149 !important;
 }
 
 .theme-dark .kpi-icon {
@@ -8908,30 +8928,43 @@ body {
 }
 
 .theme-dark .table {
-    background: var(--card-background);
-    color: var(--text-primary);
+    background: linear-gradient(135deg, #0d1220 0%, #0a0e17 100%);
+    color: #ffffff;
+    border: 1px solid rgba(88, 166, 255, 0.15);
+    border-radius: 8px;
 }
 
 .theme-dark .table thead {
+    background: rgba(88, 166, 255, 0.1);
+    border-bottom: 2px solid rgba(88, 166, 255, 0.25);
+}
+
+.theme-dark .table thead th {
+    color: #b0b8c4 !important;
+    font-weight: 600 !important;
     background: rgba(88, 166, 255, 0.08);
-    border-bottom: 2px solid rgba(88, 166, 255, 0.2);
+    border-color: rgba(88, 166, 255, 0.15);
 }
 
 .theme-dark .table tbody tr {
     border-bottom: 1px solid rgba(88, 166, 255, 0.1);
+    background: transparent;
 }
 
 .theme-dark .table tbody tr:hover {
-    background: rgba(88, 166, 255, 0.08);
+    background: rgba(88, 166, 255, 0.08) !important;
 }
 
 .theme-dark .table td {
-    color: var(--text-secondary);
+    color: #ffffff !important;
+    border-color: rgba(88, 166, 255, 0.1);
+    padding: 0.75rem 1rem !important;
 }
 
-.theme-dark .modal-content {
+.theme-dark .table-card {
     background: linear-gradient(135deg, #0d1220 0%, #0a0e17 100%);
-    border-color: rgba(88, 166, 255, 0.2);
+    border: 1px solid rgba(88, 166, 255, 0.15);
+    border-radius: 8px;
 }
 
 .theme-dark .modal-header {
