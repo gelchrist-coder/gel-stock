@@ -925,9 +925,8 @@ class NaturalHairBusinessManager {
     async recordSale(saleData) {
         try {
             // Add current user's name to the sale data
-            const currentUser = this.getCurrentUser();
-            if (currentUser) {
-                saleData.recorded_by = currentUser.fullName || currentUser.name || 'System User';
+            if (this.currentUser) {
+                saleData.recorded_by = this.currentUser.fullName || this.currentUser.name || 'System User';
             } else {
                 saleData.recorded_by = 'System User';
             }
@@ -1028,14 +1027,11 @@ class NaturalHairBusinessManager {
             ).map(checkbox => checkbox.value);
             
             const productSelect = document.getElementById('productSelect');
-            const categoryInfo = document.getElementById('categoryInfo');
-            const selectedCategoryName = document.getElementById('selectedCategoryName');
             
             // Reset product dropdown
             productSelect.innerHTML = '<option value="">Select Product</option>';
             
             if (checkedCategories.length === 0) {
-                categoryInfo.style.display = 'none';
                 return;
             }
             
@@ -1049,7 +1045,6 @@ class NaturalHairBusinessManager {
             
             if (categoryProducts.length === 0) {
                 productSelect.innerHTML += '<option value="" disabled>No products in selected categories</option>';
-                categoryInfo.style.display = 'none';
                 return;
             }
             
@@ -1078,12 +1073,7 @@ class NaturalHairBusinessManager {
                 productSelect.appendChild(option);
             });
             
-            // Show category info with selected categories
-            const categoryNames = checkedCategories.join(', ');
-            selectedCategoryName.textContent = categoryNames;
-            categoryInfo.style.display = 'block';
-            
-            console.log(`Loaded ${categoryProducts.length} products for categories: ${categoryNames}`);
+            console.log(`Loaded ${categoryProducts.length} products for categories: ${checkedCategories.join(', ')}`);
         } catch (error) {
             console.error('Failed to load products by category:', error);
             this.showNotification('Failed to load products', 'error');
@@ -6242,8 +6232,7 @@ ${credit.payments ? credit.payments.map(p => `
         }
         
         // Get current user's name
-        const currentUser = this.getCurrentUser();
-        const recordedBy = currentUser ? (currentUser.fullName || currentUser.name || 'System User') : 'System User';
+        const recordedBy = this.currentUser ? (this.currentUser.fullName || this.currentUser.name || 'System User') : 'System User';
         
         const transaction = {
             id: Date.now() + Math.random(),
