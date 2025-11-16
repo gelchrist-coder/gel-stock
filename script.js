@@ -26,7 +26,7 @@ class NaturalHairBusinessManager {
             this.initializeSystem();
         } else if (demoMode === 'true') {
             this.isDemoMode = true;
-            this.currentUser = { name: 'Demo User', email: 'demo@gel-stock.com', role: 'demo' };
+            this.currentUser = { name: 'demo', email: 'demo@gel-stock.com', role: 'demo' };
             this.showDashboard();
             this.initializeSystem();
         } else {
