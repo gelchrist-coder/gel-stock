@@ -47,6 +47,12 @@
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
         padding: 0 1rem;
         border-bottom: 1px solid #e5e7eb;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 100;
+        width: 100%;
     }
 
     .professional-header::before {
