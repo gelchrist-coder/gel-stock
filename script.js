@@ -4515,11 +4515,11 @@ ${credit.payments ? credit.payments.map(p => `
     }
 
     showPrintReceipt(saleData, products) {
-        // Get business name from settings
+        // Get business name from settings or user profile
         const settings = JSON.parse(localStorage.getItem('jmonic_business_settings') || '{}');
-        const businessName = settings.businessName || 'GEL-STOCK';
-        const businessPhone = settings.businessPhone || '';
-        const businessEmail = settings.businessEmail || '';
+        const businessName = settings.businessName || this.currentUser?.businessName || 'GEL-STOCK';
+        const businessPhone = settings.businessPhone || this.currentUser?.phone || '';
+        const businessEmail = settings.businessEmail || this.currentUser?.email || '';
         
         // Generate receipt HTML with proper date and time formatting
         const saleDateTime = new Date(saleData.date);
