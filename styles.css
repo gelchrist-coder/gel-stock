@@ -13524,4 +13524,174 @@ body {
     }
 }
 
+/* Modern Employee Table Styling */
+.employee-table-container {
+    padding: 0;
+}
+
+.modern-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--card-bg, #ffffff);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.modern-table thead {
+    background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+    border-bottom: 2px solid #d1d5db;
+}
+
+.modern-table thead tr {
+    height: 52px;
+}
+
+.modern-table thead th {
+    padding: 0.875rem 1.25rem;
+    text-align: left;
+    font-weight: 700;
+    font-size: 0.875rem;
+    color: #1f2937;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+    border-right: 1px solid #d1d5db;
+}
+
+.modern-table thead th:last-child {
+    border-right: none;
+}
+
+.modern-table tbody tr {
+    height: 56px;
+    border-bottom: 1px solid #e5e7eb;
+    transition: all 0.3s ease;
+}
+
+.modern-table tbody tr:hover {
+    background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.modern-table tbody tr:last-child {
+    border-bottom: none;
+}
+
+.modern-table td {
+    padding: 1rem 1.25rem;
+    color: #374151;
+    font-size: 0.9375rem;
+    vertical-align: middle;
+}
+
+.modern-table td:first-child {
+    font-weight: 600;
+    color: #111827;
+}
+
+.modern-table td code {
+    background: #f3f4f6;
+    color: #6366f1;
+    padding: 0.375rem 0.75rem;
+    border-radius: 6px;
+    font-family: 'Monaco', 'Courier New', monospace;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    display: inline-block;
+}
+
+.modern-table .btn-danger-small {
+    background: #ef4444;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    white-space: nowrap;
+}
+
+.modern-table .btn-danger-small:hover {
+    background: #dc2626;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.modern-table .btn-danger-small:active {
+    transform: translateY(0);
+}
+
+/* Dark theme support for employee table */
+.theme-dark .modern-table {
+    background: #1f2937;
+    color: #f3f4f6;
+}
+
+.theme-dark .modern-table thead {
+    background: linear-gradient(135deg, #2d3748 0%, #1f2937 100%);
+    border-bottom-color: #374151;
+}
+
+.theme-dark .modern-table thead th {
+    color: #f0f0f0;
+    border-right-color: #374151;
+}
+
+.theme-dark .modern-table tbody tr {
+    border-bottom-color: #374151;
+}
+
+.theme-dark .modern-table tbody tr:hover {
+    background: linear-gradient(135deg, #2d3748 0%, #1f2937 100%);
+}
+
+.theme-dark .modern-table td {
+    color: #e5e7eb;
+}
+
+.theme-dark .modern-table td:first-child {
+    color: #f9fafb;
+}
+
+.theme-dark .modern-table td code {
+    background: #374151;
+    color: #60a5fa;
+}
+
+/* Responsive table styling */
+@media (max-width: 768px) {
+    .modern-table {
+        font-size: 0.8125rem;
+    }
+
+    .modern-table thead th {
+        padding: 0.625rem 0.875rem;
+        font-size: 0.75rem;
+    }
+
+    .modern-table td {
+        padding: 0.75rem 0.875rem;
+        font-size: 0.875rem;
+    }
+
+    .modern-table .btn-danger-small {
+        padding: 0.375rem 0.75rem;
+        font-size: 0.75rem;
+    }
+
+    .modern-table tbody tr {
+        height: auto;
+    }
+
+    .modern-table thead tr {
+        height: auto;
+    }
+}
+
 
