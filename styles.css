@@ -8407,14 +8407,14 @@ body {
 }
 
 .theme-dark body {
-    background: var(--background);
+    background: linear-gradient(135deg, #0a0e17 0%, #050710 100%);
     color: var(--text-primary);
 }
 
 .theme-dark .dashboard-header {
-    background: linear-gradient(135deg, var(--card-background) 0%, #1c2128 100%);
-    border-bottom-color: var(--border-color);
-    box-shadow: 0 2px 10px var(--shadow-light);
+    background: linear-gradient(135deg, #0d1220 0%, #080b14 100%);
+    border-bottom-color: rgba(255, 255, 255, 0.12);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
 }
 
 .theme-dark .header-content h1 {
@@ -8448,28 +8448,29 @@ body {
 }
 
 .theme-dark .main-content {
-    background: var(--background);
+    background: linear-gradient(135deg, #0a0e17 0%, #050710 100%);
 }
 
 .theme-dark .dashboard-card,
 .theme-dark .stat-card,
 .theme-dark .chart-card,
 .theme-dark .table-card {
-    background: var(--card-background);
-    border-color: var(--border-color);
-    box-shadow: 0 4px 20px var(--shadow-light);
+    background: linear-gradient(135deg, #0d1220 0%, #0a0e17 100%);
+    border-color: rgba(88, 166, 255, 0.2);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
 }
 
 .theme-dark .card-header {
-    border-bottom-color: var(--border-color);
+    border-bottom-color: rgba(88, 166, 255, 0.15);
+    background: rgba(88, 166, 255, 0.05);
 }
 
 .theme-dark .card-header h3 {
-    color: var(--text-primary);
+    color: #ffffff;
 }
 
 .theme-dark .stats-overview {
-    background: var(--surface);
+    background: linear-gradient(135deg, #0d1220 0%, #0a0e17 100%);
 }
 
 .theme-dark .kpi-card {
@@ -12745,20 +12746,21 @@ body {
     /* Dark Mode Mobile Tables */
     .theme-dark .table-header,
     .theme-dark .table-row {
-        background: var(--card-background);
-        border-color: rgba(88, 166, 255, 0.15);
-        color: var(--text-primary);
+        background: linear-gradient(135deg, #0d1220 0%, #0a0e17 100%);
+        border-color: rgba(88, 166, 255, 0.2);
+        color: #ffffff;
     }
 
     .theme-dark .table-header {
-        background: rgba(88, 166, 255, 0.08);
-        border-bottom: 2px solid rgba(88, 166, 255, 0.2);
-        color: var(--text-secondary);
+        background: linear-gradient(135deg, rgba(88, 166, 255, 0.1) 0%, rgba(88, 166, 255, 0.05) 100%);
+        border-bottom: 2px solid rgba(88, 166, 255, 0.3);
+        color: #b0b8c4;
         font-weight: 600;
     }
 
     .theme-dark .table-row:hover {
-        background: rgba(88, 166, 255, 0.05);
+        background: rgba(88, 166, 255, 0.1);
+    }
     }
 
     /* Dark Mode Mobile Modals */
@@ -12961,6 +12963,170 @@ body {
         border: 1px solid rgba(217, 153, 34, 0.3);
         color: var(--warning-color);
         border-left: 4px solid var(--warning-color);
+    }
+
+    /* Dark Mode Inventory & Reports */
+    .theme-dark .inventory-table,
+    .theme-dark .reports-table,
+    .theme-dark .stock-table {
+        background: linear-gradient(135deg, #0d1220 0%, #0a0e17 100%);
+    }
+
+    .theme-dark .inventory-row,
+    .theme-dark .reports-row,
+    .theme-dark .stock-row {
+        background: linear-gradient(135deg, #0d1220 0%, #0a0e17 100%);
+        border: 1px solid rgba(88, 166, 255, 0.15);
+        color: #ffffff;
+    }
+
+    .theme-dark .inventory-row:hover,
+    .theme-dark .reports-row:hover,
+    .theme-dark .stock-row:hover {
+        background: linear-gradient(135deg, #131829 0%, #0d1220 100%);
+        border-color: var(--primary-color);
+        box-shadow: 0 4px 12px rgba(88, 166, 255, 0.15);
+    }
+
+    /* Dark Mode Inventory Section */
+    .theme-dark .stock-status {
+        background: linear-gradient(135deg, #0d1220 0%, #0a0e17 100%);
+        border: 1px solid rgba(88, 166, 255, 0.2);
+        color: #ffffff;
+    }
+
+    .theme-dark .stock-item {
+        background: linear-gradient(135deg, #0d1220 0%, #0a0e17 100%);
+        border: 1px solid rgba(88, 166, 255, 0.15);
+        color: #ffffff;
+    }
+
+    .theme-dark .stock-item:hover {
+        background: linear-gradient(135deg, #131829 0%, #0d1220 100%);
+        border-color: var(--primary-color);
+        box-shadow: 0 4px 12px rgba(88, 166, 255, 0.15);
+    }
+
+    .theme-dark .stock-label {
+        color: #b0b8c4;
+    }
+
+    .theme-dark .stock-value {
+        color: #ffffff;
+        font-weight: 600;
+    }
+
+    .theme-dark .stock-critical {
+        color: #f85149;
+    }
+
+    .theme-dark .stock-warning {
+        color: #d29922;
+    }
+
+    .theme-dark .stock-good {
+        color: #3fb950;
+    }
+
+    /* Dark Mode Reports Section */
+    .theme-dark .report-container {
+        background: linear-gradient(135deg, #0d1220 0%, #0a0e17 100%);
+        border: 1px solid rgba(88, 166, 255, 0.2);
+        border-radius: 12px;
+        color: #ffffff;
+    }
+
+    .theme-dark .report-header {
+        background: rgba(88, 166, 255, 0.08);
+        border-bottom: 1px solid rgba(88, 166, 255, 0.2);
+        color: #ffffff;
+    }
+
+    .theme-dark .report-table thead {
+        background: rgba(88, 166, 255, 0.1);
+        border-bottom: 2px solid rgba(88, 166, 255, 0.25);
+    }
+
+    .theme-dark .report-table th {
+        color: #b0b8c4;
+        font-weight: 600;
+    }
+
+    .theme-dark .report-table td {
+        color: #ffffff;
+        border-bottom: 1px solid rgba(88, 166, 255, 0.1);
+    }
+
+    .theme-dark .report-table tbody tr:hover {
+        background: rgba(88, 166, 255, 0.08);
+    }
+
+    .theme-dark .report-row-label {
+        color: #b0b8c4;
+    }
+
+    .theme-dark .report-row-value {
+        color: #ffffff;
+        font-weight: 500;
+    }
+
+    .theme-dark .report-summary {
+        background: linear-gradient(135deg, rgba(88, 166, 255, 0.1) 0%, rgba(88, 166, 255, 0.05) 100%);
+        border: 1px solid rgba(88, 166, 255, 0.2);
+        border-radius: 8px;
+        padding: 1rem;
+        margin-top: 1rem;
+    }
+
+    .theme-dark .report-summary-item {
+        color: #ffffff;
+    }
+
+    .theme-dark .report-summary-label {
+        color: #b0b8c4;
+        font-size: 0.9rem;
+    }
+
+    .theme-dark .report-chart {
+        background: linear-gradient(135deg, rgba(13, 18, 32, 0.5) 0%, rgba(10, 14, 23, 0.5) 100%);
+        border: 1px solid rgba(88, 166, 255, 0.15);
+        border-radius: 8px;
+        padding: 1rem;
+    }
+
+    /* Dark Mode Filter and Search */
+    .theme-dark .filter-section {
+        background: linear-gradient(135deg, #0d1220 0%, #0a0e17 100%);
+        border: 1px solid rgba(88, 166, 255, 0.2);
+        border-radius: 8px;
+    }
+
+    .theme-dark .filter-input,
+    .theme-dark .filter-select {
+        background: #090c12;
+        border: 1px solid rgba(88, 166, 255, 0.25);
+        color: #ffffff;
+    }
+
+    .theme-dark .filter-input::placeholder {
+        color: #8a91a0;
+    }
+
+    .theme-dark .filter-input:focus,
+    .theme-dark .filter-select:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.2);
+    }
+
+    .theme-dark .filter-btn {
+        background: linear-gradient(135deg, var(--primary-color) 0%, #4a90ff 100%);
+        color: white;
+        border: none;
+    }
+
+    .theme-dark .filter-btn:hover {
+        box-shadow: 0 4px 12px rgba(88, 166, 255, 0.25);
+        transform: translateY(-2px);
     }
 }
 
