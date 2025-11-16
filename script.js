@@ -32,8 +32,11 @@ class NaturalHairBusinessManager {
             this.initializeSystem();
         } else if (demoMode === 'true') {
             this.isDemoMode = true;
-            this.currentUser = { name: 'demo', email: 'demo@gel-stock.com', role: 'demo' };
+            this.currentUser = { name: 'demo', email: 'demo@gel-stock.com', role: 'demo', businessId: 'demo_mode' };
             this.businessId = 'demo_mode';
+            // Store demo user in sessionStorage for consistency with role-based navigation
+            sessionStorage.setItem('gel_user', JSON.stringify(this.currentUser));
+            sessionStorage.setItem('gel_demo_mode', 'true');
             // Auto-load sample products for demo mode
             const existingProducts = JSON.parse(localStorage.getItem('jmonic_products') || '[]');
             if (existingProducts.length === 0) {
@@ -6959,11 +6962,12 @@ function showSection(sectionName) {
     // Check if employee trying to access restricted section
     const currentUser = JSON.parse(sessionStorage.getItem('gel_user') || '{}');
     const isEmployee = currentUser.role === 'employee';
+    const isDemo = currentUser.role === 'demo';
     
-    // Sections only available to owners
+    // Sections only available to owners (not for regular employees, but demo has full access)
     const restrictedSections = ['products', 'sales', 'revenue', 'purchases', 'reports', 'categories', 'inventory'];
     
-    if (isEmployee && restrictedSections.includes(sectionName)) {
+    if (isEmployee && !isDemo && restrictedSections.includes(sectionName)) {
         console.warn(`Employee cannot access ${sectionName} section`);
         sectionName = 'overview'; // Fallback to dashboard
     }
