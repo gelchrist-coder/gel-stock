@@ -13317,6 +13317,128 @@ body {
         padding: 1rem;
     }
 
+    /* Dark Mode Reports Header */
+    .theme-dark .reports-header {
+        border-bottom-color: rgba(88, 166, 255, 0.15);
+    }
+
+    .theme-dark .reports-header h2 {
+        color: var(--text-primary);
+    }
+
+    .theme-dark .filter-select {
+        background: var(--surface);
+        color: var(--text-primary);
+        border-color: rgba(88, 166, 255, 0.2);
+    }
+
+    .theme-dark .filter-select:hover {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 8px rgba(88, 166, 255, 0.2);
+    }
+
+    .theme-dark .filter-select:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.15);
+        background: rgba(13, 18, 32, 0.8);
+    }
+
+    /* Dark Mode Stock Summary */
+    .theme-dark .stock-summary-grid {
+        gap: 1.5rem;
+    }
+
+    .theme-dark .stock-item {
+        background: linear-gradient(135deg, #0d1220 0%, #0a0e17 100%);
+        border: 1px solid rgba(88, 166, 255, 0.15);
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    }
+
+    .theme-dark .stock-item:hover {
+        border-color: rgba(88, 166, 255, 0.3);
+        box-shadow: 0 8px 20px rgba(88, 166, 255, 0.15);
+    }
+
+    .theme-dark .item-name {
+        color: var(--text-primary);
+        font-weight: 600;
+    }
+
+    .theme-dark .item-sku {
+        color: var(--text-secondary);
+        font-size: 0.85rem;
+    }
+
+    .theme-dark .item-quantity {
+        color: var(--primary-color);
+        font-weight: 700;
+        font-size: 1.25rem;
+    }
+
+    .theme-dark .item-value {
+        color: var(--success-color);
+        font-weight: 600;
+    }
+
+    /* Dark Mode Report Tables */
+    .theme-dark .reports-table {
+        background: linear-gradient(135deg, #0d1220 0%, #0a0e17 100%);
+        border: 1px solid rgba(88, 166, 255, 0.15);
+    }
+
+    .theme-dark .reports-table thead {
+        background: rgba(88, 166, 255, 0.08);
+        border-bottom: 2px solid rgba(88, 166, 255, 0.2);
+    }
+
+    .theme-dark .reports-table th {
+        color: var(--text-secondary);
+        font-weight: 600;
+        padding: 1rem;
+    }
+
+    .theme-dark .reports-table td {
+        color: var(--text-primary);
+        border-bottom: 1px solid rgba(88, 166, 255, 0.1);
+        padding: 0.75rem 1rem;
+    }
+
+    .theme-dark .reports-table tbody tr:hover {
+        background: rgba(88, 166, 255, 0.05);
+    }
+
+    /* Dark Mode Report Filters */
+    .theme-dark .report-filter {
+        background: linear-gradient(135deg, #0d1220 0%, #0a0e17 100%);
+        border: 1px solid rgba(88, 166, 255, 0.15);
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .theme-dark .report-filter label {
+        color: var(--text-primary);
+        font-weight: 500;
+    }
+
+    .theme-dark .report-filter input,
+    .theme-dark .report-filter select {
+        background: var(--surface);
+        color: var(--text-primary);
+        border: 1px solid rgba(88, 166, 255, 0.2);
+        border-radius: 6px;
+        padding: 0.5rem 0.75rem;
+    }
+
+    .theme-dark .report-filter input:focus,
+    .theme-dark .report-filter select:focus {
+        border-color: var(--primary-color);
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.1);
+    }
+
     /* Dark Mode Filter and Search */
     .theme-dark .filter-section {
         background: linear-gradient(135deg, #0d1220 0%, #0a0e17 100%);
