@@ -215,6 +215,26 @@ body {
     accent-color: #667eea;
 }
 
+/* Forgot Password Link */
+.forgot-password-link {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 1rem;
+}
+
+.forgot-password-link a {
+    color: #667eea;
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.forgot-password-link a:hover {
+    color: #764ba2;
+    text-decoration: underline;
+}
+
 /* Login Error Message */
 .login-error {
     background: #fee2e2;
@@ -13693,5 +13713,315 @@ body {
         height: auto;
     }
 }
+
+/* ===== FORGOT PASSWORD SCREEN STYLES ===== */
+
+.forgot-password-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    font-family: var(--font-family, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif);
+}
+
+.forgot-password-screen.hidden {
+    display: none;
+}
+
+.forgot-password-container {
+    background: white;
+    padding: 3rem;
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    width: 100%;
+    max-width: 420px;
+    position: relative;
+    z-index: 10;
+    animation: slideUp 0.4s ease-out;
+}
+
+.forgot-password-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.forgot-password-icon {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.75rem;
+    margin: 0 auto 1rem;
+    box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+}
+
+.forgot-password-header h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin: 0 0 0.5rem 0;
+}
+
+.forgot-password-header p {
+    font-size: 0.95rem;
+    color: #6b7280;
+    margin: 0;
+}
+
+.forgot-password-step {
+    animation: fadeIn 0.3s ease-in;
+}
+
+.forgot-password-step.hidden {
+    display: none;
+}
+
+.forgot-password-step form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.forgot-password-step .form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.forgot-password-step label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 0.5rem;
+}
+
+.forgot-password-step .input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.forgot-password-step .input-wrapper i {
+    position: absolute;
+    left: 1rem;
+    color: #9ca3af;
+    font-size: 1rem;
+}
+
+.forgot-password-step input,
+.forgot-password-step select {
+    width: 100%;
+    padding: 0.875rem 1rem 0.875rem 2.75rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    color: #1f2937;
+    font-family: inherit;
+    transition: all 0.3s ease;
+    background: white;
+}
+
+.forgot-password-step input:focus,
+.forgot-password-step select:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.forgot-password-step input::placeholder {
+    color: #9ca3af;
+}
+
+.forgot-password-step .form-hint,
+.forgot-password-step .password-hint {
+    font-size: 0.8rem;
+    color: #6b7280;
+    margin-top: 0.25rem;
+}
+
+.forgot-password-step .forgot-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 0.875rem 1.5rem;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.forgot-password-step .forgot-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+}
+
+.forgot-password-step .forgot-btn:active {
+    transform: translateY(0);
+}
+
+.forgot-password-step .forgot-btn:disabled {
+    opacity: 0.8;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Decorative background shapes */
+.forgot-password-bg-shapes {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.forgot-password-bg-shapes .shape {
+    position: absolute;
+    opacity: 0.1;
+}
+
+.forgot-password-bg-shapes .shape-1 {
+    width: 300px;
+    height: 300px;
+    background: white;
+    border-radius: 50%;
+    top: -100px;
+    left: -100px;
+}
+
+.forgot-password-bg-shapes .shape-2 {
+    width: 200px;
+    height: 200px;
+    background: white;
+    border-radius: 50%;
+    bottom: 10%;
+    right: 5%;
+}
+
+.forgot-password-bg-shapes .shape-3 {
+    width: 150px;
+    height: 150px;
+    background: white;
+    border-radius: 50%;
+    bottom: 20%;
+    left: 10%;
+}
+
+.auth-switch {
+    text-align: center;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #e5e7eb;
+}
+
+.auth-switch p {
+    font-size: 0.9rem;
+    color: #6b7280;
+    margin: 0;
+}
+
+.auth-switch a {
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s ease;
+}
+
+.auth-switch a:hover {
+    color: #764ba2;
+    text-decoration: underline;
+}
+
+/* Dark theme support */
+.theme-dark .forgot-password-container {
+    background: #1f2937;
+    color: #e5e7eb;
+}
+
+.theme-dark .forgot-password-header h1 {
+    color: #f3f4f6;
+}
+
+.theme-dark .forgot-password-header p {
+    color: #9ca3af;
+}
+
+.theme-dark .forgot-password-step label {
+    color: #e5e7eb;
+}
+
+.theme-dark .forgot-password-step input,
+.theme-dark .forgot-password-step select {
+    background: #111827;
+    border-color: #374151;
+    color: #f3f4f6;
+}
+
+.theme-dark .forgot-password-step input:focus,
+.theme-dark .forgot-password-step select:focus {
+    border-color: #667eea;
+}
+
+.theme-dark .auth-switch {
+    border-top-color: #374151;
+}
+
+.theme-dark .auth-switch p {
+    color: #9ca3af;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 640px) {
+    .forgot-password-container {
+        margin: 1rem;
+        padding: 2rem 1.5rem;
+        max-width: none;
+        border-radius: 12px;
+    }
+
+    .forgot-password-header h1 {
+        font-size: 1.5rem;
+    }
+
+    .forgot-password-header p {
+        font-size: 0.85rem;
+    }
+
+    .forgot-password-icon {
+        width: 50px;
+        height: 50px;
+        font-size: 1.5rem;
+    }
+
+    .forgot-password-step .input-wrapper input,
+    .forgot-password-step .input-wrapper select {
+        padding: 0.75rem 1rem 0.75rem 2.5rem;
+        font-size: 0.9rem;
+    }
+
+    .forgot-password-step .forgot-btn {
+        padding: 0.75rem 1.25rem;
+        font-size: 0.9rem;
+    }
+}
+
+
 
 

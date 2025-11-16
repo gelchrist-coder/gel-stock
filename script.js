@@ -9259,6 +9259,8 @@ function handleRegistration(event) {
     const phone = document.getElementById('registerPhone').value.trim();
     const password = document.getElementById('registerPassword').value;
     const confirmPassword = document.getElementById('confirmPassword').value;
+    const securityQuestion = document.getElementById('securityQuestionReg').value.trim();
+    const securityAnswer = document.getElementById('securityAnswerReg').value.trim();
     const agreeTerms = document.getElementById('agreeTerms').checked;
     const errorDiv = document.getElementById('registrationError');
     
@@ -9296,6 +9298,16 @@ function handleRegistration(event) {
         return;
     }
     
+    if (!securityQuestion) {
+        showRegistrationError('Please select a security question');
+        return;
+    }
+    
+    if (!securityAnswer) {
+        showRegistrationError('Please provide an answer to the security question');
+        return;
+    }
+    
     if (!agreeTerms) {
         showRegistrationError('Please agree to the Terms of Service and Privacy Policy');
         return;
@@ -9325,6 +9337,8 @@ function handleRegistration(event) {
         ownerName: ownerName,
         phone: formattedPhone,
         password: password, // Note: Hash in production
+        securityQuestion: securityQuestion,
+        securityAnswer: securityAnswer, // Note: In production, hash this too
         createdAt: new Date().toISOString(),
         employees: {} // Will store employee credentials
     };
@@ -9617,6 +9631,224 @@ function updateUserHeaderInfo() {
         const roleDisplay = businessManager.isDemoMode ? 'Demo Mode' : (user.role || 'User');
         document.getElementById('dropdownUserRole').textContent = roleDisplay;
     }
+}
+
+/**
+ * Switch to forgot password screen
+ * @param {Event} event - Click event
+ */
+function switchToForgotPassword(event) {
+    if (event) event.preventDefault();
+    
+    // Hide login screen, show forgot password screen
+    const loginScreen = document.getElementById('loginScreen');
+    const forgotPasswordScreen = document.getElementById('forgotPasswordScreen');
+    
+    if (loginScreen) loginScreen.classList.add('hidden');
+    if (forgotPasswordScreen) forgotPasswordScreen.classList.remove('hidden');
+    
+    // Reset form
+    document.getElementById('forgotPhone').value = '';
+    document.getElementById('securityAnswer').value = '';
+    document.getElementById('newPassword').value = '';
+    document.getElementById('confirmNewPassword').value = '';
+    
+    // Show step 1, hide others
+    document.getElementById('forgotPasswordStep1').classList.remove('hidden');
+    document.getElementById('forgotPasswordStep2').classList.add('hidden');
+    document.getElementById('forgotPasswordStep3').classList.add('hidden');
+    
+    // Clear error messages
+    document.getElementById('forgotPasswordError1').style.display = 'none';
+    document.getElementById('forgotPasswordError2').style.display = 'none';
+    document.getElementById('forgotPasswordError3').style.display = 'none';
+}
+
+/**
+ * Verify phone number for password reset
+ * @param {Event} event - Form submission event
+ */
+function verifyPhoneForPasswordReset(event) {
+    event.preventDefault();
+    
+    const phone = document.getElementById('forgotPhone').value.trim();
+    const errorDiv = document.getElementById('forgotPasswordError1');
+    
+    // Clear previous error
+    errorDiv.style.display = 'none';
+    
+    // Validate phone format
+    if (!validateGhanaPhone(phone)) {
+        errorDiv.textContent = 'Please enter a valid Ghana phone number';
+        errorDiv.style.display = 'flex';
+        return;
+    }
+    
+    // Format phone
+    const formattedPhone = formatGhanaPhone(phone);
+    
+    // Check if phone exists in any business account
+    const businesses = JSON.parse(localStorage.getItem('gel_businesses') || '{}');
+    let foundUser = null;
+    let businessId = null;
+    
+    // Check owner and employee accounts
+    for (const [bId, business] of Object.entries(businesses)) {
+        if (business.ownerId === formattedPhone) {
+            foundUser = {
+                name: business.ownerName,
+                type: 'owner',
+                businessId: bId,
+                securityQuestion: business.securityQuestion || 'What is your mother\'s name?',
+                securityAnswer: business.securityAnswer || ''
+            };
+            businessId = bId;
+            break;
+        }
+        
+        if (business.employees && business.employees[formattedPhone]) {
+            foundUser = {
+                name: business.employees[formattedPhone].name,
+                type: 'employee',
+                businessId: bId,
+                securityQuestion: business.employees[formattedPhone].securityQuestion || 'What is your mother\'s name?',
+                securityAnswer: business.employees[formattedPhone].securityAnswer || ''
+            };
+            businessId = bId;
+            break;
+        }
+    }
+    
+    if (!foundUser) {
+        errorDiv.textContent = 'No account found with this phone number';
+        errorDiv.style.display = 'flex';
+        return;
+    }
+    
+    // Store the found user data temporarily for next step
+    sessionStorage.setItem('passwordResetUser', JSON.stringify({
+        phone: formattedPhone,
+        businessId: businessId,
+        userType: foundUser.type,
+        securityQuestion: foundUser.securityQuestion,
+        securityAnswer: foundUser.securityAnswer
+    }));
+    
+    // Show step 2 - security question
+    document.getElementById('forgotPasswordStep1').classList.add('hidden');
+    document.getElementById('forgotPasswordStep2').classList.remove('hidden');
+    
+    // Display the security question
+    document.getElementById('securityQuestionText').textContent = foundUser.securityQuestion;
+}
+
+/**
+ * Verify security question answer
+ * @param {Event} event - Form submission event
+ */
+function verifySecurityQuestion(event) {
+    event.preventDefault();
+    
+    const answer = document.getElementById('securityAnswer').value.trim().toLowerCase();
+    const errorDiv = document.getElementById('forgotPasswordError2');
+    
+    // Clear previous error
+    errorDiv.style.display = 'none';
+    
+    // Get stored user data
+    const resetUser = JSON.parse(sessionStorage.getItem('passwordResetUser') || '{}');
+    
+    if (!resetUser.phone) {
+        errorDiv.textContent = 'Session expired. Please start over.';
+        errorDiv.style.display = 'flex';
+        return;
+    }
+    
+    // Verify the security answer (case-insensitive)
+    const correctAnswer = resetUser.securityAnswer.toLowerCase();
+    
+    if (answer !== correctAnswer) {
+        errorDiv.textContent = 'Incorrect answer. Please try again.';
+        errorDiv.style.display = 'flex';
+        return;
+    }
+    
+    // Answer is correct, show step 3 - new password
+    document.getElementById('forgotPasswordStep2').classList.add('hidden');
+    document.getElementById('forgotPasswordStep3').classList.remove('hidden');
+}
+
+/**
+ * Reset password to new password
+ * @param {Event} event - Form submission event
+ */
+function resetPassword(event) {
+    event.preventDefault();
+    
+    const newPassword = document.getElementById('newPassword').value;
+    const confirmPassword = document.getElementById('confirmNewPassword').value;
+    const errorDiv = document.getElementById('forgotPasswordError3');
+    
+    // Clear previous error
+    errorDiv.style.display = 'none';
+    
+    // Validate passwords
+    if (!newPassword || newPassword.length < 6) {
+        errorDiv.textContent = 'Password must be at least 6 characters long';
+        errorDiv.style.display = 'flex';
+        return;
+    }
+    
+    if (newPassword !== confirmPassword) {
+        errorDiv.textContent = 'Passwords do not match';
+        errorDiv.style.display = 'flex';
+        return;
+    }
+    
+    // Get stored user data
+    const resetUser = JSON.parse(sessionStorage.getItem('passwordResetUser') || '{}');
+    
+    if (!resetUser.phone) {
+        errorDiv.textContent = 'Session expired. Please start over.';
+        errorDiv.style.display = 'flex';
+        return;
+    }
+    
+    // Update password in localStorage
+    const businesses = JSON.parse(localStorage.getItem('gel_businesses') || '{}');
+    const business = businesses[resetUser.businessId];
+    
+    if (!business) {
+        errorDiv.textContent = 'Business account not found. Please try again.';
+        errorDiv.style.display = 'flex';
+        return;
+    }
+    
+    // Update password based on user type
+    if (resetUser.userType === 'owner') {
+        business.password = newPassword;
+    } else if (resetUser.userType === 'employee' && business.employees[resetUser.phone]) {
+        business.employees[resetUser.phone].password = newPassword;
+    }
+    
+    // Save updated business data
+    localStorage.setItem('gel_businesses', JSON.stringify(businesses));
+    
+    // Clear session data
+    sessionStorage.removeItem('passwordResetUser');
+    
+    // Show success message and redirect to login
+    const forgotBtn = document.querySelector('.forgot-btn');
+    if (forgotBtn) {
+        forgotBtn.innerHTML = '<i class="fas fa-check-circle"></i> Password Reset Successfully!';
+        forgotBtn.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
+        forgotBtn.disabled = true;
+    }
+    
+    // Redirect to login after 2 seconds
+    setTimeout(() => {
+        switchToLogin(null);
+    }, 2000);
 }
 
 /* ===== END LOGIN & AUTHENTICATION FUNCTIONS ===== */

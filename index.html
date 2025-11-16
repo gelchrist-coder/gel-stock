@@ -78,6 +78,11 @@
                 <!-- Error Message -->
                 <div id="loginError" class="login-error" style="display: none;"></div>
 
+                <!-- Forgot Password Link -->
+                <div class="forgot-password-link">
+                    <a href="#" onclick="switchToForgotPassword(event)">Forgot password?</a>
+                </div>
+
                 <!-- Login Button -->
                 <button type="submit" class="btn-primary login-btn">
                     <i class="fas fa-sign-in-alt"></i>
@@ -114,6 +119,125 @@
 
         <!-- Decorative Background Elements -->
         <div class="login-bg-shapes">
+            <div class="shape shape-1"></div>
+            <div class="shape shape-2"></div>
+            <div class="shape shape-3"></div>
+        </div>
+    </div>
+
+    <!-- Forgot Password Screen -->
+    <div id="forgotPasswordScreen" class="forgot-password-screen hidden">
+        <div class="forgot-password-container">
+            <!-- Header Section -->
+            <div class="forgot-password-header">
+                <div class="forgot-password-icon">
+                    <i class="fas fa-lock-open"></i>
+                </div>
+                <h1>Reset Your Password</h1>
+                <p>Verify your phone number to recover access to your account</p>
+            </div>
+
+            <!-- Step 1: Phone Verification -->
+            <div id="forgotPasswordStep1" class="forgot-password-step">
+                <form onsubmit="verifyPhoneForPasswordReset(event)">
+                    <div class="form-group">
+                        <label for="forgotPhone">Phone Number</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-mobile-alt"></i>
+                            <input 
+                                type="tel" 
+                                id="forgotPhone" 
+                                placeholder="Enter your registered phone number"
+                                required
+                            >
+                        </div>
+                        <small class="form-hint">Ghana format: 0241234567 or +233241234567</small>
+                    </div>
+
+                    <div id="forgotPasswordError1" class="login-error" style="display: none;"></div>
+
+                    <button type="submit" class="btn-primary forgot-btn">
+                        <i class="fas fa-search"></i>
+                        Verify Phone
+                    </button>
+                </form>
+            </div>
+
+            <!-- Step 2: Security Question -->
+            <div id="forgotPasswordStep2" class="forgot-password-step hidden">
+                <form onsubmit="verifySecurityQuestion(event)">
+                    <div id="securityQuestionDiv" class="form-group">
+                        <label>Security Question</label>
+                        <p id="securityQuestionText" style="font-weight: 600; color: #1f2937; margin-bottom: 1rem;"></p>
+                        <div class="input-wrapper">
+                            <i class="fas fa-lightbulb"></i>
+                            <input 
+                                type="text" 
+                                id="securityAnswer" 
+                                placeholder="Enter your answer"
+                                required
+                                autocomplete="off"
+                            >
+                        </div>
+                        <small class="form-hint">Case-insensitive</small>
+                    </div>
+
+                    <div id="forgotPasswordError2" class="login-error" style="display: none;"></div>
+
+                    <button type="submit" class="btn-primary forgot-btn">
+                        <i class="fas fa-check"></i>
+                        Verify Answer
+                    </button>
+                </form>
+            </div>
+
+            <!-- Step 3: New Password -->
+            <div id="forgotPasswordStep3" class="forgot-password-step hidden">
+                <form onsubmit="resetPassword(event)">
+                    <div class="form-group">
+                        <label for="newPassword">New Password</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-lock"></i>
+                            <input 
+                                type="password" 
+                                id="newPassword" 
+                                placeholder="Create a new password"
+                                required
+                            >
+                        </div>
+                        <small class="password-hint">Minimum 6 characters</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="confirmNewPassword">Confirm Password</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-lock"></i>
+                            <input 
+                                type="password" 
+                                id="confirmNewPassword" 
+                                placeholder="Confirm your new password"
+                                required
+                            >
+                        </div>
+                    </div>
+
+                    <div id="forgotPasswordError3" class="login-error" style="display: none;"></div>
+
+                    <button type="submit" class="btn-primary forgot-btn">
+                        <i class="fas fa-key"></i>
+                        Reset Password
+                    </button>
+                </form>
+            </div>
+
+            <!-- Back to Login -->
+            <div class="auth-switch">
+                <p><a href="#" onclick="switchToLogin(event)">Back to Login</a></p>
+            </div>
+        </div>
+
+        <!-- Decorative Background Elements -->
+        <div class="forgot-password-bg-shapes">
             <div class="shape shape-1"></div>
             <div class="shape shape-2"></div>
             <div class="shape shape-3"></div>
@@ -209,6 +333,39 @@
                             required
                         >
                     </div>
+                </div>
+
+                <!-- Security Question Input -->
+                <div class="form-group">
+                    <label for="securityQuestionReg">Security Question (for password recovery)</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-question-circle"></i>
+                        <select id="securityQuestionReg" name="securityQuestion" required>
+                            <option value="">Select a security question</option>
+                            <option value="What is your mother's name?">What is your mother's name?</option>
+                            <option value="What is your favorite color?">What is your favorite color?</option>
+                            <option value="What city were you born in?">What city were you born in?</option>
+                            <option value="What is your pet's name?">What is your pet's name?</option>
+                            <option value="What is your favorite food?">What is your favorite food?</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Security Answer Input -->
+                <div class="form-group">
+                    <label for="securityAnswerReg">Your Answer</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-lightbulb"></i>
+                        <input 
+                            type="text" 
+                            id="securityAnswerReg" 
+                            name="securityAnswer" 
+                            placeholder="Answer to your security question"
+                            required
+                            autocomplete="off"
+                        >
+                    </div>
+                    <small class="form-hint">Remember this answer - you'll need it to recover your password</small>
                 </div>
 
                 <!-- Terms Checkbox -->
