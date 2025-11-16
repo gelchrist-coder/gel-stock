@@ -6080,34 +6080,146 @@ ${credit.payments ? credit.payments.map(p => `
 
     exportTransactionLog() {
         const transactions = JSON.parse(localStorage.getItem('inventoryTransactions') || '[]');
-        const sales = JSON.parse(localStorage.getItem('jmonic_sales') || '[]');
         
-        if (transactions.length === 0 && sales.length === 0) {
+        if (transactions.length === 0) {
             this.showNotification('No transaction data to export', 'warning');
             return;
         }
         
-        // Create CSV content
-        let csvContent = "Timestamp,Product,Type,Quantity,Previous Stock,New Stock,Reference\n";
+        // Apply current filter if set
+        let filteredTransactions = [...transactions];
+        if (this.currentTransactionFilter && this.currentTransactionFilter !== 'all') {
+            filteredTransactions = filteredTransactions.filter(t => 
+                t.type === this.currentTransactionFilter
+            );
+        }
+        
+        if (filteredTransactions.length === 0) {
+            this.showNotification('No transactions matching the current filter', 'warning');
+            return;
+        }
+        
+        // Sort by timestamp (newest first)
+        filteredTransactions.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+        
+        // Create CSV content with all fields
+        let csvContent = "Timestamp,Product,Type,Quantity,Previous Stock,New Stock,Reference,Recorded By\n";
         
         // Add transaction data
-        transactions.forEach(transaction => {
+        filteredTransactions.forEach(transaction => {
             const date = new Date(transaction.timestamp);
-            csvContent += `"${date.toLocaleString()}","${transaction.product}","${transaction.type}","${transaction.quantity}","${transaction.previousStock || ''}","${transaction.newStock || ''}","${transaction.reference || ''}"\n`;
+            const recordedBy = transaction.recorded_by || 'System';
+            csvContent += `"${date.toLocaleString()}","${transaction.product || ''}","${transaction.type || ''}","${transaction.quantity || ''}","${transaction.previousStock || ''}","${transaction.newStock || ''}","${transaction.reference || ''}","${recordedBy}"\n`;
         });
         
         // Create and download file
-        const blob = new Blob([csvContent], { type: 'text/csv' });
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `jmonic_transactions_${new Date().toISOString().split('T')[0]}.csv`;
+        const now = new Date();
+        const dateStr = now.toISOString().split('T')[0];
+        const timeStr = now.toTimeString().split(' ')[0].replace(/:/g, '-');
+        const filterStr = this.currentTransactionFilter && this.currentTransactionFilter !== 'all' ? `_${this.currentTransactionFilter}` : '';
+        a.download = `jmonic_transactions_${dateStr}_${timeStr}${filterStr}.csv`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
         window.URL.revokeObjectURL(url);
         
-        this.showNotification('Transaction log exported successfully', 'success');
+        this.showNotification(`Transaction log exported successfully (${filteredTransactions.length} records)`, 'success');
+    }
+
+    // Export transaction log with detailed summary
+    exportTransactionLogWithSummary() {
+        const transactions = JSON.parse(localStorage.getItem('inventoryTransactions') || '[]');
+        
+        if (transactions.length === 0) {
+            this.showNotification('No transaction data to export', 'warning');
+            return;
+        }
+        
+        // Apply current filter if set
+        let filteredTransactions = [...transactions];
+        if (this.currentTransactionFilter && this.currentTransactionFilter !== 'all') {
+            filteredTransactions = filteredTransactions.filter(t => 
+                t.type === this.currentTransactionFilter
+            );
+        }
+        
+        // Sort by timestamp (newest first)
+        filteredTransactions.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+        
+        // Calculate summary statistics
+        const summaryStats = {
+            totalTransactions: filteredTransactions.length,
+            byType: {},
+            byUser: {},
+            totalQuantity: 0,
+            dateRange: filteredTransactions.length > 0 ? {
+                start: filteredTransactions[filteredTransactions.length - 1].timestamp,
+                end: filteredTransactions[0].timestamp
+            } : null
+        };
+        
+        filteredTransactions.forEach(t => {
+            // Count by type
+            summaryStats.byType[t.type] = (summaryStats.byType[t.type] || 0) + 1;
+            
+            // Count by user
+            const user = t.recorded_by || 'System';
+            summaryStats.byUser[user] = (summaryStats.byUser[user] || 0) + 1;
+            
+            // Sum quantities
+            summaryStats.totalQuantity += Math.abs(t.quantity || 0);
+        });
+        
+        // Create CSV content with summary
+        let csvContent = "GEL-STOCK - TRANSACTION LOG EXPORT\n";
+        csvContent += `Export Date: ${new Date().toLocaleString()}\n`;
+        csvContent += `Total Records: ${summaryStats.totalTransactions}\n`;
+        csvContent += "\n";
+        
+        // Add summary by type
+        csvContent += "SUMMARY BY TYPE\n";
+        Object.keys(summaryStats.byType).forEach(type => {
+            csvContent += `${type.toUpperCase()}: ${summaryStats.byType[type]}\n`;
+        });
+        csvContent += "\n";
+        
+        // Add summary by user
+        csvContent += "SUMMARY BY USER\n";
+        Object.keys(summaryStats.byUser).forEach(user => {
+            csvContent += `${user}: ${summaryStats.byUser[user]} transactions\n`;
+        });
+        csvContent += "\n\n";
+        
+        // Add detailed transaction data
+        csvContent += "DETAILED TRANSACTIONS\n";
+        csvContent += "Timestamp,Product,Type,Quantity,Previous Stock,New Stock,Reference,Recorded By\n";
+        
+        filteredTransactions.forEach(transaction => {
+            const date = new Date(transaction.timestamp);
+            const recordedBy = transaction.recorded_by || 'System';
+            csvContent += `"${date.toLocaleString()}","${transaction.product || ''}","${transaction.type || ''}","${transaction.quantity || ''}","${transaction.previousStock || ''}","${transaction.newStock || ''}","${transaction.reference || ''}","${recordedBy}"\n`;
+        });
+        
+        // Create and download file
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        const now = new Date();
+        const dateStr = now.toISOString().split('T')[0];
+        const timeStr = now.toTimeString().split(' ')[0].replace(/:/g, '-');
+        const filterStr = this.currentTransactionFilter && this.currentTransactionFilter !== 'all' ? `_${this.currentTransactionFilter}` : '';
+        a.download = `jmonic_transactions_detailed_${dateStr}_${timeStr}${filterStr}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+        
+        this.showNotification(`Detailed export completed (${filteredTransactions.length} records with summary)`, 'success');
     }
 
     // Inventory Transaction Management

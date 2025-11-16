@@ -6986,11 +6986,26 @@ body {
     align-items: center;
     gap: 0.5rem;
     font-size: 0.9rem;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
 }
 
 .btn-export:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+}
+
+.btn-export:active {
+    transform: translateY(0);
+}
+
+.theme-dark .btn-export {
+    background: linear-gradient(135deg, #58a6ff 0%, #79c0ff 100%);
+    color: #0a0e17;
+    box-shadow: 0 4px 12px rgba(88, 166, 255, 0.25);
+}
+
+.theme-dark .btn-export:hover {
+    box-shadow: 0 8px 25px rgba(88, 166, 255, 0.4);
 }
 
 /* Inventory Stats Grid */
