@@ -22,11 +22,18 @@ class NaturalHairBusinessManager {
         if (sessionUser) {
             this.isLoggedIn = true;
             this.currentUser = JSON.parse(sessionUser);
+            
+            // Store businessId for all data isolation
+            if (this.currentUser.businessId) {
+                this.businessId = this.currentUser.businessId;
+            }
+            
             this.showDashboard();
             this.initializeSystem();
         } else if (demoMode === 'true') {
             this.isDemoMode = true;
             this.currentUser = { name: 'demo', email: 'demo@gel-stock.com', role: 'demo' };
+            this.businessId = 'demo_mode';
             // Auto-load sample products for demo mode
             const existingProducts = JSON.parse(localStorage.getItem('jmonic_products') || '[]');
             if (existingProducts.length === 0) {
@@ -343,6 +350,11 @@ class NaturalHairBusinessManager {
         console.log('J\'MONIC ENTERPRISE System Initializing...');
         console.log('API Base URL:', this.apiBase);
         console.log('User Role:', this.currentUser?.role);
+        
+        // Update navigation based on user role
+        if (typeof updateNavigationBasedOnRole === 'function') {
+            updateNavigationBasedOnRole();
+        }
         
         // Migrate existing products to include category field if missing
         this.migrateProductsWithoutCategory();
@@ -4271,6 +4283,249 @@ ${credit.payments ? credit.payments.map(p => `
         });
     }
     
+    /**
+     * Open modal to add new employee
+     */
+    openAddEmployeeModal() {
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.id = 'addEmployeeModal';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Add Employee</h3>
+                    <button class="close-modal" onclick="closeModal('addEmployeeModal')">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <form class="modal-form" onsubmit="businessManager.createEmployee(event)">
+                    <div class="form-group">
+                        <label>Employee Name</label>
+                        <input type="text" id="employeeName" required placeholder="Enter employee's full name">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Phone Number</label>
+                        <input type="tel" id="employeePhone" required placeholder="Enter Ghana phone number">
+                        <small>Format: 0XXXXXXXXX or +233XXXXXXXXX</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Temporary Password</label>
+                        <input type="password" id="employeePassword" required placeholder="Set initial password (min 6 characters)">
+                        <small>Employee can change this on first login</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Confirm Password</label>
+                        <input type="password" id="employeePasswordConfirm" required placeholder="Confirm password">
+                    </div>
+                    
+                    <div class="modal-footer">
+                        <button type="button" class="btn-secondary" onclick="closeModal('addEmployeeModal')">
+                            Cancel
+                        </button>
+                        <button type="submit" class="btn-primary">
+                            <i class="fas fa-plus"></i> Create Employee
+                        </button>
+                    </div>
+                </form>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        modal.style.display = 'flex';
+    }
+    
+    /**
+     * Create a new employee account
+     */
+    createEmployee(event) {
+        event.preventDefault();
+        
+        const name = document.getElementById('employeeName').value.trim();
+        const phone = document.getElementById('employeePhone').value.trim();
+        const password = document.getElementById('employeePassword').value;
+        const passwordConfirm = document.getElementById('employeePasswordConfirm').value;
+        
+        if (!name || !phone || !password || !passwordConfirm) {
+            this.showLiveNotification('Error', 'All fields are required', 'error', 'fa-exclamation-circle');
+            return;
+        }
+        
+        if (password !== passwordConfirm) {
+            this.showLiveNotification('Error', 'Passwords do not match', 'error', 'fa-exclamation-circle');
+            return;
+        }
+        
+        if (password.length < 6) {
+            this.showLiveNotification('Error', 'Password must be at least 6 characters', 'error', 'fa-exclamation-circle');
+            return;
+        }
+        
+        if (!validateGhanaPhone(phone)) {
+            this.showLiveNotification('Error', 'Please enter a valid Ghana phone number', 'error', 'fa-exclamation-circle');
+            return;
+        }
+        
+        // Format phone
+        const formattedPhone = formatGhanaPhone(phone);
+        
+        try {
+            // Get current business ID
+            const currentUser = JSON.parse(sessionStorage.getItem('gel_user') || '{}');
+            const businessId = currentUser.businessId;
+            
+            if (!businessId) {
+                this.showLiveNotification('Error', 'Cannot create employee: Business ID not found', 'error', 'fa-exclamation-circle');
+                return;
+            }
+            
+            // Load businesses
+            const businesses = JSON.parse(localStorage.getItem('gel_businesses') || '{}');
+            
+            if (!businesses[businessId]) {
+                this.showLiveNotification('Error', 'Business not found', 'error', 'fa-exclamation-circle');
+                return;
+            }
+            
+            // Check if employee phone already exists
+            if (businesses[businessId].employees && businesses[businessId].employees[formattedPhone]) {
+                this.showLiveNotification('Error', 'Employee with this phone number already exists', 'error', 'fa-exclamation-circle');
+                return;
+            }
+            
+            // Add employee to business
+            if (!businesses[businessId].employees) {
+                businesses[businessId].employees = {};
+            }
+            
+            businesses[businessId].employees[formattedPhone] = {
+                name: name,
+                phone: formattedPhone,
+                password: password, // Note: Hash in production
+                createdAt: new Date().toISOString()
+            };
+            
+            // Save updated businesses
+            localStorage.setItem('gel_businesses', JSON.stringify(businesses));
+            
+            // Close modal
+            closeModal('addEmployeeModal');
+            
+            // Refresh employee list
+            this.loadEmployeeList();
+            
+            this.showLiveNotification('Success', `Employee "${name}" created successfully. Their phone: ${formattedPhone}`, 'success', 'fa-check-circle');
+        } catch (error) {
+            console.error('Error creating employee:', error);
+            this.showLiveNotification('Error', 'Failed to create employee', 'error', 'fa-exclamation-circle');
+        }
+    }
+    
+    /**
+     * Load and display employee list
+     */
+    loadEmployeeList() {
+        try {
+            const currentUser = JSON.parse(sessionStorage.getItem('gel_user') || '{}');
+            const businessId = currentUser.businessId;
+            
+            if (!businessId) return;
+            
+            const businesses = JSON.parse(localStorage.getItem('gel_businesses') || '{}');
+            const business = businesses[businessId];
+            
+            if (!business) return;
+            
+            const employees = business.employees || {};
+            const employeeList = document.getElementById('employeeList');
+            const employeeCount = document.getElementById('employeeCount');
+            
+            if (!employeeList) return;
+            
+            const employeePhones = Object.keys(employees);
+            const count = employeePhones.length;
+            
+            if (employeeCount) {
+                employeeCount.textContent = `${count} employee${count !== 1 ? 's' : ''}`;
+            }
+            
+            if (count === 0) {
+                employeeList.innerHTML = '<p style="text-align: center; color: #999; padding: 2rem;">No employees added yet</p>';
+                return;
+            }
+            
+            let html = `
+                <table class="modern-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Phone Number</th>
+                            <th>Added</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            employeePhones.forEach(phone => {
+                const employee = employees[phone];
+                const createdAt = new Date(employee.createdAt).toLocaleDateString('en-GB');
+                
+                html += `
+                    <tr>
+                        <td><strong>${employee.name}</strong></td>
+                        <td><code>${phone}</code></td>
+                        <td>${createdAt}</td>
+                        <td>
+                            <button class="btn-danger-small" onclick="businessManager.deleteEmployee('${phone}')">
+                                <i class="fas fa-trash"></i> Remove
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            html += `
+                    </tbody>
+                </table>
+            `;
+            
+            employeeList.innerHTML = html;
+        } catch (error) {
+            console.error('Error loading employee list:', error);
+        }
+    }
+    
+    /**
+     * Delete an employee
+     */
+    deleteEmployee(phone) {
+        if (!confirm(`Are you sure you want to remove this employee? Their account will no longer work.`)) {
+            return;
+        }
+        
+        try {
+            const currentUser = JSON.parse(sessionStorage.getItem('gel_user') || '{}');
+            const businessId = currentUser.businessId;
+            
+            if (!businessId) return;
+            
+            const businesses = JSON.parse(localStorage.getItem('gel_businesses') || '{}');
+            
+            if (businesses[businessId] && businesses[businessId].employees) {
+                delete businesses[businessId].employees[phone];
+                localStorage.setItem('gel_businesses', JSON.stringify(businesses));
+                
+                this.loadEmployeeList();
+                this.showLiveNotification('Success', 'Employee removed successfully', 'success', 'fa-check-circle');
+            }
+        } catch (error) {
+            console.error('Error deleting employee:', error);
+            this.showLiveNotification('Error', 'Failed to remove employee', 'error', 'fa-exclamation-circle');
+        }
+    }
+    
     resetSettings() {
         console.log('Settings: Resetting to default values');
         
@@ -6701,6 +6956,18 @@ function handleNavigation(e) {
 
 // Show Section
 function showSection(sectionName) {
+    // Check if employee trying to access restricted section
+    const currentUser = JSON.parse(sessionStorage.getItem('gel_user') || '{}');
+    const isEmployee = currentUser.role === 'employee';
+    
+    // Sections only available to owners
+    const restrictedSections = ['products', 'sales', 'revenue', 'purchases', 'reports', 'categories', 'inventory'];
+    
+    if (isEmployee && restrictedSections.includes(sectionName)) {
+        console.warn(`Employee cannot access ${sectionName} section`);
+        sectionName = 'overview'; // Fallback to dashboard
+    }
+    
     // Hide all sections
     document.querySelectorAll('.content-section').forEach(section => {
         section.classList.remove('active');
@@ -6760,12 +7027,66 @@ function showSection(sectionName) {
     } else if (sectionName === 'categories' && businessManager) {
         // Load category analytics when categories section is viewed
         businessManager.loadCategoryAnalytics();
+    } else if (sectionName === 'employees' && businessManager) {
+        // Load employee list when employees section is viewed
+        businessManager.loadEmployeeList();
     }
     
     // Update header title and subtitle
     if (typeof updateHeaderTitle === 'function') {
         updateHeaderTitle();
     }
+}
+
+/**
+ * Update navigation menu based on user role
+ */
+function updateNavigationBasedOnRole() {
+    const currentUser = JSON.parse(sessionStorage.getItem('gel_user') || '{}');
+    const userRole = currentUser.role || 'employee';
+    
+    // Get all menu items
+    const menuItems = document.querySelectorAll('[data-menu-item]');
+    
+    menuItems.forEach(item => {
+        const allowedRoles = item.getAttribute('data-allowed-roles');
+        if (!allowedRoles) return;
+        
+        const roles = allowedRoles.split(',').map(r => r.trim());
+        const isAllowed = roles.includes(userRole);
+        
+        // Show or hide menu item based on role
+        if (isAllowed) {
+            item.style.display = '';
+        } else {
+            item.style.display = 'none';
+        }
+    });
+}
+
+/**
+ * Navigate to a section and check permissions
+ */
+function navigateToSection(sectionName) {
+    const currentUser = JSON.parse(sessionStorage.getItem('gel_user') || '{}');
+    const userRole = currentUser.role || 'employee';
+    
+    // Find the menu item for this section
+    const menuItem = document.querySelector(`[data-menu-item="${sectionName}"]`);
+    if (menuItem) {
+        const allowedRoles = menuItem.getAttribute('data-allowed-roles');
+        if (allowedRoles) {
+            const roles = allowedRoles.split(',').map(r => r.trim());
+            if (!roles.includes(userRole)) {
+                // User doesn't have access to this section
+                console.warn(`User role "${userRole}" cannot access section "${sectionName}"`);
+                return;
+            }
+        }
+    }
+    
+    // Show the section
+    showSection(sectionName);
 }
 
 // Modal Functions  
@@ -8979,19 +9300,38 @@ function handleRegistration(event) {
     // Create new user account
     const formattedPhone = formatGhanaPhone(phone);
     
+    // Generate unique business ID
+    const businessId = 'BIZ_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    
     const newUser = {
+        businessId: businessId,
         businessName: businessName,
         name: ownerName,
         phone: formattedPhone,
         role: 'owner',
-        registrationTime: new Date().toISOString()
+        registrationTime: new Date().toISOString(),
+        password: password // Note: In production, hash this password
     };
+    
+    // Store owner account in localStorage for persistence
+    const businesses = JSON.parse(localStorage.getItem('gel_businesses') || '{}');
+    businesses[businessId] = {
+        businessName: businessName,
+        ownerId: formattedPhone,
+        ownerName: ownerName,
+        phone: formattedPhone,
+        password: password, // Note: Hash in production
+        createdAt: new Date().toISOString(),
+        employees: {} // Will store employee credentials
+    };
+    localStorage.setItem('gel_businesses', JSON.stringify(businesses));
     
     // Store user in session storage
     sessionStorage.setItem('gel_user', JSON.stringify(newUser));
     
     // Optional: Store business info for dashboard
     sessionStorage.setItem('gel_business_name', businessName);
+    sessionStorage.setItem('gel_business_id', businessId);
     
     // Show success animation
     showRegistrationSuccess();
@@ -9062,18 +9402,59 @@ function handleLogin(event) {
     // Format phone number to standard +233 format
     const formattedPhone = formatGhanaPhone(phone);
     
-    // For demo purposes, accept any valid phone and password
-    // In production, validate against your backend authentication API
+    // Check if this is a business owner login
+    const businesses = JSON.parse(localStorage.getItem('gel_businesses') || '{}');
+    let foundUser = null;
+    let businessId = null;
+    let role = null;
+    let businessName = null;
+    
+    // Check owner accounts
+    for (const [bId, business] of Object.entries(businesses)) {
+        if (business.ownerId === formattedPhone && business.password === password) {
+            foundUser = {
+                name: business.ownerName,
+                phone: formattedPhone,
+                role: 'owner'
+            };
+            businessId = bId;
+            businessName = business.businessName;
+            role = 'owner';
+            break;
+        }
+        // Check employee accounts in this business
+        if (business.employees && business.employees[formattedPhone] && business.employees[formattedPhone].password === password) {
+            foundUser = {
+                name: business.employees[formattedPhone].name,
+                phone: formattedPhone,
+                role: 'employee'
+            };
+            businessId = bId;
+            businessName = business.businessName;
+            role = 'employee';
+            break;
+        }
+    }
+    
+    if (!foundUser) {
+        showLoginError('Invalid phone number or password');
+        return;
+    }
+    
     // Create user session
     const user = {
-        name: formattedPhone,
+        name: foundUser.name,
         phone: formattedPhone,
-        role: 'owner',
+        role: role,
+        businessId: businessId,
+        businessName: businessName,
         loginTime: new Date().toISOString()
     };
     
     // Store in session storage (cleared when browser closes)
     sessionStorage.setItem('gel_user', JSON.stringify(user));
+    sessionStorage.setItem('gel_business_id', businessId);
+    sessionStorage.setItem('gel_business_name', businessName);
     
     // If remember me is checked, also store in localStorage for persistence
     if (rememberMe) {

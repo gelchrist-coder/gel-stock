@@ -295,7 +295,7 @@
                 </button>
             </div>
             <ul class="mobile-sidebar-menu">
-                <li class="active" data-menu-item="overview" data-allowed-roles="owner,admin,manager,staff,viewer">
+                <li class="active" data-menu-item="overview" data-allowed-roles="owner,admin,manager,staff,viewer,employee">
                     <a href="#overview" data-section="overview" onclick="navigateToSection('overview')">
                         <i class="fas fa-home"></i>
                         <span>Dashboard</span>
@@ -337,16 +337,22 @@
                         <span>Reports</span>
                     </a>
                 </li>
-                <li data-menu-item="creditors" data-allowed-roles="owner,admin,manager,staff,viewer">
+                <li data-menu-item="creditors" data-allowed-roles="owner,admin,manager,staff,viewer,employee">
                     <a href="#creditors" data-section="creditors" onclick="navigateToSection('creditors')">
                         <i class="fas fa-user-tie"></i>
                         <span>Creditors</span>
                     </a>
                 </li>
-                <li data-menu-item="settings" data-allowed-roles="owner,admin">
+                <li data-menu-item="settings" data-allowed-roles="owner,admin,employee">
                     <a href="#" onclick="navigateToSection('settings')">
                         <i class="fas fa-cog"></i>
                         <span>Settings</span>
+                    </a>
+                </li>
+                <li data-menu-item="employees" data-allowed-roles="owner,admin">
+                    <a href="#employees" data-section="employees" onclick="navigateToSection('employees')">
+                        <i class="fas fa-users"></i>
+                        <span>Employees</span>
                     </a>
                 </li>
             </ul>
@@ -360,7 +366,7 @@
                 <h2><i class="fas fa-box"></i> GEL-STOCK</h2>
             </div>
             <ul class="sidebar-menu">
-                <li class="active" data-menu-item="overview" data-allowed-roles="owner,admin,manager,staff,viewer">
+                <li class="active" data-menu-item="overview" data-allowed-roles="owner,admin,manager,staff,viewer,employee">
                     <a href="#overview" data-section="overview">
                         <i class="fas fa-home"></i>
                         <span>Dashboard</span>
@@ -402,16 +408,22 @@
                         <span>Reports</span>
                     </a>
                 </li>
-                <li data-menu-item="creditors" data-allowed-roles="owner,admin,manager,staff,viewer">
+                <li data-menu-item="creditors" data-allowed-roles="owner,admin,manager,staff,viewer,employee">
                     <a href="#creditors" data-section="creditors">
                         <i class="fas fa-user-tie"></i>
                         <span>Creditors</span>
                     </a>
                 </li>
-                <li data-menu-item="settings" data-allowed-roles="owner,admin">
+                <li data-menu-item="settings" data-allowed-roles="owner,admin,employee">
                     <a href="#settings" data-section="settings">
                         <i class="fas fa-cog"></i>
                         <span>Settings</span>
+                    </a>
+                </li>
+                <li data-menu-item="employees" data-allowed-roles="owner,admin">
+                    <a href="#employees" data-section="employees">
+                        <i class="fas fa-users"></i>
+                        <span>Employees</span>
                     </a>
                 </li>
             </ul>
@@ -1892,6 +1904,39 @@
                                     <i class="fas fa-trash"></i>
                                     Delete Account
                                 </button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Employee Management Section (Owner Only) -->
+                <section id="employees" class="content-section" data-allowed-roles="owner,admin" style="display: none;">
+                    <div class="section-header">
+                        <div class="header-title">
+                            <h2><i class="fas fa-users"></i> Employee Management</h2>
+                            <p class="header-subtitle">Create and manage employee accounts for your business</p>
+                        </div>
+                        <div class="section-actions">
+                            <button class="btn-primary" onclick="businessManager.openAddEmployeeModal()">
+                                <i class="fas fa-plus"></i> Add Employee
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Employee List -->
+                    <div class="dashboard-card modern-card">
+                        <div class="card-header modern-header">
+                            <div class="header-icon" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                                <i class="fas fa-user-friends"></i>
+                            </div>
+                            <div class="header-content">
+                                <h3>Team Members</h3>
+                                <p class="header-desc" id="employeeCount">0 employees</p>
+                            </div>
+                        </div>
+                        <div class="settings-panel modern-panel">
+                            <div id="employeeList" class="employee-table-container">
+                                <p style="text-align: center; color: #999; padding: 2rem;">No employees added yet</p>
                             </div>
                         </div>
                     </div>
