@@ -924,6 +924,14 @@ class NaturalHairBusinessManager {
     // Sales Methods
     async recordSale(saleData) {
         try {
+            // Add current user's name to the sale data
+            const currentUser = this.getCurrentUser();
+            if (currentUser) {
+                saleData.recorded_by = currentUser.fullName || currentUser.name || 'System User';
+            } else {
+                saleData.recorded_by = 'System User';
+            }
+            
             const result = await this.apiCall('sales.php', 'POST', saleData);
             this.showNotification('Sale recorded successfully!', 'success');
             
@@ -6031,6 +6039,7 @@ ${credit.payments ? credit.payments.map(p => `
             const previousStock = transaction.previousStock !== undefined && transaction.previousStock !== null ? transaction.previousStock : 'N/A';
             const newStock = transaction.newStock !== undefined && transaction.newStock !== null ? transaction.newStock : 'N/A';
             const reference = transaction.reference || 'No Reference';
+            const recordedBy = transaction.recorded_by || 'System';
             
             return `
                 <tr>
@@ -6041,6 +6050,7 @@ ${credit.payments ? credit.payments.map(p => `
                     <td>${previousStock}</td>
                     <td>${newStock}</td>
                     <td>${reference}</td>
+                    <td class="recorded-by-cell">${recordedBy}</td>
                 </tr>
             `;
         }).join('');
@@ -6119,6 +6129,10 @@ ${credit.payments ? credit.payments.map(p => `
             return duplicateCheck;
         }
         
+        // Get current user's name
+        const currentUser = this.getCurrentUser();
+        const recordedBy = currentUser ? (currentUser.fullName || currentUser.name || 'System User') : 'System User';
+        
         const transaction = {
             id: Date.now() + Math.random(),
             timestamp: now.toISOString(),
@@ -6128,7 +6142,8 @@ ${credit.payments ? credit.payments.map(p => `
             quantity: quantity,
             previousStock: previousStock,
             newStock: newStock,
-            reference: reference
+            reference: reference,
+            recorded_by: recordedBy
         };
         
         transactions.push(transaction);
