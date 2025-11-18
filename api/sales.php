@@ -1,6 +1,6 @@
 <?php
 /**
- * J'MONIC ENTERPRISE - Sales API
+ * GEL-STOCK - Sales API
  * 
  * Handle all sales related operations:
  * - GET: List sales or get specific sale

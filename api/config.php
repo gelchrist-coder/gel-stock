@@ -1,6 +1,6 @@
 <?php
 /**
- * J'MONIC ENTERPRISE - Database Configuration
+ * GEL-STOCK - Database Configuration
  * 
  * This file contains all database connection settings and constants
  * for the natural hair business management system.
@@ -15,7 +15,7 @@ date_default_timezone_set('Africa/Accra');
 
 // Database Configuration
 define('DB_HOST', 'localhost');
-define('DB_NAME', 'jmonic_enterprise');
+define('DB_NAME', 'gel_stock');
 define('DB_USER', 'root');  // Change to your MySQL username
 define('DB_PASS', '');      // Change to your MySQL password
 define('DB_CHARSET', 'utf8mb4');
@@ -25,7 +25,7 @@ define('API_VERSION', '1.0');
 define('API_BASE_URL', '/api/');
 
 // Application Settings
-define('BUSINESS_NAME', "J'MONIC ENTERPRISE");
+define('BUSINESS_NAME', "GEL-STOCK");
 define('BUSINESS_TYPE', 'Natural Hair Products');
 define('DEFAULT_CURRENCY', 'GHS');
 define('LOW_STOCK_THRESHOLD', 20);

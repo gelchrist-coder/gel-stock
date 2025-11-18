@@ -1,6 +1,6 @@
 <?php
 /**
- * J'MONIC ENTERPRISE - Dashboard API
+ * GEL-STOCK - Dashboard API
  * 
  * Provide dashboard statistics and summary data
  */

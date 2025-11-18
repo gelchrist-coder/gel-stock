@@ -1,6 +1,6 @@
 <?php
 /**
- * J'MONIC ENTERPRISE - API Test Endpoint
+ * GEL-STOCK - API Test Endpoint
  * 
  * Simple endpoint to test API connectivity
  */
@@ -19,7 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 // Simple test response
 $response = [
     'success' => true,
-    'message' => 'J\'MONIC ENTERPRISE API is online',
+    'message' => 'GEL-STOCK API is online',
     'timestamp' => date('Y-m-d H:i:s'),
     'php_version' => PHP_VERSION,
     'environment' => 'production'

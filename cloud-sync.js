@@ -48,7 +48,7 @@ function setupRealtimeListeners() {
     db.ref('demo/products').on('value', (snapshot) => {
         const data = snapshot.val();
         if (data) {
-            localStorage.setItem('jmonic_products', JSON.stringify(data));
+            localStorage.setItem('gel_stock_products', JSON.stringify(data));
             // Trigger update event
             window.dispatchEvent(new CustomEvent('cloud-sync-products', { detail: data }));
         }
@@ -60,7 +60,7 @@ function setupRealtimeListeners() {
     db.ref('demo/sales').on('value', (snapshot) => {
         const data = snapshot.val();
         if (data) {
-            localStorage.setItem('jmonic_sales', JSON.stringify(data));
+            localStorage.setItem('gel_stock_sales', JSON.stringify(data));
             // Trigger update event
             window.dispatchEvent(new CustomEvent('cloud-sync-sales', { detail: data }));
         }
@@ -135,21 +135,21 @@ function syncSaleToCloud(sale) {
  */
 function getProductsSync() {
     if (!firebaseReady || !db) {
-        return Promise.resolve(JSON.parse(localStorage.getItem('jmonic_products') || '[]'));
+        return Promise.resolve(JSON.parse(localStorage.getItem('gel_stock_products') || '[]'));
     }
 
     return db.ref('demo/products').once('value')
         .then(snapshot => {
             const data = snapshot.val();
             if (data) {
-                localStorage.setItem('jmonic_products', JSON.stringify(data));
+                localStorage.setItem('gel_stock_products', JSON.stringify(data));
                 return data;
             }
-            return JSON.parse(localStorage.getItem('jmonic_products') || '[]');
+            return JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
         })
         .catch(error => {
             console.warn('Error fetching products from cloud:', error);
-            return JSON.parse(localStorage.getItem('jmonic_products') || '[]');
+            return JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
         });
 }
 
@@ -159,21 +159,21 @@ function getProductsSync() {
  */
 function getSalesSync() {
     if (!firebaseReady || !db) {
-        return Promise.resolve(JSON.parse(localStorage.getItem('jmonic_sales') || '[]'));
+        return Promise.resolve(JSON.parse(localStorage.getItem('gel_stock_sales') || '[]'));
     }
 
     return db.ref('demo/sales').once('value')
         .then(snapshot => {
             const data = snapshot.val();
             if (data) {
-                localStorage.setItem('jmonic_sales', JSON.stringify(data));
+                localStorage.setItem('gel_stock_sales', JSON.stringify(data));
                 return data;
             }
-            return JSON.parse(localStorage.getItem('jmonic_sales') || '[]');
+            return JSON.parse(localStorage.getItem('gel_stock_sales') || '[]');
         })
         .catch(error => {
             console.warn('Error fetching sales from cloud:', error);
-            return JSON.parse(localStorage.getItem('jmonic_sales') || '[]');
+            return JSON.parse(localStorage.getItem('gel_stock_sales') || '[]');
         });
 }
 

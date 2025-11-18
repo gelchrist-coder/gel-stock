@@ -1,15 +1,15 @@
-# J'MONIC ENTERPRISE - AI Agent Instructions
+# GEL-STOCK - AI Agent Instructions
 
 ## System Overview
 
-**J'MONIC ENTERPRISE** is a natural hair business management dashboard that operates in two modes:
+**GEL-STOCK** is a natural hair business management dashboard that operates in two modes:
 - **Offline Mode**: Browser-based using `localStorage` for data persistence (development/standalone)
 - **Backend Mode**: PHP/MySQL API with persistent database (production deployment)
 
 ### Architecture
 
 ```
-J'MONIC ENTERPRISE/
+GEL-STOCK/
 ├── dashboard/              # Main application (entry point)
 │   ├── index.html         # UI layout with KPI cards, sections
 │   ├── script.js          # NaturalHairBusinessManager class (7085 lines)
@@ -52,7 +52,7 @@ class NaturalHairBusinessManager {
 
 **Offline Fallback**: Frontend gracefully degrades using `localStorage` when backend unavailable:
 - `apiCall()` method routes to `handleProductsAPI()`, `handleSalesAPI()`, etc.
-- localStorage keys: `jmonic_products`, `jmonic_sales`, `jmonic_customers`, `jmonic_business_settings`
+- localStorage keys: `gel_stock_products`, `gel_stock_sales`, `gel_stock_customers`, `gel_stock_business_settings`
 - Users see helpful messages if database connection fails
 
 ### 2. Backend Architecture (PHP APIs)
@@ -138,7 +138,7 @@ sendResponse([
 
 ```bash
 # PHP built-in server (recommended for Windows/development)
-cd c:\JMONIC-ENTERPRISE\dashboard
+cd c:\GEL-STOCK-ENTERPRISE\dashboard
 php -S localhost:9000
 
 # Then visit: http://localhost:9000

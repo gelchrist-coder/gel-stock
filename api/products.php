@@ -1,6 +1,6 @@
 <?php
 /**
- * J'MONIC ENTERPRISE - Products API
+ * GEL-STOCK - Products API
  * 
  * Handle all natural hair product related operations:
  * - GET: List all products or get specific product

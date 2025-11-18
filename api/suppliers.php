@@ -1,6 +1,6 @@
 <?php
 /**
- * J'MONIC ENTERPRISE - Suppliers API
+ * GEL-STOCK - Suppliers API
  * 
  * Handle all supplier related operations:
  * - GET: List suppliers or get specific supplier

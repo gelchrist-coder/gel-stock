@@ -1,6 +1,6 @@
 <?php
 /**
- * J'MONIC ENTERPRISE - SQLite Database Configuration
+ * GEL-STOCK - SQLite Database Configuration
  * 
  * This file contains all database connection settings and constants
  * for the natural hair business management system using SQLite.
@@ -15,14 +15,14 @@ date_default_timezone_set('Africa/Accra');
 
 // Database Configuration - SQLite
 define('DB_TYPE', 'sqlite');
-define('DB_FILE', __DIR__ . '/../jmonic_enterprise.db');
+define('DB_FILE', __DIR__ . '/../gel_stock.db');
 
 // API Configuration
 define('API_VERSION', '1.0');
 define('API_BASE_URL', '/api/');
 
 // Application Settings
-define('BUSINESS_NAME', "J'MONIC ENTERPRISE");
+define('BUSINESS_NAME', "GEL-STOCK");
 define('BUSINESS_TYPE', 'Natural Hair Products');
 define('DEFAULT_CURRENCY', 'GHS');
 define('LOW_STOCK_THRESHOLD', 20);

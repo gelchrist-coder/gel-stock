@@ -1,6 +1,6 @@
 <?php
 /**
- * J'MONIC ENTERPRISE - Database Helper Class
+ * GEL-STOCK - Database Helper Class
  * 
  * This class provides common database operations and utilities
  * for the natural hair business management system.

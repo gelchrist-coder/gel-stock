@@ -1,4 +1,4 @@
-// J'MONIC ENTERPRISE - Business Management System
+// GEL-STOCK - Business Management System
 class NaturalHairBusinessManager {
     constructor() {
         // API path for GitHub Pages deployment
@@ -38,7 +38,7 @@ class NaturalHairBusinessManager {
             sessionStorage.setItem('gel_user', JSON.stringify(this.currentUser));
             sessionStorage.setItem('gel_demo_mode', 'true');
             // Auto-load sample products for demo mode
-            const existingProducts = JSON.parse(localStorage.getItem('jmonic_products') || '[]');
+            const existingProducts = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
             if (existingProducts.length === 0) {
                 this.loadDemoSampleProducts();
             }
@@ -61,10 +61,10 @@ class NaturalHairBusinessManager {
         // If in demo mode and cloud sync is available, sync to cloud
         if (this.isDemoMode && window.CloudSync) {
             try {
-                if (key === 'jmonic_products') {
+                if (key === 'gel_stock_products') {
                     const products = JSON.parse(value);
                     window.CloudSync.syncProductsToCloud(products);
-                } else if (key === 'jmonic_sales') {
+                } else if (key === 'gel_stock_sales') {
                     const sales = JSON.parse(value);
                     window.CloudSync.syncSalesToCloud(sales);
                 }
@@ -345,7 +345,7 @@ class NaturalHairBusinessManager {
             }
         ];
         
-        localStorage.setItem('jmonic_products', JSON.stringify(sampleProducts));
+        localStorage.setItem('gel_stock_products', JSON.stringify(sampleProducts));
         console.log('✅ Demo sample products loaded:', sampleProducts.length);
     }
 
@@ -398,7 +398,7 @@ class NaturalHairBusinessManager {
 
     migrateProductsWithoutCategory() {
         try {
-            const products = JSON.parse(localStorage.getItem('jmonic_products') || '[]');
+            const products = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
             let needsMigration = false;
 
             // Check if any products are missing the category field
@@ -411,7 +411,7 @@ class NaturalHairBusinessManager {
 
             // Save migrated products if needed
             if (needsMigration) {
-                localStorage.setItem('jmonic_products', JSON.stringify(products));
+                localStorage.setItem('gel_stock_products', JSON.stringify(products));
                 console.log('✅ Products migrated to include category field');
             }
         } catch (error) {
@@ -480,7 +480,7 @@ class NaturalHairBusinessManager {
     }
     
     handleProductsAPI(method, data) {
-        const products = JSON.parse(localStorage.getItem('jmonic_products') || '[]');
+        const products = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
         
         if (method === 'POST') {
             // Add new product or update existing if SKU exists
@@ -562,7 +562,7 @@ class NaturalHairBusinessManager {
                     'fa-plus-circle'
                 );
             }
-            this.saveToStorage('jmonic_products', JSON.stringify(products));
+            this.saveToStorage('gel_stock_products', JSON.stringify(products));
             
             // Log initial stock as inventory transaction for new products only
             if (existingProductIndex === -1) {
@@ -604,13 +604,13 @@ class NaturalHairBusinessManager {
     }
     
     handleSalesAPI(method, data) {
-        const sales = JSON.parse(localStorage.getItem('jmonic_sales') || '[]');
+        const sales = JSON.parse(localStorage.getItem('gel_stock_sales') || '[]');
         
         if (method === 'POST') {
             console.log('Processing sale data:', data);
             
             // Get current products for inventory management and cost calculation
-            const products = JSON.parse(localStorage.getItem('jmonic_products') || '[]');
+            const products = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
             
             // Validate data
             if (!data.products || !Array.isArray(data.products) || data.products.length === 0) {
@@ -679,7 +679,7 @@ class NaturalHairBusinessManager {
             });
             
             // Save updated products back to localStorage
-            localStorage.setItem('jmonic_products', JSON.stringify(products));
+            localStorage.setItem('gel_stock_products', JSON.stringify(products));
             
             // Update product stats if on products page
             setTimeout(() => {
@@ -707,7 +707,7 @@ class NaturalHairBusinessManager {
             };
             
             sales.push(newSale);
-            this.saveToStorage('jmonic_sales', JSON.stringify(sales));
+            this.saveToStorage('gel_stock_sales', JSON.stringify(sales));
             console.log('Sale saved with inventory update:', newSale);
             
             // Flag that charts need updating
@@ -720,7 +720,7 @@ class NaturalHairBusinessManager {
                 this.updateInventoryReports(); // Update inventory reports
                 
                 // Update sales targets with new data
-                const updatedSales = JSON.parse(localStorage.getItem('jmonic_sales') || '[]');
+                const updatedSales = JSON.parse(localStorage.getItem('gel_stock_sales') || '[]');
                 this.updateSalesTargets(updatedSales);
             }, 100);
             
@@ -732,8 +732,8 @@ class NaturalHairBusinessManager {
     }
     
     handleDashboardAPI() {
-        const products = JSON.parse(localStorage.getItem('jmonic_products') || '[]');
-        const sales = JSON.parse(localStorage.getItem('jmonic_sales') || '[]');
+        const products = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
+        const sales = JSON.parse(localStorage.getItem('gel_stock_sales') || '[]');
         
         const today = new Date().toDateString();
         const todaySales = sales.filter(sale => 
@@ -785,8 +785,8 @@ class NaturalHairBusinessManager {
             console.error('Failed to load dashboard data:', error);
             
             // Set default values if dashboard loading fails, but calculate from localStorage
-            const products = JSON.parse(localStorage.getItem('jmonic_products') || '[]');
-            const sales = JSON.parse(localStorage.getItem('jmonic_sales') || '[]');
+            const products = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
+            const sales = JSON.parse(localStorage.getItem('gel_stock_sales') || '[]');
             
             const lowStockCount = products.filter(p => {
                 const stock = p.stock_quantity || 0;
@@ -820,11 +820,11 @@ class NaturalHairBusinessManager {
         this.loadRecentSalesTable();
         
         // Update sales targets with real data
-        const allSales = JSON.parse(localStorage.getItem('jmonic_sales') || '[]');
+        const allSales = JSON.parse(localStorage.getItem('gel_stock_sales') || '[]');
         this.updateSalesTargets(allSales);
         
         // Update product stats and refresh inventory data if products exist
-        const products = JSON.parse(localStorage.getItem('jmonic_products') || '[]');
+        const products = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
         if (products.length > 0) {
             this.updateProductStats(products);
             this.refreshLowStockData();
@@ -839,7 +839,7 @@ class NaturalHairBusinessManager {
     
     // Refresh low stock data across the dashboard
     refreshLowStockData() {
-        const products = JSON.parse(localStorage.getItem('jmonic_products') || '[]');
+        const products = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
         
         // Calculate low stock count
         const lowStockCount = products.filter(p => {
@@ -928,7 +928,7 @@ class NaturalHairBusinessManager {
     async updateProduct(productId, productData) {
         try {
             // Get existing products
-            const products = JSON.parse(localStorage.getItem('jmonic_products') || '[]');
+            const products = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
             
             // Find and update the product
             const productIndex = products.findIndex(p => p.id == productId);
@@ -970,7 +970,7 @@ class NaturalHairBusinessManager {
             }
             
             products[productIndex] = updatedProduct;
-            localStorage.setItem('jmonic_products', JSON.stringify(products));
+            localStorage.setItem('gel_stock_products', JSON.stringify(products));
             
             this.showNotification('Product updated successfully!', 'success');
             
@@ -1132,7 +1132,7 @@ class NaturalHairBusinessManager {
             }
             
             // Get all products
-            const products = JSON.parse(localStorage.getItem('jmonic_products') || '[]');
+            const products = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
             
             // Filter products by selected categories
             const categoryProducts = products.filter(p => 
@@ -1645,7 +1645,7 @@ class NaturalHairBusinessManager {
 
     saveCreditSale(saleData) {
         try {
-            let credits = JSON.parse(localStorage.getItem('jmonic_credits') || '[]');
+            let credits = JSON.parse(localStorage.getItem('gel_stock_credits') || '[]');
             
             const creditRecord = {
                 id: `CREDIT-${Date.now()}`,
@@ -1676,7 +1676,7 @@ class NaturalHairBusinessManager {
             }
             
             credits.push(creditRecord);
-            localStorage.setItem('jmonic_credits', JSON.stringify(credits));
+            localStorage.setItem('gel_stock_credits', JSON.stringify(credits));
             
             // Update the credit sales display
             this.updateCreditSalesDisplay();
@@ -1690,7 +1690,7 @@ class NaturalHairBusinessManager {
     // Load and display creditors
     loadCreditors() {
         try {
-            const credits = JSON.parse(localStorage.getItem('jmonic_credits') || '[]');
+            const credits = JSON.parse(localStorage.getItem('gel_stock_credits') || '[]');
             this.displayCreditors(credits);
             this.updateCreditorStats(credits);
         } catch (error) {
@@ -1810,7 +1810,7 @@ class NaturalHairBusinessManager {
     }
 
     filterCreditorsByStatus(status) {
-        const credits = JSON.parse(localStorage.getItem('jmonic_credits') || '[]');
+        const credits = JSON.parse(localStorage.getItem('gel_stock_credits') || '[]');
         this.displayCreditors(credits, status);
 
         // Update filter buttons
@@ -1821,7 +1821,7 @@ class NaturalHairBusinessManager {
     }
 
     recordCreditPayment(creditId) {
-        const credits = JSON.parse(localStorage.getItem('jmonic_credits') || '[]');
+        const credits = JSON.parse(localStorage.getItem('gel_stock_credits') || '[]');
         const credit = credits.find(c => c.id === creditId);
 
         if (!credit) {
@@ -1860,7 +1860,7 @@ class NaturalHairBusinessManager {
         });
 
         // Save updated credits
-        localStorage.setItem('jmonic_credits', JSON.stringify(credits));
+        localStorage.setItem('gel_stock_credits', JSON.stringify(credits));
 
         this.showNotification(`Payment of GHS ${amount.toFixed(2)} recorded successfully!`, 'success');
         
@@ -1871,7 +1871,7 @@ class NaturalHairBusinessManager {
     }
 
     viewCreditDetails(creditId) {
-        const credits = JSON.parse(localStorage.getItem('jmonic_credits') || '[]');
+        const credits = JSON.parse(localStorage.getItem('gel_stock_credits') || '[]');
         const credit = credits.find(c => c.id === creditId);
 
         if (!credit) {
@@ -1905,7 +1905,7 @@ ${credit.payments ? credit.payments.map(p => `
     }
 
     exportCreditors() {
-        const credits = JSON.parse(localStorage.getItem('jmonic_credits') || '[]');
+        const credits = JSON.parse(localStorage.getItem('gel_stock_credits') || '[]');
 
         if (credits.length === 0) {
             this.showNotification('No creditors to export', 'warning');
@@ -1933,7 +1933,7 @@ ${credit.payments ? credit.payments.map(p => `
 
     // Credit Sales Analytics - Calculate metrics for revenue dashboard
     calculateCreditSalesMetrics() {
-        const credits = JSON.parse(localStorage.getItem('jmonic_credits') || '[]');
+        const credits = JSON.parse(localStorage.getItem('gel_stock_credits') || '[]');
         
         let totalCreditRevenue = 0;
         let totalCreditPaid = 0;
@@ -2052,7 +2052,7 @@ ${credit.payments ? credit.payments.map(p => `
     
     // Inventory integration methods
     getProductInventoryStatus(productId) {
-        const products = JSON.parse(localStorage.getItem('jmonic_products') || '[]');
+        const products = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
         const product = products.find(p => p.id == productId);
         
         if (!product) return { status: 'not-found', message: 'Product not found' };
@@ -2067,14 +2067,14 @@ ${credit.payments ? credit.payments.map(p => `
     }
     
     getInventoryValue() {
-        const products = JSON.parse(localStorage.getItem('jmonic_products') || '[]');
+        const products = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
         return products.reduce((total, product) => {
             return total + (product.stock_quantity * (product.cost_price || 0));
         }, 0);
     }
     
     getInventoryRevenuePotential() {
-        const products = JSON.parse(localStorage.getItem('jmonic_products') || '[]');
+        const products = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
         return products.reduce((total, product) => {
             return total + (product.stock_quantity * (product.selling_price || 0));
         }, 0);
@@ -2082,7 +2082,7 @@ ${credit.payments ? credit.payments.map(p => `
 
     // Calculate payment method breakdown for all sales or filtered sales
     calculatePaymentMethodAmounts(filterDate = null) {
-        const sales = JSON.parse(localStorage.getItem('jmonic_sales') || '[]');
+        const sales = JSON.parse(localStorage.getItem('gel_stock_sales') || '[]');
         
         const paymentBreakdown = {
             cash: { total: 0, count: 0, percentage: 0 },
@@ -2144,7 +2144,7 @@ ${credit.payments ? credit.payments.map(p => `
 
     // Get payment method amounts for a date range
     getPaymentMethodsByDateRange(startDate, endDate) {
-        const sales = JSON.parse(localStorage.getItem('jmonic_sales') || '[]');
+        const sales = JSON.parse(localStorage.getItem('gel_stock_sales') || '[]');
         const start = new Date(startDate).toDateString();
         const end = new Date(endDate).toDateString();
         
@@ -2208,8 +2208,8 @@ ${credit.payments ? credit.payments.map(p => `
         // Stock cards now on dashboard - will be calculated below
         
         // Calculate additional metrics
-        const sales = JSON.parse(localStorage.getItem('jmonic_sales') || '[]');
-        const products = JSON.parse(localStorage.getItem('jmonic_products') || '[]');
+        const sales = JSON.parse(localStorage.getItem('gel_stock_sales') || '[]');
+        const products = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
         
         const today = new Date().toDateString();
         const todaySales = sales.filter(sale => 
@@ -2286,8 +2286,8 @@ ${credit.payments ? credit.payments.map(p => `
     // Sales Dashboard Methods
     async loadSalesDashboard() {
         try {
-            const sales = JSON.parse(localStorage.getItem('jmonic_sales') || '[]');
-            const products = JSON.parse(localStorage.getItem('jmonic_products') || '[]');
+            const sales = JSON.parse(localStorage.getItem('gel_stock_sales') || '[]');
+            const products = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
             
             // Calculate today's metrics
             const today = new Date().toDateString();
@@ -2445,7 +2445,7 @@ ${credit.payments ? credit.payments.map(p => `
      * @param {string} dateString - Date in YYYY-MM-DD format
      */
     filterTopProductsByDate(dateString) {
-        let sales = JSON.parse(localStorage.getItem('jmonic_sales') || '[]');
+        let sales = JSON.parse(localStorage.getItem('gel_stock_sales') || '[]');
         
         // Filter sales by date if a date is provided
         if (dateString) {
@@ -2503,12 +2503,12 @@ ${credit.payments ? credit.payments.map(p => `
             quarterly: 1500000,
             annual: 6000000
         };
-        const saved = localStorage.getItem('jmonic_sales_targets');
+        const saved = localStorage.getItem('gel_stock_sales_targets');
         return saved ? JSON.parse(saved) : defaultTargets;
     }
 
     setSalesTargets(targets) {
-        localStorage.setItem('jmonic_sales_targets', JSON.stringify(targets));
+        localStorage.setItem('gel_stock_sales_targets', JSON.stringify(targets));
     }
 
     updateSalesTargets(sales) {
@@ -2659,7 +2659,7 @@ ${credit.payments ? credit.payments.map(p => `
             actionsDiv.style.display = 'none';
             
             // Update targets display
-            const sales = JSON.parse(localStorage.getItem('jmonic_sales') || '[]');
+            const sales = JSON.parse(localStorage.getItem('gel_stock_sales') || '[]');
             this.updateSalesTargets(sales);
             
             // Show success message
@@ -2684,7 +2684,7 @@ ${credit.payments ? credit.payments.map(p => `
     }
 
     populateWeeklySalesTable() {
-        const sales = JSON.parse(localStorage.getItem('jmonic_sales') || '[]');
+        const sales = JSON.parse(localStorage.getItem('gel_stock_sales') || '[]');
         const tbody = document.querySelector('#weeklySalesTable tbody');
         
         if (!tbody) return;
@@ -2738,8 +2738,8 @@ ${credit.payments ? credit.payments.map(p => `
     }
 
     populateRevenueTargetTable() {
-        const sales = JSON.parse(localStorage.getItem('jmonic_sales') || '[]');
-        const settings = JSON.parse(localStorage.getItem('jmonic_business_settings') || '{}');
+        const sales = JSON.parse(localStorage.getItem('gel_stock_sales') || '[]');
+        const settings = JSON.parse(localStorage.getItem('gel_stock_business_settings') || '{}');
         
         // Calculate this week's revenue
         const today = new Date();
@@ -2826,7 +2826,7 @@ ${credit.payments ? credit.payments.map(p => `
             this.salesTrendChart.destroy();
         }
         
-        const sales = JSON.parse(localStorage.getItem('jmonic_sales') || '[]');
+        const sales = JSON.parse(localStorage.getItem('gel_stock_sales') || '[]');
         const last7Days = this.getLast7DaysData(sales);
         
         // Simple overview - just show total sales for the week
@@ -2906,7 +2906,7 @@ ${credit.payments ? credit.payments.map(p => `
             this.revenueBreakdownChart.destroy();
         }
         
-        const sales = JSON.parse(localStorage.getItem('jmonic_sales') || '[]');
+        const sales = JSON.parse(localStorage.getItem('gel_stock_sales') || '[]');
         
         // Simple revenue calculation - just show total vs target
         const totalRevenue = sales.reduce((sum, sale) => sum + parseFloat(sale.total_amount || 0), 0);
@@ -2975,7 +2975,7 @@ ${credit.payments ? credit.payments.map(p => `
     
     // Sale action methods
     viewSaleDetails(saleId) {
-        const sales = JSON.parse(localStorage.getItem('jmonic_sales') || '[]');
+        const sales = JSON.parse(localStorage.getItem('gel_stock_sales') || '[]');
         const sale = sales.find(s => s.id == saleId || `S-${Date.now().toString().slice(-5)}-${sales.indexOf(s)}` === saleId);
         
         if (!sale) {
@@ -3015,7 +3015,7 @@ ${credit.payments ? credit.payments.map(p => `
     }
     
     printReceipt(saleId) {
-        const sales = JSON.parse(localStorage.getItem('jmonic_sales') || '[]');
+        const sales = JSON.parse(localStorage.getItem('gel_stock_sales') || '[]');
         const sale = sales.find(s => s.id == saleId || `S-${Date.now().toString().slice(-5)}-${sales.indexOf(s)}` === saleId);
         
         if (!sale) {
@@ -3027,7 +3027,7 @@ ${credit.payments ? credit.payments.map(p => `
         let receipt = `
             <div style="max-width: 300px; margin: 20px auto; font-family: monospace; font-size: 12px;">
                 <div style="text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 10px;">
-                    <h2>J'MONIC ENTERPRISE</h2>
+                    <h2>GEL-STOCK</h2>
                     <p>Products</p>
                     <p>Receipt #${saleId}</p>
                 </div>
@@ -3134,7 +3134,7 @@ ${credit.payments ? credit.payments.map(p => `
         if (!tbody) return;
         
         // Get sales from localStorage
-        const sales = JSON.parse(localStorage.getItem('jmonic_sales') || '[]');
+        const sales = JSON.parse(localStorage.getItem('gel_stock_sales') || '[]');
         
         if (sales.length === 0) {
             tbody.innerHTML = '<tr><td colspan="9" class="no-data">No recent sales</td></tr>';
@@ -3215,7 +3215,7 @@ ${credit.payments ? credit.payments.map(p => `
     
     viewSaleDetails(saleId) {
         // Find the sale by ID
-        const sales = JSON.parse(localStorage.getItem('jmonic_sales') || '[]');
+        const sales = JSON.parse(localStorage.getItem('gel_stock_sales') || '[]');
         const sale = sales.find(s => (s.sale_id || s.id || `#S-${Date.now().toString().slice(-5)}`) === saleId);
         
         if (sale) {
@@ -3243,7 +3243,7 @@ ${credit.payments ? credit.payments.map(p => `
     
     exportRecentSales() {
         try {
-            const sales = JSON.parse(localStorage.getItem('jmonic_sales') || '[]');
+            const sales = JSON.parse(localStorage.getItem('gel_stock_sales') || '[]');
             console.log('Export: Found', sales.length, 'sales records');
             
             if (sales.length === 0) {
@@ -3347,7 +3347,7 @@ ${credit.payments ? credit.payments.map(p => `
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `jmonic-recent-sales-${new Date().toISOString().split('T')[0]}.csv`;
+            a.download = `gel-stock-recent-sales-${new Date().toISOString().split('T')[0]}.csv`;
             a.style.display = 'none';
             document.body.appendChild(a);
             a.click();
@@ -3646,7 +3646,7 @@ ${credit.payments ? credit.payments.map(p => `
         }
         
         // Get low stock products
-        const products = JSON.parse(localStorage.getItem('jmonic_products') || '[]');
+        const products = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
         console.log('📦 Products found:', products.length);
         
         const lowStockProducts = products.filter(p => {
@@ -3697,7 +3697,7 @@ ${credit.payments ? credit.payments.map(p => `
         });
         
         // Add recent sales notifications (last 24 hours)
-        const sales = JSON.parse(localStorage.getItem('jmonic_sales') || '[]');
+        const sales = JSON.parse(localStorage.getItem('gel_stock_sales') || '[]');
         const recentSales = sales.filter(sale => {
             const saleDate = new Date(sale.date || sale.created_at);
             const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
@@ -3900,7 +3900,7 @@ ${credit.payments ? credit.payments.map(p => `
     }
     
     updateHeaderNotificationBadge() {
-        const products = JSON.parse(localStorage.getItem('jmonic_products') || '[]');
+        const products = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
         const lowStockCount = products.filter(p => {
             const stock = p.stock_quantity || 0;
             const reorderLevel = p.reorderLevel || p.min_stock_level || 5;
@@ -4170,7 +4170,7 @@ ${credit.payments ? credit.payments.map(p => `
     }
     
     loadSettings() {
-        const settings = JSON.parse(localStorage.getItem('jmonic_settings') || '{}');
+        const settings = JSON.parse(localStorage.getItem('gel_stock_settings') || '{}');
         
         // Load theme settings for both selectors
         const themeRadios = document.querySelectorAll('input[name="theme"], input[name="theme-dash"]');
@@ -4247,7 +4247,7 @@ ${credit.payments ? credit.payments.map(p => `
             autoBackup: (document.getElementById('autoBackup')?.checked || document.getElementById('autoBackup-dash')?.checked) !== false
         };
         
-        localStorage.setItem('jmonic_settings', JSON.stringify(settings));
+        localStorage.setItem('gel_stock_settings', JSON.stringify(settings));
         this.applySettings(settings);
         this.showNotification('Settings saved successfully!', 'success');
         
@@ -4596,7 +4596,7 @@ ${credit.payments ? credit.payments.map(p => `
         }
         
         // Save settings and apply
-        localStorage.setItem('jmonic_settings', JSON.stringify(defaultSettings));
+        localStorage.setItem('gel_stock_settings', JSON.stringify(defaultSettings));
         this.applySettings(defaultSettings);
         
         this.showNotification('Settings reset to default successfully!', 'success');
@@ -4665,7 +4665,7 @@ ${credit.payments ? credit.payments.map(p => `
         }, 500);
         
         // Store theme preference
-        localStorage.setItem('jmonic_theme', theme);
+        localStorage.setItem('gel_stock_theme', theme);
         
         // Update theme preview in theme cards
         this.updateThemePreview(theme);
@@ -4711,7 +4711,7 @@ ${credit.payments ? credit.payments.map(p => `
         
         // Listen for system theme changes when in auto mode
         window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-            const currentTheme = localStorage.getItem('jmonic_theme') || 'light';
+            const currentTheme = localStorage.getItem('gel_stock_theme') || 'light';
             if (currentTheme === 'auto') {
                 this.applyTheme('auto');
             }
@@ -4774,7 +4774,7 @@ ${credit.payments ? credit.payments.map(p => `
 
     showPrintReceipt(saleData, products) {
         // Get business name from settings or user profile
-        const settings = JSON.parse(localStorage.getItem('jmonic_business_settings') || '{}');
+        const settings = JSON.parse(localStorage.getItem('gel_stock_business_settings') || '{}');
         const businessName = settings.businessName || this.currentUser?.businessName || 'GEL-STOCK';
         const businessPhone = settings.businessPhone || this.currentUser?.phone || '';
         const businessEmail = settings.businessEmail || this.currentUser?.email || '';
@@ -4935,7 +4935,7 @@ ${credit.payments ? credit.payments.map(p => `
                 return;
             }
             
-            const products = JSON.parse(localStorage.getItem('jmonic_products') || '[]');
+            const products = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
             
             salesTableBody.innerHTML = sales.map((sale, index) => {
                 // Calculate totals and costs
@@ -5101,8 +5101,8 @@ ${credit.payments ? credit.payments.map(p => `
 
     async loadCategoryAnalytics() {
         try {
-            const products = JSON.parse(localStorage.getItem('jmonic_products') || '[]');
-            const sales = JSON.parse(localStorage.getItem('jmonic_sales') || '[]');
+            const products = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
+            const sales = JSON.parse(localStorage.getItem('gel_stock_sales') || '[]');
             
             if (products.length === 0) {
                 this.showCategoryAnalyticsEmpty();
@@ -5314,7 +5314,7 @@ ${credit.payments ? credit.payments.map(p => `
     }
 
     updateInventoryOverview() {
-        const products = JSON.parse(localStorage.getItem('jmonic_products') || '[]');
+        const products = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
         let totalValue = 0;
         let revenuePotential = 0;
         let inStock = 0;
@@ -5354,7 +5354,7 @@ ${credit.payments ? credit.payments.map(p => `
         }
 
         // Calculate turnover rate
-        const sales = JSON.parse(localStorage.getItem('jmonic_sales') || '[]');
+        const sales = JSON.parse(localStorage.getItem('gel_stock_sales') || '[]');
         const currentMonth = new Date();
         const monthlyRevenue = sales
             .filter(sale => {
@@ -5371,7 +5371,7 @@ ${credit.payments ? credit.payments.map(p => `
     }
 
     loadLowStockAlerts() {
-        const products = JSON.parse(localStorage.getItem('jmonic_products') || '[]');
+        const products = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
         const lowStockProducts = products.filter(product => {
             const stock = product.stock_quantity || 0;
             const reorderLevel = product.reorder_level || product.reorderLevel || product.min_stock_level || 5;
@@ -5456,7 +5456,7 @@ ${credit.payments ? credit.payments.map(p => `
         }
         
         // If we have products but no valid transactions, create sample data
-        const products = JSON.parse(localStorage.getItem('jmonic_products') || '[]');
+        const products = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
         if (products.length > 0 && transactions.length === 0) {
             console.log('📦 Regenerating sample inventory transactions...');
             this.createSampleInventoryTransactions();
@@ -5594,8 +5594,8 @@ ${credit.payments ? credit.payments.map(p => `
     }
 
     calculateProductSalesVelocity() {
-        const sales = JSON.parse(localStorage.getItem('jmonic_sales') || '[]');
-        const products = JSON.parse(localStorage.getItem('jmonic_products') || '[]');
+        const sales = JSON.parse(localStorage.getItem('gel_stock_sales') || '[]');
+        const products = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
         
         // Calculate total quantity sold for each product
         const salesByProduct = {};
@@ -5649,7 +5649,7 @@ ${credit.payments ? credit.payments.map(p => `
         if (!ctx) return;
 
         // Simple overview - show total products in stock vs low stock
-        const products = JSON.parse(localStorage.getItem('jmonic_products') || '[]');
+        const products = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
         const totalProducts = products.length;
         const lowStockProducts = products.filter(p => {
             const stock = p.stock_quantity || 0;
@@ -6130,24 +6130,24 @@ ${credit.payments ? credit.payments.map(p => `
 
             console.log('🔥 About to clear localStorage items...');
             
-            // Get all keys to ensure we clear everything J'MONIC related
+            // Get all keys to ensure we clear everything GEL-STOCK related
             const allKeys = Object.keys(localStorage);
-            const jmonicKeys = allKeys.filter(key => key.startsWith('jmonic_') || key.includes('jmonic'));
+            const gelStockKeys = allKeys.filter(key => key.startsWith('gel_stock_') || key.includes('gel_stock'));
             
-            console.log('🔥 Found J\'MONIC keys to clear:', jmonicKeys);
+            console.log('🔥 Found GEL-STOCK keys to clear:', gelStockKeys);
             
             // Clear all localStorage data (comprehensive clearing)
-            localStorage.removeItem('jmonic_products');
-            localStorage.removeItem('jmonic_sales'); 
-            localStorage.removeItem('jmonic_purchases');
+            localStorage.removeItem('gel_stock_products');
+            localStorage.removeItem('gel_stock_sales'); 
+            localStorage.removeItem('gel_stock_purchases');
             localStorage.removeItem('inventoryTransactions');
-            localStorage.removeItem('jmonic_settings');
-            localStorage.removeItem('jmonic_theme');
-            localStorage.removeItem('jmonic_notifications');
-            localStorage.removeItem('jmonic_analytics');
+            localStorage.removeItem('gel_stock_settings');
+            localStorage.removeItem('gel_stock_theme');
+            localStorage.removeItem('gel_stock_notifications');
+            localStorage.removeItem('gel_stock_analytics');
             
-            // Clear any additional J'MONIC keys that might exist
-            jmonicKeys.forEach(key => {
+            // Clear any additional GEL-STOCK keys that might exist
+            gelStockKeys.forEach(key => {
                 console.log(`🔥 Clearing additional key: ${key}`);
                 localStorage.removeItem(key);
             });
@@ -6194,8 +6194,8 @@ ${credit.payments ? credit.payments.map(p => `
     }
 
     updateInventoryStats() {
-        const sales = JSON.parse(localStorage.getItem('jmonic_sales') || '[]');
-        const products = JSON.parse(localStorage.getItem('jmonic_products') || '[]');
+        const sales = JSON.parse(localStorage.getItem('gel_stock_sales') || '[]');
+        const products = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         // Calculate total stock left and product count
@@ -6450,7 +6450,7 @@ ${credit.payments ? credit.payments.map(p => `
         const dateStr = now.toISOString().split('T')[0];
         const timeStr = now.toTimeString().split(' ')[0].replace(/:/g, '-');
         const filterStr = this.currentTransactionFilter && this.currentTransactionFilter !== 'all' ? `_${this.currentTransactionFilter}` : '';
-        a.download = `jmonic_transactions_${dateStr}_${timeStr}${filterStr}.csv`;
+        a.download = `gel_stock_transactions_${dateStr}_${timeStr}${filterStr}.csv`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -6542,7 +6542,7 @@ ${credit.payments ? credit.payments.map(p => `
         const dateStr = now.toISOString().split('T')[0];
         const timeStr = now.toTimeString().split(' ')[0].replace(/:/g, '-');
         const filterStr = this.currentTransactionFilter && this.currentTransactionFilter !== 'all' ? `_${this.currentTransactionFilter}` : '';
-        a.download = `jmonic_transactions_detailed_${dateStr}_${timeStr}${filterStr}.csv`;
+        a.download = `gel_stock_transactions_detailed_${dateStr}_${timeStr}${filterStr}.csv`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -6595,7 +6595,7 @@ ${credit.payments ? credit.payments.map(p => `
 
     // Create sample inventory transactions for demonstration
     createSampleInventoryTransactions() {
-        const products = JSON.parse(localStorage.getItem('jmonic_products') || '[]');
+        const products = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
         if (products.length === 0) return;
 
         const transactions = JSON.parse(localStorage.getItem('inventoryTransactions') || '[]');
@@ -6766,11 +6766,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 const confirmClear = confirm('⚠️ DANGER: This will permanently delete ALL your business data.\n\nThis action CANNOT be undone.\n\nAre you absolutely sure?');
                 if (confirmClear) {
                     try {
-                        localStorage.removeItem('jmonic_products');
-                        localStorage.removeItem('jmonic_sales');
-                        localStorage.removeItem('jmonic_purchases');
+                        localStorage.removeItem('gel_stock_products');
+                        localStorage.removeItem('gel_stock_sales');
+                        localStorage.removeItem('gel_stock_purchases');
                         localStorage.removeItem('inventoryTransactions');
-                        localStorage.removeItem('jmonic_settings');
+                        localStorage.removeItem('gel_stock_settings');
                         
                         // Reset flag before reload
                         window.clearDataInProgress = false;
@@ -6815,11 +6815,11 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             if (confirm('EMERGENCY: Clear all business data immediately?')) {
                 console.log('🚨 User confirmed emergency clear');
-                localStorage.removeItem('jmonic_products');
-                localStorage.removeItem('jmonic_sales');
-                localStorage.removeItem('jmonic_purchases');
+                localStorage.removeItem('gel_stock_products');
+                localStorage.removeItem('gel_stock_sales');
+                localStorage.removeItem('gel_stock_purchases');
                 localStorage.removeItem('inventoryTransactions');
-                localStorage.removeItem('jmonic_settings');
+                localStorage.removeItem('gel_stock_settings');
                 alert('✅ Emergency clear complete! Page will refresh.');
                 location.reload();
             }
@@ -6878,7 +6878,7 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('🚨 Emergency clear data called');
         try {
             if (confirm('EMERGENCY CLEAR: Delete all business data?')) {
-                ['jmonic_products', 'jmonic_sales', 'jmonic_purchases', 'inventoryTransactions', 'jmonic_settings']
+                ['gel_stock_products', 'gel_stock_sales', 'gel_stock_purchases', 'inventoryTransactions', 'gel_stock_settings']
                     .forEach(key => localStorage.removeItem(key));
                 alert('Data cleared via emergency function');
                 location.reload();
@@ -6914,7 +6914,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Initialize product stats on page load
-    const products = JSON.parse(localStorage.getItem('jmonic_products') || '[]');
+    const products = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
     if (businessManager && document.querySelector('#products')) {
         businessManager.updateProductStats(products);
     }
@@ -7008,7 +7008,7 @@ function showSection(sectionName) {
     } else if (sectionName === 'products' && businessManager) {
         businessManager.loadProductsInventory();
         // Also update product stats
-        const products = JSON.parse(localStorage.getItem('jmonic_products') || '[]');
+        const products = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
         businessManager.updateProductStats(products);
     } else if (sectionName === 'inventory' && businessManager) {
         businessManager.initializeInventoryTracking();
@@ -7114,7 +7114,7 @@ function openModal(modalId) {
                 dateInput.value = new Date().toISOString().split('T')[0];
             }
             // Update business name in header
-            const settings = JSON.parse(localStorage.getItem('jmonic_business_settings') || '{}');
+            const settings = JSON.parse(localStorage.getItem('gel_stock_business_settings') || '{}');
             const businessName = settings.businessName || 'GEL-STOCK';
             const businessHeader = document.getElementById('saleBusinessHeader');
             if (businessHeader) {
@@ -7170,7 +7170,7 @@ function toggleBusinessInfoMode() {
         businessInfoEdit.style.display = 'flex';
         
         // Populate edit fields with current display values
-        const settings = JSON.parse(localStorage.getItem('jmonic_settings') || '{}');
+        const settings = JSON.parse(localStorage.getItem('gel_stock_settings') || '{}');
         
         const businessNameInput = document.getElementById('businessName');
         const ownerNameInput = document.getElementById('ownerName');
@@ -7230,7 +7230,7 @@ function saveBusinessInfo() {
     }
     
     // Get current settings
-    const settings = JSON.parse(localStorage.getItem('jmonic_settings') || '{}');
+    const settings = JSON.parse(localStorage.getItem('gel_stock_settings') || '{}');
     
     // Update with new values
     settings.businessName = businessNameInput?.value || 'J\'MONIC ENTERPRISE';
@@ -7240,7 +7240,7 @@ function saveBusinessInfo() {
     settings.businessAddress = businessAddressInput?.value || '';
     
     // Save to localStorage
-    localStorage.setItem('jmonic_settings', JSON.stringify(settings));
+    localStorage.setItem('gel_stock_settings', JSON.stringify(settings));
     
     // Update display
     if (businessManager) {
@@ -7311,7 +7311,7 @@ function suggestProducts() {
         return;
     }
 
-    const products = JSON.parse(localStorage.getItem('jmonic_products') || '[]');
+    const products = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
     const matches = products.filter(p => {
         const name = (p.name || '').toLowerCase();
         const sku = (p.sku || '').toLowerCase();
@@ -7339,7 +7339,7 @@ function suggestProducts() {
 
 // Handle click on suggestion item
 function onSuggestionClick(productId) {
-    const products = JSON.parse(localStorage.getItem('jmonic_products') || '[]');
+    const products = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
     const product = products.find(p => p.id === productId);
     if (!product) return;
 
@@ -7380,7 +7380,7 @@ function searchProductBySKU() {
         return;
     }
     
-    const products = JSON.parse(localStorage.getItem('jmonic_products') || '[]');
+    const products = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
     const searchTerm = skuInput.toLowerCase();
     
     // Search by SKU (exact or partial match)
@@ -7471,7 +7471,7 @@ async function addExistingProduct() {
     
     try {
         // Get current products
-        const products = JSON.parse(localStorage.getItem('jmonic_products') || '[]');
+        const products = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
         // Convert selectedProductData.id to number for comparison (may come as string from HTML)
         const selectedId = typeof window.selectedProductData.id === 'string' 
             ? parseFloat(window.selectedProductData.id) 
@@ -7525,7 +7525,7 @@ async function addExistingProduct() {
         }
         
         // Save updated products
-        localStorage.setItem('jmonic_products', JSON.stringify(products));
+        localStorage.setItem('gel_stock_products', JSON.stringify(products));
         
         // Build success message
         let successMsg = `Added ${quantityToAdd} units to ${window.selectedProductData.name}. New stock: ${products[productIndex].stock_quantity} units`;
@@ -7759,7 +7759,7 @@ function editProduct(productId) {
     console.log('Editing product:', productId);
     
     // Get products from localStorage
-    const products = JSON.parse(localStorage.getItem('jmonic_products') || '[]');
+    const products = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
     const product = products.find(p => p.id == productId);
     
     if (!product) {
@@ -7813,13 +7813,13 @@ function deleteProduct(productId) {
         
         try {
             // Get products from localStorage
-            const products = JSON.parse(localStorage.getItem('jmonic_products') || '[]');
+            const products = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
             
             // Filter out the product to delete
             const updatedProducts = products.filter(p => p.id != productId);
             
             // Save back to localStorage
-            localStorage.setItem('jmonic_products', JSON.stringify(updatedProducts));
+            localStorage.setItem('gel_stock_products', JSON.stringify(updatedProducts));
             
             // Show success message
             if (window.businessManager) {
@@ -7899,8 +7899,8 @@ function handleGlobalSearch() {
     }
     
     // Search through products and sales
-    const products = JSON.parse(localStorage.getItem('jmonic_products') || '[]');
-    const sales = JSON.parse(localStorage.getItem('jmonic_sales') || '[]');
+    const products = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
+    const sales = JSON.parse(localStorage.getItem('gel_stock_sales') || '[]');
     
     const productResults = products
         .filter(product => 
@@ -7951,7 +7951,7 @@ function handleGlobalSearch() {
 }
 
 function showNotifications() {
-    const products = JSON.parse(localStorage.getItem('jmonic_products') || '[]');
+    const products = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
     const lowStockProducts = products.filter(p => p.stock_quantity <= (p.reorder_level || 10));
     
     let notificationContent = '<div class="notification-popup">';
@@ -8008,7 +8008,7 @@ function showNotifications() {
 }
 
 function updateNotificationBadge() {
-    const products = JSON.parse(localStorage.getItem('jmonic_products') || '[]');
+    const products = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
     const lowStockCount = products.filter(p => p.stock_quantity <= (p.reorder_level || 10)).length;
     
     const badge = document.querySelector('.notification-badge');
@@ -8066,8 +8066,8 @@ class RevenueAnalytics {
     
     async loadRevenueAnalytics() {
         try {
-            const sales = JSON.parse(localStorage.getItem('jmonic_sales') || '[]');
-            const products = JSON.parse(localStorage.getItem('jmonic_products') || '[]');
+            const sales = JSON.parse(localStorage.getItem('gel_stock_sales') || '[]');
+            const products = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
             
             // Calculate comprehensive revenue metrics
             const metrics = this.calculateRevenueMetrics(sales, products);
@@ -8437,7 +8437,7 @@ function toggleSettings() {
 // Theme Management Functions
 function initializeTheme() {
     // Get saved theme or default to light
-    const savedTheme = localStorage.getItem('jmonic_theme') || 'light';
+    const savedTheme = localStorage.getItem('gel_stock_theme') || 'light';
     
     // Apply theme immediately
     applyThemeGlobal(savedTheme);
@@ -8447,7 +8447,7 @@ function initializeTheme() {
     
     // Listen for system theme changes
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-        const currentTheme = localStorage.getItem('jmonic_theme') || 'light';
+        const currentTheme = localStorage.getItem('gel_stock_theme') || 'light';
         if (currentTheme === 'auto') {
             applyThemeGlobal('auto');
         }
@@ -8492,7 +8492,7 @@ function applyThemeGlobal(theme) {
     }, 500);
     
     // Store theme preference
-    localStorage.setItem('jmonic_theme', theme);
+    localStorage.setItem('gel_stock_theme', theme);
     
     // Update all theme selectors
     updateThemeSelectors(theme);
@@ -8731,9 +8731,9 @@ function addTestDataForNotifications() {
     ];
     
     // Store in localStorage
-    const existingProducts = JSON.parse(localStorage.getItem('jmonic_products') || '[]');
+    const existingProducts = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
     const updatedProducts = [...existingProducts, ...testProducts];
-    localStorage.setItem('jmonic_products', JSON.stringify(updatedProducts));
+    localStorage.setItem('gel_stock_products', JSON.stringify(updatedProducts));
     
     // Add a recent sale
     const testSale = {
@@ -8748,9 +8748,9 @@ function addTestDataForNotifications() {
         ]
     };
     
-    const existingSales = JSON.parse(localStorage.getItem('jmonic_sales') || '[]');
+    const existingSales = JSON.parse(localStorage.getItem('gel_stock_sales') || '[]');
     existingSales.push(testSale);
-    localStorage.setItem('jmonic_sales', JSON.stringify(existingSales));
+    localStorage.setItem('gel_stock_sales', JSON.stringify(existingSales));
     
     console.log('✅ Test data added for notifications');
     
@@ -8956,7 +8956,7 @@ function testNotificationSystem() {
         }
     ];
     
-    localStorage.setItem('jmonic_products', JSON.stringify(testProducts));
+    localStorage.setItem('gel_stock_products', JSON.stringify(testProducts));
     console.log('📦 Added test product with low stock');
     
     // Test live notification
@@ -8991,8 +8991,8 @@ function testNotificationSystem() {
 // Function to clear test data and restore clean dashboard  
 function clearTestData() {
     console.log('🧹 Clearing test data...');
-    localStorage.removeItem('jmonic_products');
-    localStorage.removeItem('jmonic_sales');
+    localStorage.removeItem('gel_stock_products');
+    localStorage.removeItem('gel_stock_sales');
     localStorage.removeItem('inventoryTransactions');
     
     // Hide notification badge
@@ -9033,7 +9033,7 @@ function diagnoseNotificationSystem() {
     console.log('  - Has loadNotifications:', !!(window.businessManager && window.businessManager.loadNotifications));
     
     // Check data
-    const products = JSON.parse(localStorage.getItem('jmonic_products') || '[]');
+    const products = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
     console.log('📋 Data Check:');
     console.log('  - Products:', products.length, products);
     
@@ -9129,12 +9129,12 @@ function loadSampleProducts() {
     ];
     
     console.log('💾 Saving to localStorage...');
-    localStorage.setItem('jmonic_products', JSON.stringify(sampleProducts));
+    localStorage.setItem('gel_stock_products', JSON.stringify(sampleProducts));
     console.log('✅ Sample products saved! Total:', sampleProducts.length);
     console.log('✅ Products:', sampleProducts.map(p => `${p.sku} - ${p.name}`).join(', '));
     
     // Verify data was saved
-    const saved = JSON.parse(localStorage.getItem('jmonic_products') || '[]');
+    const saved = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
     console.log('🔍 Verification - Products in localStorage:', saved.length);
     
     // If dropdown exists, refresh it

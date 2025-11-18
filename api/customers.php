@@ -1,6 +1,6 @@
 <?php
 /**
- * J'MONIC ENTERPRISE - Customers API
+ * GEL-STOCK - Customers API
  * 
  * Handle all customer related operations:
  * - GET: List customers or get specific customer
