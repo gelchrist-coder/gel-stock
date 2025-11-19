@@ -1,0 +1,27 @@
+name: Deploy to gel-stock.me
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Deploy via FTP
+      uses: SamKirkland/FTP-Deploy-Action@4.3.5
+      with:
+        server: ${{ secrets.FTP_SERVER }}
+        username: ${{ secrets.FTP_USERNAME }}
+        password: ${{ secrets.FTP_PASSWORD }}
+        local-dir: ./
+        server-dir: /public_html/  # Adjust this path to your hosting directory
+        dangerous-delete-include-files: |
+          .gitignore
+          .github/**
+        exclude: |
+          **/.git*
+          **/node_modules/**
