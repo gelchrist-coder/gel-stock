@@ -638,10 +638,7 @@ class NaturalHairBusinessManager {
         // Update inventory reports and transaction log
         this.updateInventoryReports();
         
-        // Ensure stock by products table is populated with fresh data from localStorage
-        const freshProducts = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
-        console.log('loadDashboardData final: Updating table with', freshProducts.length, 'products');
-        this.updateStockByProductsTable(freshProducts);
+        // Dashboard data loading complete
     }
     
     // Refresh low stock data across the dashboard
@@ -5488,8 +5485,6 @@ ${credit.payments ? credit.payments.map(p => `
         const products = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
         console.log('Products found:', products.length, products);
         this.initializeInventoryTracking();
-        // Also update the stock by products table directly
-        this.updateStockByProductsTable(products);
         this.showNotification('Inventory data refreshed', 'success');
     }
 
@@ -5994,75 +5989,8 @@ ${credit.payments ? credit.payments.map(p => `
         if (totalTransactionsElement) totalTransactionsElement.textContent = totalTransactions;
         if (stockAlertsElement) stockAlertsElement.textContent = lowStockProducts.length;
         
-        // Update stock by products table
-        this.updateStockByProductsTable(products);
     }
     
-    updateStockByProductsTable(products) {
-        const tableBody = document.getElementById('stockByProductsTable');
-        if (!tableBody) {
-            console.warn('stockByProductsTable element not found');
-            return;
-        }
-        
-        // Force reload from localStorage if products array is empty
-        let productsToDisplay = products;
-        if (!productsToDisplay || productsToDisplay.length === 0) {
-            console.warn('Products array empty, loading from localStorage...');
-            productsToDisplay = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
-            console.log('Loaded from localStorage:', productsToDisplay.length);
-        }
-        
-        console.log('updateStockByProductsTable called with products:', productsToDisplay.length, productsToDisplay);
-        
-        tableBody.innerHTML = '';
-        
-        if (!productsToDisplay || productsToDisplay.length === 0) {
-            console.warn('No products to display - showing empty state');
-            tableBody.innerHTML = '<div class="table-row empty"><span>No products found</span></div>';
-            return;
-        }
-        
-        // Sort products by stock quantity (highest first)
-        const sortedProducts = [...productsToDisplay].sort((a, b) => 
-            (b.stock_quantity || 0) - (a.stock_quantity || 0)
-        );
-        
-        sortedProducts.forEach(product => {
-            const stock = parseInt(product.stock_quantity) || 0;
-            const reorderLevel = parseInt(product.reorder_level) || 5;
-            const costPrice = parseFloat(product.cost_price) || 0;
-            const inventoryValue = stock * costPrice;
-            
-            // Determine status
-            let status = 'In Stock';
-            let statusClass = 'status-in-stock';
-            if (stock === 0) {
-                status = 'Out of Stock';
-                statusClass = 'status-out-of-stock';
-            } else if (stock <= reorderLevel) {
-                status = 'Low Stock';
-                statusClass = 'status-low-stock';
-            }
-            
-            const row = document.createElement('div');
-            row.className = 'table-row';
-            row.innerHTML = `
-                <div class="col-product">
-                    <div class="product-name">${product.name || 'N/A'}</div>
-                </div>
-                <div class="col-sku">${product.sku || 'N/A'}</div>
-                <div class="col-stock">
-                    <span class="stock-badge">${stock}</span>
-                </div>
-                <div class="col-value">GHS ${inventoryValue.toFixed(2)}</div>
-                <div class="col-status">
-                    <span class="status-badge ${statusClass}">${status}</span>
-                </div>
-            `;
-            tableBody.appendChild(row);
-        });
-    }
 
     updateTransactionLog() {
         const transactions = JSON.parse(localStorage.getItem('inventoryTransactions') || '[]');
