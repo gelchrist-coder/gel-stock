@@ -32,9 +32,21 @@ class NaturalHairBusinessManager {
             sessionStorage.setItem('gel_user', JSON.stringify(this.currentUser));
             sessionStorage.setItem('gel_demo_mode', 'true');
             // Auto-load sample products for demo mode
-            const existingProducts = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
+            let existingProducts = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
+            // Also check for old jmonic_products key and migrate if found
             if (existingProducts.length === 0) {
+                const oldProducts = JSON.parse(localStorage.getItem('jmonic_products') || '[]');
+                if (oldProducts.length > 0) {
+                    console.log('Migrating old jmonic_products to gel_stock_products');
+                    localStorage.setItem('gel_stock_products', JSON.stringify(oldProducts));
+                    existingProducts = oldProducts;
+                }
+            }
+            if (existingProducts.length === 0) {
+                console.log('No products found, loading demo sample products...');
                 this.loadDemoSampleProducts();
+            } else {
+                console.log('Products already exist, not loading demo products. Count:', existingProducts.length);
             }
             this.showDashboard();
             this.initializeSystem();
@@ -5470,9 +5482,11 @@ ${credit.payments ? credit.payments.map(p => `
     }
 
     refreshInventory() {
-        this.initializeInventoryTracking();
-        // Also update the stock by products table
+        console.log('🔄 Refreshing inventory...');
         const products = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
+        console.log('Products found:', products.length, products);
+        this.initializeInventoryTracking();
+        // Also update the stock by products table directly
         this.updateStockByProductsTable(products);
         this.showNotification('Inventory data refreshed', 'success');
     }
