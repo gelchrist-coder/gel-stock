@@ -116,7 +116,10 @@ class NaturalHairBusinessManager {
         ];
         
         localStorage.setItem('gel_stock_products', JSON.stringify(sampleProducts));
-        console.log('✅ Demo sample products loaded:', sampleProducts.length);
+        console.log('✅ Demo sample products loaded:', sampleProducts.length, sampleProducts);
+        // Verify they're saved
+        const savedProducts = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
+        console.log('✅ Verified saved products:', savedProducts.length);
     }
     
     showLoginScreen() {
@@ -5940,6 +5943,7 @@ ${credit.payments ? credit.payments.map(p => `
     updateInventoryStats() {
         const sales = JSON.parse(localStorage.getItem('gel_stock_sales') || '[]');
         const products = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
+        console.log('updateInventoryStats - Products from localStorage:', products.length, products);
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         // Calculate total stock left and product count
@@ -5980,11 +5984,17 @@ ${credit.payments ? credit.payments.map(p => `
     
     updateStockByProductsTable(products) {
         const tableBody = document.getElementById('stockByProductsTable');
-        if (!tableBody) return;
+        if (!tableBody) {
+            console.warn('stockByProductsTable element not found');
+            return;
+        }
+        
+        console.log('updateStockByProductsTable called with products:', products);
         
         tableBody.innerHTML = '';
         
         if (products.length === 0) {
+            console.warn('No products to display');
             tableBody.innerHTML = '<div class="table-row empty"><span>No products found</span></div>';
             return;
         }
