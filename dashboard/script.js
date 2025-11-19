@@ -638,8 +638,10 @@ class NaturalHairBusinessManager {
         // Update inventory reports and transaction log
         this.updateInventoryReports();
         
-        // Ensure stock by products table is populated
-        this.updateStockByProductsTable(products);
+        // Ensure stock by products table is populated with fresh data from localStorage
+        const freshProducts = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
+        console.log('loadDashboardData final: Updating table with', freshProducts.length, 'products');
+        this.updateStockByProductsTable(freshProducts);
     }
     
     // Refresh low stock data across the dashboard
@@ -6003,18 +6005,26 @@ ${credit.payments ? credit.payments.map(p => `
             return;
         }
         
-        console.log('updateStockByProductsTable called with products:', products);
+        // Force reload from localStorage if products array is empty
+        let productsToDisplay = products;
+        if (!productsToDisplay || productsToDisplay.length === 0) {
+            console.warn('Products array empty, loading from localStorage...');
+            productsToDisplay = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
+            console.log('Loaded from localStorage:', productsToDisplay.length);
+        }
+        
+        console.log('updateStockByProductsTable called with products:', productsToDisplay.length, productsToDisplay);
         
         tableBody.innerHTML = '';
         
-        if (products.length === 0) {
-            console.warn('No products to display');
+        if (!productsToDisplay || productsToDisplay.length === 0) {
+            console.warn('No products to display - showing empty state');
             tableBody.innerHTML = '<div class="table-row empty"><span>No products found</span></div>';
             return;
         }
         
         // Sort products by stock quantity (highest first)
-        const sortedProducts = [...products].sort((a, b) => 
+        const sortedProducts = [...productsToDisplay].sort((a, b) => 
             (b.stock_quantity || 0) - (a.stock_quantity || 0)
         );
         
