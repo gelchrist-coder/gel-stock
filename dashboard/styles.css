@@ -7100,6 +7100,21 @@ body {
     align-items: center;
 }
 
+.table-header > div {
+    word-break: break-word;
+    overflow-wrap: break-word;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    white-space: normal;
+}
+
+.table-header > div:first-child {
+    text-align: left;
+    justify-content: flex-start;
+}
+
 .table-body {
     display: flex;
     flex-direction: column;
@@ -7138,14 +7153,17 @@ body {
 
 .col-product {
     min-width: 0;
+    word-break: break-word;
+    overflow-wrap: break-word;
 }
 
 .col-product .product-name {
     font-weight: 600;
     color: #1f2937;
     font-size: 0.96rem;
-    line-height: 1.5;
+    line-height: 1.6;
     word-break: break-word;
+    white-space: normal;
 }
 
 .col-sku {
