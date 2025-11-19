@@ -7178,16 +7178,16 @@ body {
 
 .table-header {
     display: grid;
-    grid-template-columns: 2fr 1fr 1.2fr 1.2fr 1fr;
-    gap: 1.5rem;
-    padding: 1.25rem 1.5rem;
+    grid-template-columns: 2.5fr 1.2fr 1.5fr 1.5fr 1.2fr;
+    gap: 2rem;
+    padding: 1.5rem 2rem;
     background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
     border-bottom: 2px solid #e2e8f0;
     font-weight: 700;
     color: #4a5568;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     text-transform: uppercase;
-    letter-spacing: 0.8px;
+    letter-spacing: 1px;
     border-radius: 8px 8px 0 0;
     align-items: center;
 }
@@ -7203,9 +7203,9 @@ body {
 
 .table-row {
     display: grid;
-    grid-template-columns: 2fr 1fr 1.2fr 1.2fr 1fr;
-    gap: 1.5rem;
-    padding: 1.25rem 1.5rem;
+    grid-template-columns: 2.5fr 1.2fr 1.5fr 1.5fr 1.2fr;
+    gap: 2rem;
+    padding: 1.5rem 2rem;
     border-bottom: 1px solid #e5e7eb;
     align-items: center;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -7225,44 +7225,47 @@ body {
     grid-template-columns: 1fr;
     text-align: center;
     color: #9ca3af;
-    padding: 3rem 1.5rem;
-}
-
-.col-product .product-name {
-    font-weight: 600;
-    color: #1f2937;
-    font-size: 0.95rem;
-    line-height: 1.4;
+    padding: 3rem 2rem;
 }
 
 .col-product {
     min-width: 0;
 }
 
+.col-product .product-name {
+    font-weight: 600;
+    color: #1f2937;
+    font-size: 0.96rem;
+    line-height: 1.5;
+    word-break: break-word;
+}
+
 .col-sku {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     color: #6b7280;
     font-family: 'Courier New', monospace;
     font-weight: 500;
     background: #f3f4f6;
-    padding: 0.5rem 0.75rem;
+    padding: 0.6rem 0.75rem;
     border-radius: 6px;
     font-size: 0.8rem;
-    text-align: center;
-    display: flex;
-    justify-content: center;
+    min-width: 100px;
 }
 
 .col-stock {
     display: flex;
     justify-content: center;
-    min-width: 80px;
+    align-items: center;
+    min-width: 100px;
 }
 
 .stock-badge {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-width: 50px;
+    min-width: 60px;
     height: 50px;
     background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
     color: white;
@@ -7279,15 +7282,19 @@ body {
 }
 
 .col-value {
-    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     font-weight: 600;
     color: #2d3748;
     font-size: 0.95rem;
+    min-width: 120px;
 }
 
 .col-status {
     display: flex;
     justify-content: center;
+    align-items: center;
     min-width: 100px;
 }
 
