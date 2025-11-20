@@ -31,23 +31,12 @@ class NaturalHairBusinessManager {
             // Store demo user in sessionStorage for consistency with role-based navigation
             sessionStorage.setItem('gel_user', JSON.stringify(this.currentUser));
             sessionStorage.setItem('gel_demo_mode', 'true');
-            // Auto-load sample products for demo mode
-            let existingProducts = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
-            // Also check for old jmonic_products key and migrate if found
-            if (existingProducts.length === 0) {
-                const oldProducts = JSON.parse(localStorage.getItem('jmonic_products') || '[]');
-                if (oldProducts.length > 0) {
-                    console.log('Migrating old jmonic_products to gel_stock_products');
-                    localStorage.setItem('gel_stock_products', JSON.stringify(oldProducts));
-                    existingProducts = oldProducts;
-                }
-            }
-            if (existingProducts.length === 0) {
-                console.log('No products found, loading demo sample products...');
-                this.loadDemoSampleProducts();
-            } else {
-                console.log('Products already exist, not loading demo products. Count:', existingProducts.length);
-            }
+            // Always clear old demo products and load fresh empty products
+            localStorage.removeItem('gel_stock_products');
+            localStorage.removeItem('jmonic_products');
+            console.log('Demo mode: cleared cached products');
+            // Load fresh demo products (currently empty)
+            this.loadDemoSampleProducts();
             this.showDashboard();
             this.initializeSystem();
         } else {
