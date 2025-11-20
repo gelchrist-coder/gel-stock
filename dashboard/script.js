@@ -31,10 +31,11 @@ class NaturalHairBusinessManager {
             // Store demo user in sessionStorage for consistency with role-based navigation
             sessionStorage.setItem('gel_user', JSON.stringify(this.currentUser));
             sessionStorage.setItem('gel_demo_mode', 'true');
-            // Always clear old demo products and load fresh empty products
+            // Always clear old demo products and transactions
             localStorage.removeItem('gel_stock_products');
             localStorage.removeItem('jmonic_products');
-            console.log('Demo mode: cleared cached products');
+            localStorage.removeItem('inventoryTransactions');
+            console.log('Demo mode: cleared cached products and transactions');
             // Load fresh demo products (currently empty)
             this.loadDemoSampleProducts();
             this.showDashboard();
