@@ -7808,6 +7808,22 @@ body {
         width: 20px;
         text-align: center;
     }
+
+    .mobile-sidebar-menu li.mobile-logout {
+        border-top: 2px solid #e2e8f0;
+        margin-top: auto;
+        padding-top: 1rem;
+    }
+
+    .mobile-sidebar-menu li.mobile-logout a {
+        color: #e53e3e;
+        font-weight: 600;
+    }
+
+    .mobile-sidebar-menu li.mobile-logout a:hover {
+        background: rgba(229, 62, 62, 0.1);
+        color: #c53030;
+    }
     
     /* Enhanced KPI Cards for Mobile */
     .kpi-grid {
