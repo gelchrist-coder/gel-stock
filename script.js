@@ -277,73 +277,7 @@ class NaturalHairBusinessManager {
      * Load sample products for demo mode
      */
     loadDemoSampleProducts() {
-        const sampleProducts = [
-            {
-                id: 'prod-oil-001',
-                sku: 'OIL-001',
-                name: 'Hair Oil Premium',
-                description: 'Premium hair oil treatment',
-                category: 'Feeds',
-                selling_price: 50,
-                price: 50,
-                cost_price: 30,
-                stock_quantity: 25,
-                reorder_level: 10,
-                created_at: new Date().toISOString()
-            },
-            {
-                id: 'prod-oil-002',
-                sku: 'OIL-002',
-                name: 'Hair Oil Regular',
-                description: 'Regular hair oil treatment',
-                category: 'Feeds',
-                selling_price: 35,
-                price: 35,
-                cost_price: 20,
-                stock_quantity: 15,
-                reorder_level: 8,
-                created_at: new Date().toISOString()
-            },
-            {
-                id: 'prod-shampoo-001',
-                sku: 'SHP-001',
-                name: 'Natural Hair Shampoo',
-                description: 'Gentle shampoo for natural hair',
-                category: 'Shampoos',
-                selling_price: 45,
-                price: 45,
-                cost_price: 25,
-                stock_quantity: 20,
-                reorder_level: 10,
-                created_at: new Date().toISOString()
-            },
-            {
-                id: 'prod-conditioner-001',
-                sku: 'COND-001',
-                name: 'Deep Conditioner',
-                description: 'Deep conditioning treatment',
-                category: 'Conditioners',
-                selling_price: 60,
-                price: 60,
-                cost_price: 35,
-                stock_quantity: 12,
-                reorder_level: 5,
-                created_at: new Date().toISOString()
-            },
-            {
-                id: 'prod-gel-001',
-                sku: 'GEL-001',
-                name: 'Hair Gel Strong Hold',
-                description: 'Strong hold hair gel',
-                category: 'Gels',
-                selling_price: 40,
-                price: 40,
-                cost_price: 22,
-                stock_quantity: 30,
-                reorder_level: 15,
-                created_at: new Date().toISOString()
-            }
-        ];
+        const sampleProducts = [];
         
         localStorage.setItem('gel_stock_products', JSON.stringify(sampleProducts));
         console.log('✅ Demo sample products loaded:', sampleProducts.length);
