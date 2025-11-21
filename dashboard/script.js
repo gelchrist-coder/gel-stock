@@ -127,6 +127,13 @@ class NaturalHairBusinessManager {
             const testResult = await this.apiCall('test.php');
             console.log('✅ API Connection successful:', testResult.data);
             
+            // If logged in (not demo), load data from backend
+            if (this.isLoggedIn && !this.isDemoMode) {
+                console.log('Loading user data from backend...');
+                await this.loadFromBackend();
+                this.initializePeriodicSync();
+            }
+            
             // If connection works, load dashboard data
             await this.loadDashboardData();
             console.log('System Ready - J\'MONIC ENTERPRISE Dashboard Loaded!');
@@ -158,6 +165,107 @@ class NaturalHairBusinessManager {
         } catch (error) {
             console.error('Error migrating products:', error);
         }
+    }
+
+    /**
+     * Sync user data to backend database for cross-device access
+     * Called automatically when user adds/updates products or sales
+     */
+    async syncToBackend(dataType = 'all') {
+        if (this.isDemoMode || !this.isLoggedIn) {
+            return; // Don't sync demo mode or when not logged in
+        }
+        
+        try {
+            let dataToSync = {};
+            
+            if (dataType === 'all' || dataType === 'products') {
+                dataToSync.products = JSON.parse(localStorage.getItem(this.getStorageKey('products')) || '[]');
+            }
+            
+            if (dataType === 'all' || dataType === 'sales') {
+                dataToSync.sales = JSON.parse(localStorage.getItem(this.getStorageKey('sales')) || '[]');
+            }
+            
+            if (dataType === 'all' || dataType === 'settings') {
+                dataToSync.settings = JSON.parse(localStorage.getItem(this.getStorageKey('settings')) || '{}');
+            }
+            
+            const syncPayload = {
+                userId: this.userId,
+                dataType: dataType,
+                ...dataToSync
+            };
+            
+            const response = await this.apiCall('user_data.php', 'POST', syncPayload);
+            console.log(`✅ Data synced to backend (${dataType}):`, response);
+            
+        } catch (error) {
+            console.warn(`⚠️ Failed to sync data to backend (${dataType}):`, error.message);
+            // Continue working offline even if sync fails
+        }
+    }
+
+    /**
+     * Load user data from backend database
+     * Called when user logs in to restore their data on new device
+     */
+    async loadFromBackend() {
+        if (this.isDemoMode || !this.isLoggedIn) {
+            return; // Don't load for demo mode or when not logged in
+        }
+        
+        try {
+            const response = await this.apiCall('user_data.php', 'GET', { 
+                userId: this.userId,
+                dataType: 'all'
+            });
+            
+            if (response.success && response.data) {
+                // Load products from backend
+                if (response.data.products && response.data.products.length > 0) {
+                    localStorage.setItem(this.getStorageKey('products'), JSON.stringify(response.data.products));
+                    console.log('✅ Loaded', response.data.products.length, 'products from backend');
+                }
+                
+                // Load sales from backend
+                if (response.data.sales && response.data.sales.length > 0) {
+                    localStorage.setItem(this.getStorageKey('sales'), JSON.stringify(response.data.sales));
+                    console.log('✅ Loaded', response.data.sales.length, 'sales from backend');
+                }
+                
+                // Load settings from backend
+                if (response.data.settings) {
+                    localStorage.setItem(this.getStorageKey('settings'), JSON.stringify(response.data.settings));
+                    console.log('✅ Loaded settings from backend');
+                }
+                
+                return true;
+            }
+            
+            return false;
+            
+        } catch (error) {
+            console.warn('⚠️ Failed to load data from backend:', error.message);
+            // Continue with local data even if sync fails
+            return false;
+        }
+    }
+
+    /**
+     * Set up periodic sync - syncs data every 5 minutes
+     */
+    initializePeriodicSync() {
+        if (this.isDemoMode || !this.isLoggedIn) {
+            return; // Don't sync demo mode
+        }
+        
+        // Sync every 5 minutes
+        setInterval(() => {
+            this.syncToBackend('all');
+        }, 5 * 60 * 1000); // 5 minutes
+        
+        console.log('📡 Periodic sync initialized (every 5 minutes)');
     }
 
     
@@ -1371,6 +1479,9 @@ class NaturalHairBusinessManager {
                 
                 // Refresh dashboard data to show updated inventory and revenue
                 await this.loadDashboardData();
+                
+                // Sync sales to backend
+                await this.syncToBackend('sales');
                 
                 // Refresh products inventory if on products page
                 const currentSection = document.querySelector('.content-section.active');
@@ -7360,6 +7471,9 @@ async function handleAddProductSubmit(e) {
             // Force refresh the products table and low stock data
             await businessManager.loadProductsInventory();
             businessManager.refreshLowStockData();
+            
+            // Sync products to backend
+            await businessManager.syncToBackend('products');
             
             // Refresh dashboard KPI cards to show updated stock-in
             businessManager.loadDashboardData();
