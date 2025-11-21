@@ -266,6 +266,41 @@
                     </div>
                 </div>
 
+                <!-- Business Type Input -->
+                <div class="form-group">
+                    <label for="businessType">Business Type</label>
+                    <div class="input-wrapper">
+                        <select 
+                            id="businessType" 
+                            name="businessType"
+                            required
+                        >
+                            <option value="">Select your business type</option>
+                            <option value="retail">Retail Store</option>
+                            <option value="wholesale">Wholesale Distributor</option>
+                            <option value="e-commerce">E-Commerce</option>
+                            <option value="manufacturing">Manufacturing</option>
+                            <option value="service">Service Business</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Product Categories Input -->
+                <div class="form-group">
+                    <label for="categoriesInput">Product Categories <span style="color: #999; font-size: 0.9rem;">(optional)</span></label>
+                    <div class="input-wrapper">
+                        <input 
+                            type="text" 
+                            id="categoriesInput" 
+                            name="categories" 
+                            placeholder="E.g.: Electronics, Clothing, Beauty, Groceries (comma-separated)"
+                        >
+                    </div>
+                    <small class="form-hint">Enter your product categories separated by commas. They'll appear when you add products.</small>
+                    <div id="categoriesList" style="margin-top: 0.75rem; display: flex; flex-wrap: wrap; gap: 0.5rem;"></div>
+                </div>
+
                 <!-- Owner Name Input -->
                 <div class="form-group">
                     <label for="ownerName">Your Full Name</label>
@@ -2154,7 +2189,9 @@
                         </div>
                         <div class="form-group">
                             <label>Category</label>
-                            <input type="text" name="category" placeholder="e.g., Hair Care, Accessories, Oils">
+                            <select name="category" id="productCategorySelect" onchange="autoPopulateSKU()">
+                                <option value="">Select or enter a category</option>
+                            </select>
                         </div>
                     </div>
                     <div class="form-row">

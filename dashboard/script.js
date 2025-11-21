@@ -7738,7 +7738,84 @@ function openAddProductModal() {
     // Populate dropdown when modal opens
     setTimeout(() => {
         populateSKUDropdown();
+        populateCategories();
     }, 100);
+}
+
+// Populate product categories from user's registered categories
+function populateCategories() {
+    const categorySelect = document.getElementById('productCategorySelect');
+    if (!categorySelect) return;
+    
+    // Get user info from session
+    const userJson = sessionStorage.getItem('gel_user');
+    const user = userJson ? JSON.parse(userJson) : null;
+    
+    // Get categories from localStorage
+    let categories = [];
+    if (user) {
+        // Try to get categories associated with the user's business
+        const businessId = user.businessId || user.phone;
+        const storedCategories = localStorage.getItem(`gel_stock_categories_${businessId}`);
+        if (storedCategories) {
+            categories = JSON.parse(storedCategories);
+        }
+    }
+    
+    // Clear existing options except the first one
+    while (categorySelect.options.length > 1) {
+        categorySelect.remove(1);
+    }
+    
+    // Add categories as options
+    if (categories.length > 0) {
+        categories.forEach(category => {
+            const option = document.createElement('option');
+            option.value = category;
+            option.textContent = category;
+            categorySelect.appendChild(option);
+        });
+    }
+}
+
+// Auto-populate SKU prefix based on selected category
+function autoPopulateSKU() {
+    const categorySelect = document.getElementById('productCategorySelect');
+    const skuInput = document.querySelector('input[name="sku"]');
+    
+    if (!categorySelect || !skuInput) return;
+    
+    const selectedCategory = categorySelect.value;
+    
+    if (!selectedCategory) {
+        // Clear SKU if no category selected
+        skuInput.placeholder = 'Enter unique SKU (e.g., PROD-001)';
+        return;
+    }
+    
+    // Get first letter of category
+    const firstLetter = selectedCategory.charAt(0).toUpperCase();
+    
+    // Set placeholder to show the expected format
+    skuInput.placeholder = `${firstLetter}-0001`;
+    
+    // If SKU is empty, start with the prefix
+    if (!skuInput.value) {
+        skuInput.value = `${firstLetter}-`;
+    } else if (!skuInput.value.startsWith(firstLetter)) {
+        // Replace prefix if it's different
+        const match = skuInput.value.match(/^[A-Z]?-(.*)$/);
+        if (match) {
+            skuInput.value = `${firstLetter}-${match[1]}`;
+        } else {
+            skuInput.value = `${firstLetter}-${skuInput.value}`;
+        }
+    }
+    
+    // Focus on the input and position cursor after the hyphen
+    skuInput.focus();
+    const prefixLength = firstLetter.length + 1; // Letter + hyphen
+    skuInput.setSelectionRange(prefixLength, skuInput.value.length);
 }
 
 function editProduct(productId) {
@@ -9090,6 +9167,8 @@ function handleRegistration(event) {
     event.preventDefault();
     
     const businessName = document.getElementById('businessName').value.trim();
+    const businessType = document.getElementById('businessType').value.trim();
+    const categoriesInput = document.getElementById('categoriesInput').value.trim();
     const ownerName = document.getElementById('ownerName').value.trim();
     const phone = document.getElementById('registerPhone').value.trim();
     const password = document.getElementById('registerPassword').value;
@@ -9105,6 +9184,11 @@ function handleRegistration(event) {
     // Validation checks
     if (!businessName) {
         showRegistrationError('Please enter your business name');
+        return;
+    }
+
+    if (!businessType) {
+        showRegistrationError('Please select your business type');
         return;
     }
     
@@ -9148,11 +9232,19 @@ function handleRegistration(event) {
         return;
     }
     
+    // Parse categories from comma-separated input
+    let categories = [];
+    if (categoriesInput) {
+        categories = categoriesInput.split(',').map(cat => cat.trim()).filter(cat => cat.length > 0);
+    }
+    
     // Create new user account
     const formattedPhone = formatGhanaPhone(phone);
     
     const newUser = {
         businessName: businessName,
+        businessType: businessType,
+        categories: categories,
         name: ownerName,
         phone: formattedPhone,
         role: 'owner',
@@ -9165,6 +9257,12 @@ function handleRegistration(event) {
     
     // Optional: Store business info for dashboard
     sessionStorage.setItem('gel_business_name', businessName);
+    sessionStorage.setItem('gel_business_type', businessType);
+    
+    // Store categories in localStorage for product form
+    if (categories.length > 0) {
+        localStorage.setItem(`gel_stock_categories_${formattedPhone}`, JSON.stringify(categories));
+    }
     
     // Clear any demo data from localStorage to ensure clean start for new user
     localStorage.removeItem('demo_mode_products');
