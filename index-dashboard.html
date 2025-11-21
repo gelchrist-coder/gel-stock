@@ -18,7 +18,6 @@
     <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%233b82f6' width='100' height='100'/><text x='50' y='65' font-size='70' font-weight='bold' fill='white' text-anchor='middle'>G</text></svg>">
     
     <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="mobile-header-modern.css">
     <link href="assets/css/fontawesome.min.css" rel="stylesheet">
     <script src="assets/js/chart.min.js"></script>
 </head>
@@ -398,36 +397,53 @@
         </div>
     </div>
 
+    <!-- Desktop Professional Header -->
+    <header class="header professional-header d-desktop">
+        <div class="header-content">
+            <div class="header-logo">
+                <i class="fas fa-box"></i>
+                <span>GEL-STOCK</span>
+            </div>
+            <div class="header-center">
+                <p class="header-tagline">Professional Inventory Management</p>
+            </div>
+            <div class="header-actions">
+                <button class="user-profile-btn" onclick="toggleUserMenu()">
+                    <div class="user-avatar"></div>
+                    <span class="user-name" id="headerUserName">User</span>
+                    <i class="fas fa-chevron-down"></i>
+                </button>
+                <!-- User Profile Dropdown -->
+                <div class="user-dropdown hidden" id="userDropdown">
+                    <div class="user-dropdown-header">
+                        <div class="user-avatar-large"></div>
+                        <div class="user-info">
+                            <p class="user-full-name" id="dropdownUserName">User Name</p>
+                            <p class="user-phone" id="dropdownUserPhone">+233 XXX XXX XXX</p>
+                            <p class="user-business" id="dropdownBusinessName">GEL-STOCK</p>
+                        </div>
+                    </div>
+                    <div class="user-dropdown-menu">
+                        <a href="#" onclick="showSection('settings')" class="dropdown-item">
+                            <i class="fas fa-cog"></i>
+                            <span>Settings</span>
+                        </a>
+                        <a href="#" onclick="logoutUser()" class="dropdown-item logout">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>Logout</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
     <!-- Mobile Professional Header -->
     <header class="header professional-header d-mobile">
         <div class="header-content">
             <button class="mobile-menu-toggle" onclick="toggleMobileSidebar()">
                 <i class="fas fa-bars"></i>
             </button>
-            <div class="header-center">
-                <div class="header-logo">
-                    <i class="fas fa-box"></i>
-                    <span id="mobileHeaderBusinessName">GEL-STOCK</span>
-                </div>
-            </div>
-            <div class="header-right">
-                <button class="mobile-user-profile-btn" onclick="toggleMobileUserMenu()">
-                    <div class="mobile-user-avatar" id="mobileUserAvatar">G</div>
-                    <span class="mobile-user-name" id="mobileUserName">User</span>
-                </button>
-                <!-- Mobile User Dropdown -->
-                <div class="mobile-user-dropdown" id="mobileUserDropdown" style="display: none;">
-                    <div class="mobile-dropdown-item" onclick="navigateToSection('settings')">
-                        <i class="fas fa-cog"></i>
-                        <span>Settings</span>
-                    </div>
-                    <div class="mobile-dropdown-divider"></div>
-                    <div class="mobile-dropdown-item logout" onclick="logoutUser()">
-                        <i class="fas fa-sign-out-alt"></i>
-                        <span>Logout</span>
-                    </div>
-                </div>
-            </div>
         </div>
     </header>
 
@@ -442,7 +458,7 @@
                 </button>
             </div>
             <ul class="mobile-sidebar-menu">
-                <li class="active" data-menu-item="overview" data-allowed-roles="owner,admin,manager,staff,viewer,employee,demo">
+                <li class="active" data-menu-item="overview" data-allowed-roles="owner,admin,manager,staff,viewer,demo">
                     <a href="#overview" data-section="overview" onclick="navigateToSection('overview')">
                         <i class="fas fa-home"></i>
                         <span>Dashboard</span>
@@ -519,13 +535,13 @@
                 <h2><i class="fas fa-box"></i> GEL-STOCK</h2>
             </div>
             <ul class="sidebar-menu">
-                <li class="active" data-menu-item="overview" data-allowed-roles="owner,admin,manager,staff,viewer,employee,demo">
+                <li class="active" data-menu-item="overview" data-allowed-roles="owner,admin,manager,staff,viewer">
                     <a href="#overview" data-section="overview">
                         <i class="fas fa-home"></i>
                         <span>Dashboard</span>
                     </a>
                 </li>
-                <li data-menu-item="products" data-allowed-roles="owner,admin,manager,demo">
+                <li data-menu-item="products" data-allowed-roles="owner,admin,manager">
                     <a href="#products" data-section="products">
                         <i class="fas fa-cut"></i>
                         <span>Products</span>
@@ -592,7 +608,10 @@
                     </button>
                 </div>
                 <div class="header-center">
-                    <span id="headerBusinessName" class="header-business-name">GEL-STOCK</span>
+                    <div class="header-title-section">
+                        <h1 id="pageTitle">Dashboard</h1>
+                        <p class="business-info" id="businessInfo">GEL-STOCK Professional Inventory System</p>
+                    </div>
                 </div>
                 <div class="header-right">
                     <!-- Notification Bell Button -->
@@ -838,18 +857,8 @@
                     <div class="sales-table-section">
                         <div class="performance-grid">
                             <div class="top-products-card">
-                                <div class="top-products-header">
-                                    <h3>Top Selling Products</h3>
-                                    <div class="date-filter-group">
-                                        <input 
-                                            type="date" 
-                                            id="topProductsDateFilter" 
-                                            class="date-filter-input"
-                                            onchange="businessManager.filterTopProductsByDate(this.value)"
-                                        >
-                                    </div>
-                                </div>
-                                <div class="product-performance-list" id="topProductsList">
+                                <h3>Top Selling Products</h3>
+                                <div class="product-performance-list">
                                     <div class="product-performance-item">
                                         <div class="product-rank">1</div>
                                         <div class="product-details">
@@ -1829,9 +1838,12 @@
                     <div class="section-header">
                         <div class="header-title">
                             <h2><i class="fas fa-cog"></i> Settings & Preferences</h2>
-                            <p class="header-subtitle">Manage your profile and customize your dashboard</p>
+                            <p class="header-subtitle">Customize your business dashboard experience</p>
                         </div>
                         <div class="section-actions">
+                            <button class="btn-secondary" onclick="businessManager.resetSettings()">
+                                <i class="fas fa-undo"></i> Reset to Default
+                            </button>
                             <button class="btn-primary" onclick="businessManager.saveSettings()">
                                 <i class="fas fa-save"></i> Save Changes
                             </button>
@@ -1840,49 +1852,6 @@
 
                     <!-- Settings Categories -->
                     <div class="settings-grid modern-settings">
-                        <!-- Profile Settings -->
-                        <div class="dashboard-card modern-card">
-                            <div class="card-header modern-header">
-                                <div class="header-icon" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);">
-                                    <i class="fas fa-user-circle"></i>
-                                </div>
-                                <div class="header-content">
-                                    <h3>Profile</h3>
-                                    <p class="header-desc">Edit your account information</p>
-                                </div>
-                            </div>
-                            <div class="settings-panel modern-panel">
-                                <div class="setting-group">
-                                    <label class="setting-label">Full Name</label>
-                                    <input type="text" id="profileFullName" class="modern-select" placeholder="Enter your full name">
-                                </div>
-
-                                <div class="setting-group">
-                                    <label class="setting-label">Business Name</label>
-                                    <input type="text" id="profileBusinessName" class="modern-select" placeholder="Enter your business name">
-                                </div>
-
-                                <div class="setting-group">
-                                    <label class="setting-label">Phone Number</label>
-                                    <input type="tel" id="profilePhone" class="modern-select" placeholder="Enter your phone number">
-                                </div>
-
-                                <div class="setting-group">
-                                    <label class="setting-label">Email Address</label>
-                                    <input type="email" id="profileEmail" class="modern-select" placeholder="Enter your email address">
-                                </div>
-
-                                <div class="setting-group">
-                                    <label class="setting-label">Role</label>
-                                    <input type="text" id="profileRole" class="modern-select" placeholder="Your role" disabled>
-                                </div>
-
-                                <button class="btn-primary-modern" onclick="businessManager.updateProfile()">
-                                    <i class="fas fa-check"></i> Update Profile
-                                </button>
-                            </div>
-                        </div>
-
                         <!-- Appearance Settings -->
                         <div class="dashboard-card modern-card">
                             <div class="card-header modern-header">
@@ -2017,7 +1986,7 @@
                             </div>
                         </div>
 
-                        <!-- Delete Account -->
+                        <!-- Danger Zone -->
                         <div class="dashboard-card modern-card danger-card">
                             <div class="card-header modern-header danger">
                                 <div class="header-icon danger-icon">
@@ -2032,13 +2001,13 @@
                                 <div class="danger-warning">
                                     <i class="fas fa-warning"></i>
                                     <div>
-                                        <h4>Delete Account</h4>
-                                        <p>This will permanently delete your account and all associated data. This action cannot be undone.</p>
+                                        <h4>Clear All Data</h4>
+                                        <p>This will permanently delete all your business data including products, sales, and reports. This action cannot be undone.</p>
                                     </div>
                                 </div>
-                                <button class="btn-danger-modern" onclick="businessManager.showDeleteAccountConfirm()">
+                                <button class="btn-danger-modern" id="deleteDataBtn-dash" onclick="clearAllData()">
                                     <i class="fas fa-trash"></i>
-                                    Delete Account
+                                    Clear All Data
                                 </button>
                             </div>
                         </div>
@@ -2541,18 +2510,11 @@
     </nav>
 
     <script src="script.js"></script>
-    <script src="cloud-sync.js"></script>
-    
+
     <script>
-        // Initialize cloud sync and dashboard
+        // Initialize dashboard when page loads
         document.addEventListener('DOMContentLoaded', function() {
             console.log('📱 Dashboard loaded');
-            
-            // Initialize cloud sync for demo mode
-            const demoMode = sessionStorage.getItem('gel_demo_mode');
-            if (demoMode === 'true' && window.CloudSync && window.CloudSync.initializeFirebaseSync) {
-                window.CloudSync.initializeFirebaseSync();
-            }
             
             // Hide all sections except the first one (overview)
             const sections = document.querySelectorAll('.content-section');
