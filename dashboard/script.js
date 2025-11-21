@@ -9,6 +9,7 @@ class NaturalHairBusinessManager {
         this.isLoggedIn = false;
         this.isDemoMode = false;
         this.currentUser = null;
+        this.userId = 'demo_mode'; // Initialize with default user ID
         
         this.initializeAuthSystem();
     }
@@ -22,11 +23,15 @@ class NaturalHairBusinessManager {
         if (sessionUser) {
             this.isLoggedIn = true;
             this.currentUser = JSON.parse(sessionUser);
+            // Set unique user ID for data storage
+            this.userId = this.currentUser.phone || this.currentUser.email || 'user_' + Date.now();
+            this.businessId = this.userId;
             this.showDashboard();
             this.initializeSystem();
         } else if (demoMode === 'true') {
             this.isDemoMode = true;
             this.currentUser = { name: 'demo', email: 'demo@gel-stock.com', role: 'demo', businessId: 'demo_mode' };
+            this.userId = 'demo_mode';
             this.businessId = 'demo_mode';
             // Store demo user in sessionStorage for consistency with role-based navigation
             sessionStorage.setItem('gel_user', JSON.stringify(this.currentUser));
@@ -44,17 +49,27 @@ class NaturalHairBusinessManager {
             this.showLoginScreen();
         }
     }
+    
+    /**
+     * Get localStorage key for user data
+     * @param {string} dataType - Type of data (products, sales, etc.)
+     * @returns {string} - Unique key for user's data
+     */
+    getStorageKey(dataType) {
+        const userId = this.userId || 'demo_mode';
+        return `${userId}_${dataType}`;
+    }
 
     /**
      * Load sample products for demo mode
      */
     loadDemoSampleProducts() {
         const sampleProducts = [];
-        
-        localStorage.setItem('gel_stock_products', JSON.stringify(sampleProducts));
+        const storageKey = this.getStorageKey('products');
+        localStorage.setItem(storageKey, JSON.stringify(sampleProducts));
         console.log('✅ Demo sample products loaded:', sampleProducts.length, sampleProducts);
         // Verify they're saved
-        const savedProducts = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
+        const savedProducts = JSON.parse(localStorage.getItem(storageKey) || '[]');
         console.log('✅ Verified saved products:', savedProducts.length);
     }
     
@@ -6297,10 +6312,58 @@ ${credit.payments ? credit.payments.map(p => `
 // Initialize the system
 let businessManager;
 
+// Create localStorage wrapper to handle per-user data storage
+function initializeUserStorageWrapper() {
+    const originalGetItem = localStorage.getItem;
+    const originalSetItem = localStorage.setItem;
+    const originalRemoveItem = localStorage.removeItem;
+    
+    // Get current user ID from businessManager or fallback to demo_mode
+    const getUserId = () => {
+        if (businessManager && businessManager.userId) {
+            return businessManager.userId;
+        }
+        return 'demo_mode';
+    };
+    
+    // Override getItem for gel_stock_* keys
+    localStorage.getItem = function(key) {
+        if (key.startsWith('gel_stock_')) {
+            const userId = getUserId();
+            const userKey = `${userId}_${key}`;
+            return originalGetItem.call(this, userKey);
+        }
+        return originalGetItem.call(this, key);
+    };
+    
+    // Override setItem for gel_stock_* keys
+    localStorage.setItem = function(key, value) {
+        if (key.startsWith('gel_stock_')) {
+            const userId = getUserId();
+            const userKey = `${userId}_${key}`;
+            return originalSetItem.call(this, userKey, value);
+        }
+        return originalSetItem.call(this, key, value);
+    };
+    
+    // Override removeItem for gel_stock_* keys
+    localStorage.removeItem = function(key) {
+        if (key.startsWith('gel_stock_')) {
+            const userId = getUserId();
+            const userKey = `${userId}_${key}`;
+            return originalRemoveItem.call(this, userKey);
+        }
+        return originalRemoveItem.call(this, key);
+    };
+}
+
 // DOM Ready
 document.addEventListener('DOMContentLoaded', function() {
     console.log('DOM loaded, initializing business manager...');
     businessManager = new NaturalHairBusinessManager();
+    
+    // Initialize per-user storage wrapper
+    initializeUserStorageWrapper();
     
     // Initialize theme immediately
     initializeTheme();
@@ -8797,7 +8860,8 @@ function handleRegistration(event) {
         name: ownerName,
         phone: formattedPhone,
         role: 'owner',
-        registrationTime: new Date().toISOString()
+        registrationTime: new Date().toISOString(),
+        userId: formattedPhone // Use phone as unique user ID
     };
     
     // Store user in session storage
@@ -8805,6 +8869,11 @@ function handleRegistration(event) {
     
     // Optional: Store business info for dashboard
     sessionStorage.setItem('gel_business_name', businessName);
+    
+    // Clear any demo data from localStorage to ensure clean start for new user
+    localStorage.removeItem('demo_mode_products');
+    localStorage.removeItem('demo_mode_sales');
+    localStorage.removeItem('demo_mode_credits');
     
     // Show success animation
     showRegistrationSuccess();

@@ -9,6 +9,7 @@ class NaturalHairBusinessManager {
         this.isLoggedIn = false;
         this.isDemoMode = false;
         this.currentUser = null;
+        this.userId = 'demo_mode'; // Initialize with default user ID
         
         this.initializeAuthSystem();
     }
@@ -6552,10 +6553,58 @@ ${credit.payments ? credit.payments.map(p => `
 // Initialize the system
 let businessManager;
 
+// Create localStorage wrapper to handle per-user data storage
+function initializeUserStorageWrapper() {
+    const originalGetItem = localStorage.getItem;
+    const originalSetItem = localStorage.setItem;
+    const originalRemoveItem = localStorage.removeItem;
+    
+    // Get current user ID from businessManager or fallback to demo_mode
+    const getUserId = () => {
+        if (businessManager && businessManager.userId) {
+            return businessManager.userId;
+        }
+        return 'demo_mode';
+    };
+    
+    // Override getItem for gel_stock_* keys
+    localStorage.getItem = function(key) {
+        if (key.startsWith('gel_stock_')) {
+            const userId = getUserId();
+            const userKey = `${userId}_${key}`;
+            return originalGetItem.call(this, userKey);
+        }
+        return originalGetItem.call(this, key);
+    };
+    
+    // Override setItem for gel_stock_* keys
+    localStorage.setItem = function(key, value) {
+        if (key.startsWith('gel_stock_')) {
+            const userId = getUserId();
+            const userKey = `${userId}_${key}`;
+            return originalSetItem.call(this, userKey, value);
+        }
+        return originalSetItem.call(this, key, value);
+    };
+    
+    // Override removeItem for gel_stock_* keys
+    localStorage.removeItem = function(key) {
+        if (key.startsWith('gel_stock_')) {
+            const userId = getUserId();
+            const userKey = `${userId}_${key}`;
+            return originalRemoveItem.call(this, userKey);
+        }
+        return originalRemoveItem.call(this, key);
+    };
+}
+
 // DOM Ready
 document.addEventListener('DOMContentLoaded', function() {
     console.log('DOM loaded, initializing business manager...');
     businessManager = new NaturalHairBusinessManager();
+    
+    // Initialize per-user storage wrapper
+    initializeUserStorageWrapper();
     
     // Initialize theme immediately
     initializeTheme();
