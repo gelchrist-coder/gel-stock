@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GEL-STOCK Admin Portal</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .login-container {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .login-header h1 {
+            color: #333;
+            font-size: 28px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .login-header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 5px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .login-button {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .login-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .login-button:active {
+            transform: translateY(0);
+        }
+
+        .error {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 12px;
+            border-radius: 5px;
+            border-left: 4px solid #dc2626;
+            margin-bottom: 20px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .success {
+            background: #dcfce7;
+            color: #166534;
+            padding: 12px;
+            border-radius: 5px;
+            border-left: 4px solid #22c55e;
+            margin-bottom: 20px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            color: #667eea;
+            margin-top: 10px;
+        }
+
+        .login-footer {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e5e7eb;
+            color: #666;
+            font-size: 12px;
+        }
+
+        .demo-info {
+            background: #f0f9ff;
+            border: 1px solid #bfdbfe;
+            color: #1e40af;
+            padding: 12px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            font-size: 13px;
+        }
+
+        @media (max-width: 480px) {
+            .login-container {
+                padding: 25px;
+                margin: 20px;
+            }
+
+            .login-header h1 {
+                font-size: 22px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-header">
+            <h1><i class="fas fa-lock-open"></i> Admin Portal</h1>
+            <p>GEL-STOCK Management System</p>
+        </div>
+
+        <div class="error" id="errorMsg"></div>
+        <div class="success" id="successMsg"></div>
+
+        <div class="demo-info">
+            <i class="fas fa-info-circle"></i> Default admin key: <strong>admin123</strong>
+        </div>
+
+        <form id="adminLoginForm" onsubmit="handleLogin(event)">
+            <div class="form-group">
+                <label for="adminKey">Admin Key</label>
+                <input 
+                    type="password" 
+                    id="adminKey" 
+                    placeholder="Enter your admin key"
+                    required
+                    autofocus
+                >
+            </div>
+
+            <button type="submit" class="login-button">
+                <i class="fas fa-sign-in-alt"></i> Access Dashboard
+            </button>
+
+            <div class="loading" id="loading">
+                <i class="fas fa-spinner fa-spin"></i> Verifying...
+            </div>
+        </form>
+
+        <div class="login-footer">
+            <p>For security, keep your admin key confidential</p>
+        </div>
+    </div>
+
+    <script>
+        function handleLogin(event) {
+            event.preventDefault();
+            
+            const adminKey = document.getElementById('adminKey').value.trim();
+            const errorMsg = document.getElementById('errorMsg');
+            const successMsg = document.getElementById('successMsg');
+            const loading = document.getElementById('loading');
+
+            // Clear previous messages
+            errorMsg.style.display = 'none';
+            successMsg.style.display = 'none';
+            loading.style.display = 'none';
+
+            if (!adminKey) {
+                errorMsg.textContent = 'Please enter your admin key';
+                errorMsg.style.display = 'block';
+                return;
+            }
+
+            // Show loading
+            loading.style.display = 'block';
+
+            // Store admin key in sessionStorage (not localStorage for security)
+            sessionStorage.setItem('adminKey', adminKey);
+            
+            // Try to verify the key by making a test API call
+            fetch(`../api/admin_stats.php?adminKey=${encodeURIComponent(adminKey)}`)
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success || result.data) {
+                        // Key is valid, redirect to dashboard
+                        successMsg.textContent = 'Authentication successful! Redirecting...';
+                        successMsg.style.display = 'block';
+                        setTimeout(() => {
+                            window.location.href = 'dashboard.html';
+                        }, 500);
+                    } else {
+                        throw new Error('Invalid admin key');
+                    }
+                })
+                .catch(error => {
+                    errorMsg.textContent = `Error: ${error.message || 'Invalid admin key'}`;
+                    errorMsg.style.display = 'block';
+                    sessionStorage.removeItem('adminKey');
+                })
+                .finally(() => {
+                    loading.style.display = 'none';
+                });
+        }
+
+        // Auto-focus on admin key field
+        document.getElementById('adminKey').focus();
+    </script>
+</body>
+</html>

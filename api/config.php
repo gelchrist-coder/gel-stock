@@ -86,8 +86,9 @@ function getDbConnection() {
             
         } catch (PDOException $e) {
             error_log("Database connection failed: " . $e->getMessage());
-            sendErrorResponse(HTTP_INTERNAL_ERROR, 'Database connection failed');
-            return null;
+            // Don't exit here - let the caller handle the error
+            // This allows admin_stats.php to return graceful error responses
+            return false;
         }
     }
     

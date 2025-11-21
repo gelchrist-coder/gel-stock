@@ -1,13 +1,1 @@
-{
-    "4b383c7f0648bce58e9e892065a51bd17a405d853740148204d2a075e785b8bd": {
-        "phone": "+233599712382",
-        "name": "Gelchrist Goat",
-        "businessName": "Alaba Shop",
-        "id": "owner_617c7074df45",
-        "role": "owner",
-        "createdAt": "2025-11-10 18:16:03",
-        "expiresAt": 1762884963,
-        "ipAddress": "::1",
-        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0"
-    }
-}
+{}

@@ -86,6 +86,104 @@
             background: #059669;
         }
 
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: #666;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .modal-close:hover {
+            color: #333;
+        }
+
+        .modal-form {
+            margin-bottom: 20px;
+        }
+
+        .modal-form label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .modal-form input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e5e7eb;
+            border-radius: 5px;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+
+        .modal-form input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .modal-footer .btn {
+            flex: 1;
+            max-width: 150px;
+        }
+
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -234,6 +332,22 @@
             color: #333;
         }
 
+        .btn-delete-user {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-delete-user:hover {
+            background: #dc2626;
+            transform: scale(1.05);
+        }
+
         @media (max-width: 768px) {
             .stats-grid {
                 grid-template-columns: 1fr;
@@ -246,6 +360,53 @@
     </style>
 </head>
 <body>
+    <!-- Change Admin Key Modal -->
+    <div id="changeKeyModal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeChangeKeyModal()">&times;</button>
+            <div class="modal-header">
+                <i class="fas fa-key"></i>
+                Change Admin Key
+            </div>
+            <form id="changeKeyForm" class="modal-form" onsubmit="submitKeyChange(event)">
+                <label for="currentAdminKey">Current Admin Key (for verification)</label>
+                <input 
+                    type="password" 
+                    id="currentAdminKey" 
+                    name="currentAdminKey" 
+                    placeholder="Enter your current admin key" 
+                    required
+                />
+                
+                <label for="newAdminKey" style="margin-top: 15px;">New Admin Key (minimum 6 characters)</label>
+                <input 
+                    type="password" 
+                    id="newAdminKey" 
+                    name="newAdminKey" 
+                    placeholder="Enter new admin key" 
+                    minlength="6" 
+                    required
+                />
+                
+                <label for="confirmAdminKey" style="margin-top: 15px;">Confirm New Admin Key</label>
+                <input 
+                    type="password" 
+                    id="confirmAdminKey" 
+                    name="confirmAdminKey" 
+                    placeholder="Confirm new admin key" 
+                    minlength="6" 
+                    required
+                />
+                
+                <div id="changeKeyResult"></div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeChangeKeyModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Change Key</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <div class="container">
         <div class="header">
             <h1>
@@ -255,17 +416,14 @@
             <p style="color: #666; margin-bottom: 15px;">System-wide analytics and user management</p>
             
             <div class="header-controls">
-                <input 
-                    type="password" 
-                    id="adminKey" 
-                    class="admin-key-input" 
-                    placeholder="Enter admin key to view statistics"
-                >
                 <button class="btn btn-primary" onclick="loadStats()">
-                    <i class="fas fa-unlock"></i> View Dashboard
+                    <i class="fas fa-sync-alt"></i> Refresh Dashboard
                 </button>
-                <button class="btn btn-refresh" onclick="loadStats()">
-                    <i class="fas fa-sync-alt"></i> Refresh
+                <button class="btn btn-primary" onclick="openChangeKeyModal()">
+                    <i class="fas fa-key"></i> Change Admin Key
+                </button>
+                <button class="btn btn-secondary" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i> Logout
                 </button>
             </div>
         </div>
@@ -276,12 +434,24 @@
     <script>
         const API_BASE = '../api/';
 
+        // Check if user is authenticated on page load
+        window.addEventListener('load', function() {
+            const adminKey = sessionStorage.getItem('adminKey');
+            if (!adminKey) {
+                window.location.href = 'index.html';
+                return;
+            }
+            // Auto-load stats when page loads
+            loadStats();
+        });
+
         async function loadStats() {
-            const adminKey = document.getElementById('adminKey').value.trim();
+            const adminKey = sessionStorage.getItem('adminKey');
             const content = document.getElementById('content');
 
             if (!adminKey) {
-                content.innerHTML = '<div class="error"><i class="fas fa-exclamation-circle"></i> Please enter the admin key</div>';
+                content.innerHTML = '<div class="error"><i class="fas fa-lock"></i> Please log in first</div>';
+                window.location.href = 'index.html';
                 return;
             }
 
@@ -289,16 +459,126 @@
 
             try {
                 const response = await fetch(`${API_BASE}admin_stats.php?type=all&adminKey=${encodeURIComponent(adminKey)}`);
+                
+                if (!response.ok) {
+                    content.innerHTML = `<div class="error"><i class="fas fa-exclamation-circle"></i> API Error: ${response.status} ${response.statusText}</div>`;
+                    return;
+                }
+                
                 const result = await response.json();
+                
+                console.log('API Response:', result);
 
-                if (!result.success) {
-                    content.innerHTML = `<div class="error"><i class="fas fa-lock"></i> ${result.message}</div>`;
+                if (!result || !result.success) {
+                    content.innerHTML = `<div class="error"><i class="fas fa-lock"></i> ${result?.message || 'Unknown error'}</div>`;
                     return;
                 }
 
                 displayStats(result.data);
             } catch (error) {
+                console.error('Error:', error);
                 content.innerHTML = `<div class="error"><i class="fas fa-exclamation-circle"></i> Error: ${error.message}</div>`;
+            }
+        }
+
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                sessionStorage.removeItem('adminKey');
+                window.location.href = 'index.html';
+            }
+        }
+
+        function openChangeKeyModal() {
+            document.getElementById('changeKeyModal').classList.add('active');
+            document.getElementById('changeKeyForm').reset();
+            document.getElementById('changeKeyResult').innerHTML = '';
+        }
+
+        function closeChangeKeyModal() {
+            document.getElementById('changeKeyModal').classList.remove('active');
+            document.getElementById('changeKeyForm').reset();
+            document.getElementById('changeKeyResult').innerHTML = '';
+        }
+
+        async function submitKeyChange(event) {
+            event.preventDefault();
+            
+            const currentAdminKey = document.getElementById('currentAdminKey').value.trim();
+            const newAdminKey = document.getElementById('newAdminKey').value.trim();
+            const confirmAdminKey = document.getElementById('confirmAdminKey').value.trim();
+            const resultDiv = document.getElementById('changeKeyResult');
+            
+            // Validate current key
+            if (!currentAdminKey) {
+                resultDiv.innerHTML = '<div class="error"><i class="fas fa-exclamation-circle"></i> Please enter your current admin key</div>';
+                return;
+            }
+
+            // Validate new key length
+            if (newAdminKey.length < 6) {
+                resultDiv.innerHTML = '<div class="error"><i class="fas fa-exclamation-circle"></i> New admin key must be at least 6 characters</div>';
+                return;
+            }
+
+            // Verify new key matches confirmation
+            if (newAdminKey !== confirmAdminKey) {
+                resultDiv.innerHTML = '<div class="error"><i class="fas fa-exclamation-circle"></i> New keys do not match. Please try again.</div>';
+                return;
+            }
+
+            // Prevent using same key
+            if (currentAdminKey === newAdminKey) {
+                resultDiv.innerHTML = '<div class="error"><i class="fas fa-exclamation-circle"></i> New key must be different from the current key</div>';
+                return;
+            }
+
+            try {
+                resultDiv.innerHTML = '<div style="color: #666;"><i class="fas fa-spinner fa-spin"></i> Verifying current key and processing...</div>';
+                
+                const response = await fetch(`${API_BASE}admin_key.php`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        adminKey: currentAdminKey,
+                        newKey: newAdminKey
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <i class="fas fa-check-circle"></i> Key change instructions:
+                        </div>
+                        <div style="background: #f3f4f6; padding: 15px; border-radius: 5px; margin-top: 10px; font-size: 13px; line-height: 1.6;">
+                            <strong>Option 1 (Recommended - Environment Variable):</strong>
+                            <p style="margin: 8px 0;">Set the environment variable in your system:</p>
+                            <code style="background: white; padding: 8px; border-radius: 3px; display: block; word-break: break-all;">GEL_STOCK_ADMIN_KEY=${result.new_key}</code>
+                            
+                            <strong style="margin-top: 15px; display: block;">Option 2 (Direct Edit):</strong>
+                            <p style="margin: 8px 0;">Edit <code>api/config.php</code> and change:</p>
+                            <code style="background: white; padding: 8px; border-radius: 3px; display: block;">define('ADMIN_KEY', '${result.new_key}');</code>
+                            
+                            <strong style="margin-top: 15px; display: block;">⚠️ Next Steps:</strong>
+                            <p style="margin: 8px 0;">1. Implement the change using Option 1 or Option 2 above</p>
+                            <p style="margin: 8px 0;">2. Click "Logout" to exit the dashboard</p>
+                            <p style="margin: 8px 0;">3. Login again with your new admin key</p>
+                        </div>
+                    `;
+                    
+                    // Auto-logout after 5 seconds so user must use new key
+                    setTimeout(() => {
+                        alert('Key change registered! You will be logged out to ensure the new key is used.');
+                        logout();
+                    }, 5000);
+                } else {
+                    resultDiv.innerHTML = `<div class="error"><i class="fas fa-exclamation-circle"></i> ${result.message || 'Failed to process key change - current key may be incorrect'}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error"><i class="fas fa-exclamation-circle"></i> Error: ${error.message}</div>`;
             }
         }
 
@@ -352,6 +632,7 @@
                                     <th>Email</th>
                                     <th>Registered</th>
                                     <th>Last Login</th>
+                                    <th>Action</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -367,6 +648,7 @@
                             <td>${user.email}</td>
                             <td>${regDate}</td>
                             <td>${lastLogin}</td>
+                            <td><button class="btn-delete-user" onclick="deleteUser('${user.phone}', '${user.name}')" title="Delete user and all associated data"><i class="fas fa-trash-alt"></i> Delete</button></td>
                         </tr>
                     `;
                 });
@@ -514,6 +796,39 @@
             }
 
             document.getElementById('content').innerHTML = html;
+        }
+
+        // Delete user function
+        async function deleteUser(phone, name) {
+            if (!confirm(`Are you sure you want to delete ${name} (${phone}) and ALL their associated data?\n\nThis cannot be undone!`)) {
+                return;
+            }
+
+            try {
+                const adminKey = sessionStorage.getItem('adminKey');
+                const response = await fetch(`${API_BASE}admin_stats.php?phone=${encodeURIComponent(phone)}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        adminKey: adminKey,
+                        phone: phone
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    alert(`✓ User ${name} deleted successfully!`);
+                    loadStats(); // Reload dashboard
+                } else {
+                    alert(`✗ Error: ${result.message}`);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert(`✗ Error deleting user: ${error.message}`);
+            }
         }
 
         // Load stats on Enter key
