@@ -668,6 +668,8 @@ class NaturalHairBusinessManager {
         // Load recent sales for dashboard
         this.loadRecentSalesTable();
         
+        // Update payment methods breakdown
+        this.updatePaymentMethodsBreakdown();
         // Update sales targets with real data
         const allSales = JSON.parse(localStorage.getItem('gel_stock_sales') || '[]');
         this.updateSalesTargets(allSales);
@@ -5626,6 +5628,44 @@ ${credit.payments ? credit.payments.map(p => `
                 categoriesIndicator.className = 'stat-change positive';
             }
         }
+    }
+
+    // Update payment methods breakdown on dashboard
+    updatePaymentMethodsBreakdown() {
+        const breakdown = this.calculatePaymentMethodAmounts();
+        
+        // Update Cash
+        const cashTotal = document.getElementById('cashTotal');
+        const cashCount = document.getElementById('cashCount');
+        const cashPercentage = document.getElementById('cashPercentage');
+        const cashBar = document.getElementById('cashBar');
+        
+        if (cashTotal) cashTotal.textContent = `GHS ${breakdown.cash.total.toFixed(2)}`;
+        if (cashCount) cashCount.textContent = `${breakdown.cash.count} transaction${breakdown.cash.count !== 1 ? 's' : ''}`;
+        if (cashPercentage) cashPercentage.textContent = `${breakdown.cash.percentage.toFixed(1)}%`;
+        if (cashBar) cashBar.style.width = `${breakdown.cash.percentage}%`;
+        
+        // Update Mobile Money
+        const mobilemoneyTotal = document.getElementById('mobilemoneyTotal');
+        const mobilemoneyCount = document.getElementById('mobilemoneyCount');
+        const mobilemoneyPercentage = document.getElementById('mobilemoneyPercentage');
+        const mobilemoneyBar = document.getElementById('mobilemoneyBar');
+        
+        if (mobilemoneyTotal) mobilemoneyTotal.textContent = `GHS ${breakdown.mobile_money.total.toFixed(2)}`;
+        if (mobilemoneyCount) mobilemoneyCount.textContent = `${breakdown.mobile_money.count} transaction${breakdown.mobile_money.count !== 1 ? 's' : ''}`;
+        if (mobilemoneyPercentage) mobilemoneyPercentage.textContent = `${breakdown.mobile_money.percentage.toFixed(1)}%`;
+        if (mobilemoneyBar) mobilemoneyBar.style.width = `${breakdown.mobile_money.percentage}%`;
+        
+        // Update Bank Transfer
+        const transferTotal = document.getElementById('transferTotal');
+        const transferCount = document.getElementById('transferCount');
+        const transferPercentage = document.getElementById('transferPercentage');
+        const transferBar = document.getElementById('transferBar');
+        
+        if (transferTotal) transferTotal.textContent = `GHS ${breakdown.transfer.total.toFixed(2)}`;
+        if (transferCount) transferCount.textContent = `${breakdown.transfer.count} transaction${breakdown.transfer.count !== 1 ? 's' : ''}`;
+        if (transferPercentage) transferPercentage.textContent = `${breakdown.transfer.percentage.toFixed(1)}%`;
+        if (transferBar) transferBar.style.width = `${breakdown.transfer.percentage}%`;
     }
 
     // Clear all data function
