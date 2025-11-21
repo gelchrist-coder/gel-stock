@@ -864,7 +864,8 @@ class NaturalHairBusinessManager {
         // Load recent sales for dashboard
         this.loadRecentSalesTable();
         
-        // Update sales targets with real data
+        // Update payment methods breakdown
+        this.updatePaymentMethodsBreakdown();
         const allSales = JSON.parse(localStorage.getItem('gel_stock_sales') || '[]');
         this.updateSalesTargets(allSales);
         
@@ -880,6 +881,44 @@ class NaturalHairBusinessManager {
         
         // Update inventory reports and transaction log
         this.updateInventoryReports();
+    }
+
+    // Update payment methods breakdown on dashboard
+    updatePaymentMethodsBreakdown() {
+        const breakdown = this.calculatePaymentMethodAmounts();
+        
+        // Update Cash
+        const cashTotal = document.getElementById('cashTotal');
+        const cashCount = document.getElementById('cashCount');
+        const cashPercentage = document.getElementById('cashPercentage');
+        const cashBar = document.getElementById('cashBar');
+        
+        if (cashTotal) cashTotal.textContent = `GHS ${breakdown.cash.total.toFixed(2)}`;
+        if (cashCount) cashCount.textContent = `${breakdown.cash.count} transaction${breakdown.cash.count !== 1 ? 's' : ''}`;
+        if (cashPercentage) cashPercentage.textContent = `${breakdown.cash.percentage.toFixed(1)}%`;
+        if (cashBar) cashBar.style.width = `${breakdown.cash.percentage}%`;
+        
+        // Update Mobile Money
+        const mobilemoneyTotal = document.getElementById('mobilemoneyTotal');
+        const mobilemoneyCount = document.getElementById('mobilemoneyCount');
+        const mobilemoneyPercentage = document.getElementById('mobilemoneyPercentage');
+        const mobilemoneyBar = document.getElementById('mobilemoneyBar');
+        
+        if (mobilemoneyTotal) mobilemoneyTotal.textContent = `GHS ${breakdown.mobile_money.total.toFixed(2)}`;
+        if (mobilemoneyCount) mobilemoneyCount.textContent = `${breakdown.mobile_money.count} transaction${breakdown.mobile_money.count !== 1 ? 's' : ''}`;
+        if (mobilemoneyPercentage) mobilemoneyPercentage.textContent = `${breakdown.mobile_money.percentage.toFixed(1)}%`;
+        if (mobilemoneyBar) mobilemoneyBar.style.width = `${breakdown.mobile_money.percentage}%`;
+        
+        // Update Bank Transfer
+        const transferTotal = document.getElementById('transferTotal');
+        const transferCount = document.getElementById('transferCount');
+        const transferPercentage = document.getElementById('transferPercentage');
+        const transferBar = document.getElementById('transferBar');
+        
+        if (transferTotal) transferTotal.textContent = `GHS ${breakdown.transfer.total.toFixed(2)}`;
+        if (transferCount) transferCount.textContent = `${breakdown.transfer.count} transaction${breakdown.transfer.count !== 1 ? 's' : ''}`;
+        if (transferPercentage) transferPercentage.textContent = `${breakdown.transfer.percentage.toFixed(1)}%`;
+        if (transferBar) transferBar.style.width = `${breakdown.transfer.percentage}%`;
     }
     
     // Refresh low stock data across the dashboard
@@ -1628,6 +1667,138 @@ class NaturalHairBusinessManager {
         console.log('Product extraction complete. Final products array:', saleData.products);
         console.log('Final sale data:', JSON.stringify(saleData, null, 2));
         
+        // Show confirmation dialog before recording sale
+        this.showSaleConfirmation(saleData);
+    }
+
+    // Show confirmation dialog for sale
+    showSaleConfirmation(saleData) {
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.id = 'saleConfirmationModal';
+        modal.style.display = 'flex';
+
+        // Format payment method display
+        const paymentMethodDisplay = {
+            'cash': 'Cash',
+            'transfer': 'Bank Transfer',
+            'mobile_money': 'Mobile Money',
+            'credit': 'Credit'
+        };
+
+        const paymentLabel = paymentMethodDisplay[saleData.paymentMethod] || saleData.paymentMethod;
+        const customerName = saleData.customerName || 'Not specified';
+        const saleDate = new Date(saleData.date).toLocaleDateString();
+
+        let productsList = saleData.products.map((p, idx) => `
+            <tr style="border-bottom: 1px solid #e5e7eb;">
+                <td style="padding: 0.75rem; text-align: left;">${p.name}</td>
+                <td style="padding: 0.75rem; text-align: center;">${p.quantity}</td>
+                <td style="padding: 0.75rem; text-align: right;">GHS ${p.price.toFixed(2)}</td>
+                <td style="padding: 0.75rem; text-align: right; font-weight: 600;">GHS ${p.subtotal.toFixed(2)}</td>
+            </tr>
+        `).join('');
+
+        let creditInfo = '';
+        if (saleData.paymentMethod === 'credit') {
+            creditInfo = `
+                <div style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 1rem; border-radius: 6px; margin-top: 1rem;">
+                    <p style="margin: 0.5rem 0; font-size: 0.95rem; color: #92400e;">
+                        <strong>Credit Customer:</strong> ${saleData.creditCustomerName}
+                    </p>
+                    <p style="margin: 0.5rem 0; font-size: 0.95rem; color: #92400e;">
+                        <strong>Amount Paid:</strong> GHS ${saleData.creditAmountPaid.toFixed(2)}
+                    </p>
+                    <p style="margin: 0.5rem 0; font-size: 0.95rem; color: #92400e;">
+                        <strong>Outstanding:</strong> GHS ${saleData.creditAmountOutstanding.toFixed(2)}
+                    </p>
+                    <p style="margin: 0.5rem 0; font-size: 0.95rem; color: #92400e;">
+                        <strong>Due Date:</strong> ${saleData.creditDueDate || 'Not set'}
+                    </p>
+                </div>
+            `;
+        }
+
+        modal.innerHTML = `
+            <div class="modal-content" style="max-width: 600px;">
+                <div class="modal-header" style="border-bottom: 2px solid #e5e7eb;">
+                    <h2 style="margin: 0; color: #1f2937;">
+                        <i class="fas fa-clipboard-check"></i> Confirm Sale
+                    </h2>
+                    <button class="close-modal" onclick="document.getElementById('saleConfirmationModal').remove()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #666;">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+
+                <div style="padding: 1.5rem; color: #374151;">
+                    <!-- Sale Details -->
+                    <div style="margin-bottom: 1.5rem;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                            <div>
+                                <p style="margin: 0 0 0.25rem 0; font-size: 0.85rem; color: #6b7280; text-transform: uppercase; font-weight: 600;">Sale Date</p>
+                                <p style="margin: 0; font-size: 1rem; color: #1f2937;">${saleDate}</p>
+                            </div>
+                            <div>
+                                <p style="margin: 0 0 0.25rem 0; font-size: 0.85rem; color: #6b7280; text-transform: uppercase; font-weight: 600;">Payment Method</p>
+                                <p style="margin: 0; font-size: 1rem; color: #1f2937; font-weight: 500;">${paymentLabel}</p>
+                            </div>
+                            <div style="grid-column: 1 / -1;">
+                                <p style="margin: 0 0 0.25rem 0; font-size: 0.85rem; color: #6b7280; text-transform: uppercase; font-weight: 600;">Customer</p>
+                                <p style="margin: 0; font-size: 1rem; color: #1f2937;">${customerName}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Products Table -->
+                    <div style="margin-bottom: 1.5rem; border-radius: 8px; overflow: hidden; border: 1px solid #e5e7eb;">
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <thead style="background: #f9fafb; border-bottom: 2px solid #e5e7eb;">
+                                <tr>
+                                    <th style="padding: 0.75rem; text-align: left; font-weight: 600; color: #6b7280;">Product</th>
+                                    <th style="padding: 0.75rem; text-align: center; font-weight: 600; color: #6b7280;">Qty</th>
+                                    <th style="padding: 0.75rem; text-align: right; font-weight: 600; color: #6b7280;">Price</th>
+                                    <th style="padding: 0.75rem; text-align: right; font-weight: 600; color: #6b7280;">Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${productsList}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Total Amount -->
+                    <div style="background: #ecfdf5; border: 2px solid #10b981; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-weight: 600; color: #047857; font-size: 1.1rem;">Total Amount:</span>
+                            <span style="font-size: 1.5rem; font-weight: 700; color: #047857;">GHS ${saleData.totalAmount.toFixed(2)}</span>
+                        </div>
+                    </div>
+
+                    <!-- Credit Info if applicable -->
+                    ${creditInfo}
+
+                    <!-- Action Buttons -->
+                    <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                        <button class="btn-secondary" onclick="document.getElementById('saleConfirmationModal').remove()" style="flex: 1; padding: 0.75rem; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">
+                            <i class="fas fa-times"></i> Cancel Sale
+                        </button>
+                        <button class="btn-primary" onclick="businessManager.recordSaleConfirmed(${JSON.stringify(saleData).replace(/"/g, '&quot;')})" style="flex: 1; padding: 0.75rem; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; background: #10b981; color: white;">
+                            <i class="fas fa-check"></i> Confirm & Record Sale
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+    }
+
+    // Record the sale after confirmation
+    async recordSaleConfirmed(saleData) {
+        // Remove confirmation modal
+        const confirmModal = document.getElementById('saleConfirmationModal');
+        if (confirmModal) confirmModal.remove();
+
         try {
             const result = await this.apiCall('sales.php', 'POST', {
                 ...saleData,
@@ -1640,7 +1811,7 @@ class NaturalHairBusinessManager {
             if (result && result.success) {
                 console.log('Sale recorded successfully');
                 // Store credit data in localStorage if credit sale
-                if (paymentMethod === 'credit') {
+                if (saleData.paymentMethod === 'credit') {
                     this.saveCreditSale(saleData);
                 }
                 
@@ -1682,7 +1853,7 @@ class NaturalHairBusinessManager {
                 this.showNotification(`Failed to record sale: ${result?.message || 'Unknown error'}`, 'error');
             }
         } catch (error) {
-            console.error('Exception in submitSale:', error);
+            console.error('Exception in recordSaleConfirmed:', error);
             console.error('Error stack:', error.stack);
             this.showNotification(`Failed to record sale: ${error.message}`, 'error');
         }
