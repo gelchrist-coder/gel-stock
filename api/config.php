@@ -15,7 +15,7 @@ date_default_timezone_set('Africa/Accra');
 
 // Database Configuration
 define('DB_HOST', 'localhost');
-define('DB_NAME', 'gel_stock');
+define('DB_NAME', 'jmonic_enterprise');
 define('DB_USER', 'root');  // Change to your MySQL username
 define('DB_PASS', '');      // Change to your MySQL password
 define('DB_CHARSET', 'utf8mb4');
