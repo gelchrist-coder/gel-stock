@@ -7269,6 +7269,11 @@ function switchProductTab(tabName) {
         // Hide any suggestion panel
         const sugg = document.getElementById('searchSuggestions');
         if (sugg) { sugg.innerHTML = ''; sugg.style.display = 'none'; }
+    } else if (tabName === 'new') {
+        // Populate categories when switching to "Create New" tab
+        setTimeout(() => {
+            populateCategories();
+        }, 50);
     }
 }
 
@@ -7745,22 +7750,35 @@ function openAddProductModal() {
 // Populate product categories from user's registered categories
 function populateCategories() {
     const categorySelect = document.getElementById('productCategorySelect');
-    if (!categorySelect) return;
+    if (!categorySelect) {
+        console.log('Category select not found');
+        return;
+    }
     
     // Get user info from session
     const userJson = sessionStorage.getItem('gel_user');
     const user = userJson ? JSON.parse(userJson) : null;
     
+    console.log('User from session:', user);
+    
     // Get categories from localStorage
     let categories = [];
     if (user) {
         // Try to get categories associated with the user's business
-        const businessId = user.businessId || user.phone;
+        const businessId = user.businessId || user.userId || user.phone;
+        console.log('Looking for categories with key:', `gel_stock_categories_${businessId}`);
         const storedCategories = localStorage.getItem(`gel_stock_categories_${businessId}`);
+        console.log('Stored categories:', storedCategories);
         if (storedCategories) {
-            categories = JSON.parse(storedCategories);
+            try {
+                categories = JSON.parse(storedCategories);
+            } catch (e) {
+                console.error('Error parsing categories:', e);
+            }
         }
     }
+    
+    console.log('Categories to populate:', categories);
     
     // Clear existing options except the first one
     while (categorySelect.options.length > 1) {
@@ -7775,6 +7793,9 @@ function populateCategories() {
             option.textContent = category;
             categorySelect.appendChild(option);
         });
+        console.log('Added', categories.length, 'categories to dropdown');
+    } else {
+        console.log('No categories found to populate');
     }
 }
 
