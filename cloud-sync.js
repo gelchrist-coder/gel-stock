@@ -4,8 +4,10 @@
  */
 
 // Firebase Configuration
+// NOTE: These are placeholder values. For production, use environment variables.
+// DO NOT commit real API keys to public repositories!
 const firebaseConfig = {
-    apiKey: "***REMOVED***",
+    apiKey: "YOUR_FIREBASE_API_KEY_HERE",
     authDomain: "gel-stock-demo.firebaseapp.com",
     projectId: "gel-stock-demo",
     storageBucket: "gel-stock-demo.appspot.com",
