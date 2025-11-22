@@ -7495,6 +7495,10 @@ function switchProductTab(tabName) {
         // Hide any suggestion panel
         const sugg = document.getElementById('searchSuggestions');
         if (sugg) { sugg.innerHTML = ''; sugg.style.display = 'none'; }
+        // Populate category filter for search tab
+        setTimeout(() => {
+            populateSearchCategoryFilter();
+        }, 50);
     } else if (tabName === 'new') {
         // Populate categories when switching to "Create New" tab
         setTimeout(() => {
@@ -8060,6 +8064,90 @@ function autoPopulateSKU() {
     skuInput.focus();
     const prefixLength = firstLetter.length + 1; // Letter + hyphen
     skuInput.setSelectionRange(prefixLength, skuInput.value.length);
+}
+
+// Populate search category filter dropdown
+function populateSearchCategoryFilter() {
+    const filterSelect = document.getElementById('searchCategoryFilter');
+    if (!filterSelect) {
+        console.log('Search category filter not found');
+        return;
+    }
+    
+    // Get products from localStorage
+    const products = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
+    
+    // Extract unique categories from products
+    const categoriesSet = new Set();
+    products.forEach(product => {
+        if (product.category && product.category.trim()) {
+            categoriesSet.add(product.category.trim());
+        }
+    });
+    
+    const categories = Array.from(categoriesSet).sort();
+    console.log('Found categories in products:', categories);
+    
+    // Clear existing options except the first one
+    while (filterSelect.options.length > 1) {
+        filterSelect.remove(1);
+    }
+    
+    // Add categories as options
+    if (categories.length > 0) {
+        categories.forEach(category => {
+            const option = document.createElement('option');
+            option.value = category;
+            option.textContent = category;
+            filterSelect.appendChild(option);
+        });
+        console.log('Added', categories.length, 'categories to search filter');
+    }
+}
+
+// Filter products by selected category in search tab
+function filterProductsByCategory() {
+    const filterSelect = document.getElementById('searchCategoryFilter');
+    const selectedCategory = filterSelect ? filterSelect.value : '';
+    
+    console.log('Filtering by category:', selectedCategory);
+    
+    // Get all products
+    const products = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
+    
+    // Filter products by selected category
+    let filtered = products;
+    if (selectedCategory) {
+        filtered = products.filter(p => p.category && p.category.trim() === selectedCategory);
+    }
+    
+    // Display filtered products
+    const resultsDiv = document.getElementById('searchResults');
+    if (!resultsDiv) return;
+    
+    if (filtered.length === 0) {
+        resultsDiv.innerHTML = `<div class="search-no-results"><i class="fas fa-inbox"></i><p>No products found in category: ${selectedCategory || 'All'}</p></div>`;
+        return;
+    }
+    
+    // Build product list HTML
+    resultsDiv.innerHTML = filtered.map(p => {
+        return `
+            <div class="product-result-item" onclick="onSuggestionClick('${p.id}')" style="cursor: pointer; padding: 1rem; border: 1px solid #e5e7eb; border-radius: 6px; margin-bottom: 0.5rem; transition: all 0.2s;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <strong>${escapeHtml(p.sku || '')}</strong> — ${escapeHtml(p.name || '')}
+                        <br>
+                        <small style="color: #666;">${escapeHtml(p.category || 'Uncategorized')}</small>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="color: #10b981; font-weight: bold;">GHS ${parseFloat(p.selling_price || 0).toFixed(2)}</div>
+                        <small style="color: #666;">Stock: ${p.stock_quantity || 0}</small>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
 }
 
 function editProduct(productId) {

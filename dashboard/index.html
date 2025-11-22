@@ -2109,19 +2109,27 @@
             <!-- Search Existing Product Tab -->
             <div id="searchProductTab" class="product-tab active">
                 <div class="search-section">
-                    <!-- SKU Dropdown and Search Options -->
+                    <!-- Category Filter and Search Options -->
                     <div class="search-input-group">
-                        <div class="search-input-wrapper" style="width:100%;">
-                            <label class="search-label">Search by Name or SKU</label>
-                            <div class="search-controls">
-                                <input type="text" id="skuSearchInput" placeholder="Start typing a product name or SKU..." class="search-input" oninput="suggestProducts()" autocomplete="off">
-                                <button type="button" class="btn-search" onclick="searchProductBySKU()">
-                                    <i class="fas fa-search"></i>
-                                </button>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                            <div class="search-input-wrapper">
+                                <label class="search-label">Filter by Category</label>
+                                <select id="searchCategoryFilter" onchange="filterProductsByCategory()" style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 6px; font-size: 1rem;">
+                                    <option value="">All Categories</option>
+                                </select>
                             </div>
-                            <!-- Suggestion results will appear below the input -->
-                            <div id="searchSuggestions" class="search-suggestions" style="display:none;"></div>
+                            <div class="search-input-wrapper">
+                                <label class="search-label">Search by Name or SKU</label>
+                                <div class="search-controls">
+                                    <input type="text" id="skuSearchInput" placeholder="Start typing a product name or SKU..." class="search-input" oninput="suggestProducts()" autocomplete="off">
+                                    <button type="button" class="btn-search" onclick="searchProductBySKU()">
+                                        <i class="fas fa-search"></i>
+                                    </button>
+                                </div>
+                            </div>
                         </div>
+                        <!-- Suggestion results will appear below the input -->
+                        <div id="searchSuggestions" class="search-suggestions" style="display:none;"></div>
                     </div>
                     <div id="searchResults" class="search-results"></div>
                     
