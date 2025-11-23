@@ -9363,11 +9363,11 @@ body {
 }
 
 .sku-dropdown {
-    padding: 0.875rem 1.125rem;
-    border: 1.5px solid var(--border-color);
+    padding: 1rem 1.125rem;
+    border: 2px solid var(--border-color);
     border-radius: 10px;
     font-size: 0.9375rem;
-    font-weight: 600;
+    font-weight: 500;
     background: var(--card-background);
     color: var(--text-primary);
     cursor: pointer;
@@ -9421,8 +9421,8 @@ body {
 
 .search-input {
     flex: 1;
-    padding: 0.875rem 1.125rem;
-    border: 1.5px solid var(--border-color);
+    padding: 1rem 1.125rem;
+    border: 2px solid var(--border-color);
     border-radius: 10px;
     font-size: 0.9375rem;
     transition: all 0.2s ease;
@@ -9441,7 +9441,7 @@ body {
 }
 
 .btn-search {
-    padding: 0.875rem 1rem;
+    padding: 1rem 1.5rem;
     background: linear-gradient(135deg, var(--primary-color), #5555f0);
     color: white;
     border: none;
@@ -9451,10 +9451,13 @@ body {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 0.625rem;
     font-size: 0.875rem;
     box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
     white-space: nowrap;
+    min-width: 80px;
+    letter-spacing: 0.3px;
 }
 
 .btn-search:hover {
