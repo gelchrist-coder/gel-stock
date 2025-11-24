@@ -1,8 +1,31 @@
 // GEL-STOCK - Business Management System
 class NaturalHairBusinessManager {
     constructor() {
-        // Fix API path - should be relative to current location
-        this.apiBase = '../api/';
+        // API path - works for both local development and production
+        // Local: ../api/ (relative path)
+        // Production (gel-stock.me): /api/ (served from same domain)
+        // Cloud (Render.com): https://gel-stock.me/api/ (from GitHub Pages)
+        
+        // Detect environment
+        const isProduction = window.location.hostname === 'gel-stock.me' || 
+                           window.location.hostname === 'gelchrist-coder.github.io';
+        const isLocalhost = window.location.hostname === 'localhost' || 
+                           window.location.hostname === '127.0.0.1';
+        
+        if (isProduction) {
+            // Production: use same-origin API
+            this.apiBase = '/api/';
+            this.apiURL = 'https://gel-stock.me/api/';
+        } else if (isLocalhost) {
+            // Local development: use relative path
+            this.apiBase = '../api/';
+            this.apiURL = 'http://localhost:9000/api/';
+        } else {
+            // GitHub Pages or other: use full URL
+            this.apiBase = 'https://gel-stock.me/api/';
+            this.apiURL = 'https://gel-stock.me/api/';
+        }
+        
         this.products = [];
         this.sales = [];
         this.currentTransactionFilter = 'all'; // Initialize transaction filter
