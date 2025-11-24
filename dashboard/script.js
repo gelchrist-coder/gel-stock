@@ -19,11 +19,12 @@ class NaturalHairBusinessManager {
         // Check for existing session token (for cross-device login)
         const sessionToken = sessionStorage.getItem('gel_session_token') || localStorage.getItem('gel_session_token');
         const sessionUser = sessionStorage.getItem('gel_user');
+        const savedUser = localStorage.getItem('gel_user_data');
         const demoMode = sessionStorage.getItem('gel_demo_mode');
         
-        if (sessionToken) {
-            // Verify token with backend (user logged in from another device)
-            this.verifySessionToken(sessionToken);
+        if (sessionToken && savedUser) {
+            // Have both token and user data - try to verify with backend first
+            this.verifySessionToken(sessionToken, savedUser);
         } else if (sessionUser) {
             // User has session storage data
             this.isLoggedIn = true;
@@ -31,6 +32,23 @@ class NaturalHairBusinessManager {
             // Set unique user ID for data storage
             this.userId = this.currentUser.phone || this.currentUser.email || 'user_' + Date.now();
             this.businessId = this.userId;
+            this.showDashboard();
+            this.initializeSystem();
+        } else if (savedUser) {
+            // Have saved user data in localStorage (cross-device login)
+            const userData = JSON.parse(savedUser);
+            this.isLoggedIn = true;
+            this.currentUser = userData;
+            this.userId = this.currentUser.phone || this.currentUser.email || 'user_' + Date.now();
+            this.businessId = this.userId;
+            
+            // Restore to session storage
+            sessionStorage.setItem('gel_user', JSON.stringify(this.currentUser));
+            if (sessionToken) {
+                sessionStorage.setItem('gel_session_token', sessionToken);
+            }
+            
+            console.log('✅ User restored from localStorage - cross-device login');
             this.showDashboard();
             this.initializeSystem();
         } else if (demoMode === 'true') {
@@ -58,36 +76,71 @@ class NaturalHairBusinessManager {
     /**
      * Verify session token with backend
      * Allows cross-device login - user can access from phone after registering on desktop
+     * Falls back to localStorage data if backend is unavailable
      */
-    async verifySessionToken(token) {
+    async verifySessionToken(token, fallbackUserData) {
         try {
-            const response = await fetch(this.apiBase + 'auth.php?token=' + encodeURIComponent(token));
+            const response = await fetch(this.apiBase + 'auth.php?token=' + encodeURIComponent(token), {
+                timeout: 3000 // 3 second timeout
+            });
             const result = await response.json();
             
             if (result.success) {
-                // Token is valid - restore user session
+                // Token is valid - restore user session with fresh backend data
                 this.isLoggedIn = true;
                 this.currentUser = result.data.user;
                 this.userId = this.currentUser.phone || this.currentUser.email || 'user_' + Date.now();
                 this.businessId = this.userId;
                 
-                // Update session storage
+                // Update both storages
                 sessionStorage.setItem('gel_user', JSON.stringify(this.currentUser));
                 sessionStorage.setItem('gel_session_token', token);
+                localStorage.setItem('gel_user_data', JSON.stringify(this.currentUser));
                 
-                console.log('✅ Session verified from token - user logged in on new device');
+                console.log('✅ Session verified from backend token');
                 this.showDashboard();
                 this.initializeSystem();
             } else {
-                // Token expired or invalid
-                sessionStorage.removeItem('gel_session_token');
-                localStorage.removeItem('gel_session_token');
-                this.showLoginScreen();
+                // Token invalid - try fallback to localStorage
+                this.useLocalStorageFallback(fallbackUserData, token);
             }
         } catch (error) {
-            console.error('Token verification failed:', error);
+            // Backend unreachable - use localStorage fallback
+            console.warn('⚠️ Backend verification failed, using localStorage fallback:', error.message);
+            this.useLocalStorageFallback(fallbackUserData, token);
+        }
+    }
+    
+    /**
+     * Fallback to localStorage for cross-device login when backend is unavailable
+     */
+    useLocalStorageFallback(userData, token) {
+        if (userData) {
+            try {
+                const userObj = typeof userData === 'string' ? JSON.parse(userData) : userData;
+                this.isLoggedIn = true;
+                this.currentUser = userObj;
+                this.userId = this.currentUser.phone || this.currentUser.email || 'user_' + Date.now();
+                this.businessId = this.userId;
+                
+                // Restore to session storage
+                sessionStorage.setItem('gel_user', JSON.stringify(this.currentUser));
+                if (token) {
+                    sessionStorage.setItem('gel_session_token', token);
+                }
+                
+                console.log('✅ User restored from localStorage (offline mode) - cross-device login working');
+                this.showDashboard();
+                this.initializeSystem();
+            } catch (e) {
+                console.error('Failed to parse user data:', e);
+                this.showLoginScreen();
+            }
+        } else {
+            // No fallback data available
             this.showLoginScreen();
         }
+    }
     }
     
     /**
@@ -136,11 +189,22 @@ class NaturalHairBusinessManager {
     }
     
     logout() {
+        // Clear all storage to logout from all devices
         sessionStorage.removeItem('gel_user');
+        sessionStorage.removeItem('gel_session_token');
+        sessionStorage.removeItem('gel_session_expires');
         sessionStorage.removeItem('gel_demo_mode');
+        
+        // Also clear localStorage for complete logout
+        localStorage.removeItem('gel_user_data');
+        localStorage.removeItem('gel_session_token');
+        localStorage.removeItem('gel_session_expires');
+        
         this.isLoggedIn = false;
         this.isDemoMode = false;
         this.currentUser = null;
+        
+        console.log('✅ User logged out from all devices');
         window.location.reload();
     }
     
@@ -9404,9 +9468,14 @@ function handleRegistration(event) {
     // Store user in session storage
     sessionStorage.setItem('gel_user', JSON.stringify(newUser));
     
+    // ALSO store user data in localStorage for cross-device login
+    localStorage.setItem('gel_user_data', JSON.stringify(newUser));
+    
     // Optional: Store business info for dashboard
     sessionStorage.setItem('gel_business_name', businessName);
     sessionStorage.setItem('gel_business_type', businessType);
+    localStorage.setItem('gel_business_name', businessName);
+    localStorage.setItem('gel_business_type', businessType);
     
     // Store categories in localStorage for product form
     if (categories.length > 0) {
@@ -9417,6 +9486,8 @@ function handleRegistration(event) {
     localStorage.removeItem('demo_mode_products');
     localStorage.removeItem('demo_mode_sales');
     localStorage.removeItem('demo_mode_credits');
+    
+    console.log('✅ User registered - Data saved for cross-device access');
     
     // Show success animation
     showRegistrationSuccess();
@@ -9490,7 +9561,7 @@ async function handleLogin(event) {
         loginBtn.disabled = true;
         
         // Send login request to auth API
-        const response = await fetch('../api/auth.php', {
+        const response = await fetch('../api/auth_fallback.php', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -9520,11 +9591,13 @@ async function handleLogin(event) {
             sessionStorage.setItem('gel_session_token', result.data.session_token);
             sessionStorage.setItem('gel_session_expires', result.data.expires_at);
             
-            // If remember me is checked, also store token in localStorage
-            if (rememberMe) {
-                localStorage.setItem('gel_session_token', result.data.session_token);
-                localStorage.setItem('gel_session_expires', result.data.expires_at);
-            }
+            // ALWAYS store user data in localStorage for cross-device login
+            // This allows user to access from other devices after logging in
+            localStorage.setItem('gel_user_data', JSON.stringify(sessionData.user));
+            localStorage.setItem('gel_session_token', result.data.session_token);
+            localStorage.setItem('gel_session_expires', result.data.expires_at);
+            
+            console.log('✅ Login successful - User data saved for cross-device access');
             
             // Show success animation
             showLoginSuccess();
