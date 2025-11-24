@@ -1,9 +1,9 @@
 <?php
 /**
- * GEL-STOCK - Database Configuration
+ * GEL-STOCK - PostgreSQL Configuration (Render.com)
  * 
  * This file contains all database connection settings and constants
- * for the business management system.
+ * for the business management system using PostgreSQL on Render.com.
  */
 
 // Enable error reporting for development
@@ -13,12 +13,14 @@ ini_set('display_errors', 1);
 // Set the default timezone
 date_default_timezone_set('Africa/Accra');
 
-// Database Configuration
-define('DB_HOST', 'localhost');
-define('DB_NAME', 'jmonic_enterprise');
-define('DB_USER', 'root');  // Change to your MySQL username
-define('DB_PASS', '');      // Change to your MySQL password
-define('DB_CHARSET', 'utf8mb4');
+// Database Configuration for PostgreSQL (Render.com Hosted)
+define('DB_HOST', 'dpg-d4ictcjqkflc73b4e3b0-a.oregon-postgres.render.com');
+define('DB_PORT', 5432);                          // PostgreSQL default port
+define('DB_NAME', 'gelstockdb');
+define('DB_USER', 'gelstockdb_user');             // Render.com database user
+define('DB_PASS', '4y8yiyVYLXlWRtDHj107hE2xgRe0Qe3A');  // Render.com database password
+define('DB_CHARSET', 'UTF8');
+define('DB_SSL', true);                           // Render.com requires SSL
 
 // API Configuration
 define('API_VERSION', '1.0');
@@ -70,19 +72,24 @@ function getDbConnection() {
     
     if ($pdo === null) {
         try {
-            $dsn = "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=" . DB_CHARSET;
+            // PostgreSQL DSN format: pgsql:host=hostname;port=5432;dbname=database
+            $dsn = 'pgsql:host=' . DB_HOST . ';port=' . DB_PORT . ';dbname=' . DB_NAME;
+            
+            // Add SSL mode for remote connections (Render.com requires SSL)
+            if (defined('DB_SSL') && DB_SSL) {
+                $dsn .= ';sslmode=require';
+            }
+            
             $options = [
                 PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
                 PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
                 PDO::ATTR_EMULATE_PREPARES => false
             ];
             
-            // Only add MYSQL_ATTR_INIT_COMMAND if the constant exists (MySQL driver)
-            if (defined('PDO::MYSQL_ATTR_INIT_COMMAND')) {
-                $options[PDO::MYSQL_ATTR_INIT_COMMAND] = "SET NAMES " . DB_CHARSET;
-            }
-            
             $pdo = new PDO($dsn, DB_USER, DB_PASS, $options);
+            
+            // Set client encoding for PostgreSQL
+            $pdo->exec("SET client_encoding = 'UTF-8'");
             
         } catch (PDOException $e) {
             error_log("Database connection failed: " . $e->getMessage());
