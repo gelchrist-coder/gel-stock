@@ -16,11 +16,16 @@ class NaturalHairBusinessManager {
     
     // Authentication System
     initializeAuthSystem() {
-        // Check if user is already logged in or in demo mode
+        // Check for existing session token (for cross-device login)
+        const sessionToken = sessionStorage.getItem('gel_session_token') || localStorage.getItem('gel_session_token');
         const sessionUser = sessionStorage.getItem('gel_user');
         const demoMode = sessionStorage.getItem('gel_demo_mode');
         
-        if (sessionUser) {
+        if (sessionToken) {
+            // Verify token with backend (user logged in from another device)
+            this.verifySessionToken(sessionToken);
+        } else if (sessionUser) {
+            // User has session storage data
             this.isLoggedIn = true;
             this.currentUser = JSON.parse(sessionUser);
             // Set unique user ID for data storage
@@ -46,6 +51,41 @@ class NaturalHairBusinessManager {
             this.showDashboard();
             this.initializeSystem();
         } else {
+            this.showLoginScreen();
+        }
+    }
+    
+    /**
+     * Verify session token with backend
+     * Allows cross-device login - user can access from phone after registering on desktop
+     */
+    async verifySessionToken(token) {
+        try {
+            const response = await fetch(this.apiBase + 'auth.php?token=' + encodeURIComponent(token));
+            const result = await response.json();
+            
+            if (result.success) {
+                // Token is valid - restore user session
+                this.isLoggedIn = true;
+                this.currentUser = result.data.user;
+                this.userId = this.currentUser.phone || this.currentUser.email || 'user_' + Date.now();
+                this.businessId = this.userId;
+                
+                // Update session storage
+                sessionStorage.setItem('gel_user', JSON.stringify(this.currentUser));
+                sessionStorage.setItem('gel_session_token', token);
+                
+                console.log('✅ Session verified from token - user logged in on new device');
+                this.showDashboard();
+                this.initializeSystem();
+            } else {
+                // Token expired or invalid
+                sessionStorage.removeItem('gel_session_token');
+                localStorage.removeItem('gel_session_token');
+                this.showLoginScreen();
+            }
+        } catch (error) {
+            console.error('Token verification failed:', error);
             this.showLoginScreen();
         }
     }
@@ -9421,7 +9461,7 @@ function showRegistrationSuccess() {
  * Handle login form submission
  * @param {Event} event - Form submission event
  */
-function handleLogin(event) {
+async function handleLogin(event) {
     event.preventDefault();
     
     const phone = document.getElementById('loginPhone').value.trim();
@@ -9432,7 +9472,7 @@ function handleLogin(event) {
     // Clear previous errors
     errorDiv.style.display = 'none';
     
-    // Simple validation (in production, validate against backend)
+    // Simple validation
     if (!phone || !password) {
         showLoginError('Please enter both phone number and password');
         return;
@@ -9444,34 +9484,93 @@ function handleLogin(event) {
         return;
     }
     
-    // Format phone number to standard +233 format
-    const formattedPhone = formatGhanaPhone(phone);
-    
-    // For demo purposes, accept any valid phone and password
-    // In production, validate against your backend authentication API
-    // Create user session
-    const user = {
-        name: formattedPhone,
-        phone: formattedPhone,
-        role: 'owner',
-        loginTime: new Date().toISOString()
-    };
-    
-    // Store in session storage (cleared when browser closes)
-    sessionStorage.setItem('gel_user', JSON.stringify(user));
-    
-    // If remember me is checked, also store in localStorage for persistence
-    if (rememberMe) {
-        localStorage.setItem('gel_user_remember', JSON.stringify(user));
+    try {
+        // Disable login button during request
+        const loginBtn = document.querySelector('.login-btn');
+        loginBtn.disabled = true;
+        
+        // Send login request to auth API
+        const response = await fetch('../api/auth.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                action: 'login',
+                phone: phone,
+                password: password,
+                device_name: getDeviceName(),
+                device_type: getDeviceType()
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            // Store session token and user data
+            const sessionData = {
+                session_token: result.data.session_token,
+                user: result.data.user,
+                expires_at: result.data.expires_at,
+                loginTime: new Date().toISOString()
+            };
+            
+            // Store in session storage (cleared when browser closes)
+            sessionStorage.setItem('gel_user', JSON.stringify(sessionData.user));
+            sessionStorage.setItem('gel_session_token', result.data.session_token);
+            sessionStorage.setItem('gel_session_expires', result.data.expires_at);
+            
+            // If remember me is checked, also store token in localStorage
+            if (rememberMe) {
+                localStorage.setItem('gel_session_token', result.data.session_token);
+                localStorage.setItem('gel_session_expires', result.data.expires_at);
+            }
+            
+            // Show success animation
+            showLoginSuccess();
+            
+            // Reload page to reinitialize with user logged in
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        } else {
+            loginBtn.disabled = false;
+            showLoginError(result.message || 'Login failed');
+        }
+    } catch (error) {
+        const loginBtn = document.querySelector('.login-btn');
+        loginBtn.disabled = false;
+        showLoginError('Network error: ' + error.message);
     }
+}
+
+/**
+ * Get device name for session tracking
+ */
+function getDeviceName() {
+    const userAgent = navigator.userAgent;
+    let deviceName = 'Unknown';
     
-    // Show success animation
-    showLoginSuccess();
+    if (userAgent.match(/iPhone/i)) deviceName = 'iPhone';
+    else if (userAgent.match(/iPad/i)) deviceName = 'iPad';
+    else if (userAgent.match(/Android/i)) deviceName = 'Android Device';
+    else if (userAgent.match(/Chrome/i)) deviceName = 'Chrome Browser';
+    else if (userAgent.match(/Safari/i)) deviceName = 'Safari Browser';
+    else if (userAgent.match(/Firefox/i)) deviceName = 'Firefox Browser';
     
-    // Reload page to reinitialize with user logged in
-    setTimeout(() => {
-        window.location.reload();
-    }, 1000);
+    return deviceName;
+}
+
+/**
+ * Get device type for session tracking
+ */
+function getDeviceType() {
+    const userAgent = navigator.userAgent;
+    
+    if (userAgent.match(/mobile|android|iphone|ipod|windows phone/i)) return 'mobile';
+    if (userAgent.match(/tablet|ipad/i)) return 'tablet';
+    
+    return 'web';
 }
 
 /**
