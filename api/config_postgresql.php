@@ -13,13 +13,14 @@ ini_set('display_errors', 1);
 // Set the default timezone
 date_default_timezone_set('Africa/Accra');
 
-// Database Configuration for PostgreSQL
-define('DB_HOST', 'localhost');
+// Database Configuration for PostgreSQL (Render.com Hosted)
+define('DB_HOST', 'dpg-d4ictcjqkflc73b4e3b0-a.oregon-postgres.render.com');
 define('DB_PORT', 5432);                          // PostgreSQL default port
-define('DB_NAME', 'gel_stock');
-define('DB_USER', 'postgres');                    // Change to your PostgreSQL username
-define('DB_PASS', 'postgres');                    // Change to your PostgreSQL password
+define('DB_NAME', 'gelstockdb');
+define('DB_USER', 'gelstockdb_user');             // Render.com database user
+define('DB_PASS', '4y8yiyVYLXlWRtDHj107hE2xgRe0Qe3A');  // Render.com database password
 define('DB_CHARSET', 'UTF8');
+define('DB_SSL', true);                           // Render.com requires SSL
 
 // API Configuration
 define('API_VERSION', '1.0');
@@ -59,6 +60,11 @@ function getDbConnection() {
     try {
         // PostgreSQL DSN format: pgsql:host=hostname;port=5432;dbname=database
         $dsn = 'pgsql:host=' . DB_HOST . ';port=' . DB_PORT . ';dbname=' . DB_NAME;
+        
+        // Add SSL mode for remote connections (Render.com requires SSL)
+        if (defined('DB_SSL') && DB_SSL) {
+            $dsn .= ';sslmode=require';
+        }
         
         $pdo = new PDO(
             $dsn,
