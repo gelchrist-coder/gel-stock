@@ -3,7 +3,7 @@
  * GEL-STOCK - SQLite Database Configuration
  * 
  * This file contains all database connection settings and constants
- * for the natural hair business management system using SQLite.
+ * for the business management system using SQLite.
  */
 
 // Enable error reporting for development
@@ -23,7 +23,7 @@ define('API_BASE_URL', '/api/');
 
 // Application Settings
 define('BUSINESS_NAME', "GEL-STOCK");
-define('BUSINESS_TYPE', 'Natural Hair Products');
+define('BUSINESS_TYPE', 'Business Management System');
 define('DEFAULT_CURRENCY', 'GHS');
 define('LOW_STOCK_THRESHOLD', 20);
 

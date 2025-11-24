@@ -3,7 +3,7 @@
  * GEL-STOCK - Database Helper Class
  * 
  * This class provides common database operations and utilities
- * for the natural hair business management system.
+ * for the business management system.
  */
 
 require_once 'config.php';

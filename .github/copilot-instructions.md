@@ -2,7 +2,7 @@
 
 ## System Overview
 
-**GEL-STOCK** is a natural hair business management dashboard that operates in two modes:
+**GEL-STOCK** is a comprehensive business management dashboard that operates in two modes:
 - **Offline Mode**: Browser-based using `localStorage` for data persistence (development/standalone)
 - **Backend Mode**: PHP/MySQL API with persistent database (production deployment)
 
