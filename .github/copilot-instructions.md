@@ -4,7 +4,7 @@
 
 **GEL-STOCK** is a comprehensive business management dashboard that operates in two modes:
 - **Offline Mode**: Browser-based using `localStorage` for data persistence (development/standalone)
-- **Backend Mode**: PHP/MySQL API with persistent database (production deployment)
+- **Backend Mode**: PHP/PostgreSQL (or MySQL) API with persistent database (production deployment)
 
 ### Architecture
 
@@ -146,6 +146,7 @@ php -S localhost:9000
 
 ### Database Setup
 
+**MySQL Setup:**
 ```bash
 # Check database status
 php dashboard/check_database.php
@@ -153,6 +154,16 @@ php dashboard/check_database.php
 # Or use web interface
 http://localhost:9000/dashboard/web_installer.php
 ```
+
+**PostgreSQL Setup:**
+See `documentation/POSTGRESQL_MIGRATION_GUIDE.md` for detailed migration instructions.
+
+**Database Configuration Files:**
+- `api/config.php` - Current active config (MySQL or PostgreSQL)
+- `api/config_postgresql.php` - PostgreSQL configuration
+- `api/config_sqlite.php` - SQLite configuration (offline-only)
+
+To switch databases, update `api/config.php` or rename the appropriate config file.
 
 ### Testing API Endpoints
 
