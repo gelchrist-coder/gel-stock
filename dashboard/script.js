@@ -164,7 +164,6 @@ class NaturalHairBusinessManager {
             this.showLoginScreen();
         }
     }
-    }
     
     /**
      * Get localStorage key for user data
