@@ -10,15 +10,31 @@ require_once 'config.php';
 
 class Database {
     private $pdo;
+    private $isConnected = true;
     
     public function __construct() {
         $this->pdo = getDbConnection();
+        if ($this->pdo === false) {
+            $this->isConnected = false;
+            error_log("Database connection failed in Database class constructor");
+        }
+    }
+    
+    /**
+     * Check if database is connected
+     */
+    public function isConnected() {
+        return $this->isConnected && $this->pdo !== null && $this->pdo !== false;
     }
     
     /**
      * Execute a SELECT query
      */
     public function select($query, $params = []) {
+        if (!$this->isConnected()) {
+            error_log("Cannot execute query: Database not connected");
+            return false;
+        }
         try {
             $stmt = $this->pdo->prepare($query);
             $stmt->execute($params);
@@ -33,6 +49,10 @@ class Database {
      * Execute a SELECT query and return single row
      */
     public function selectOne($query, $params = []) {
+        if (!$this->isConnected()) {
+            error_log("Cannot execute query: Database not connected");
+            return false;
+        }
         try {
             $stmt = $this->pdo->prepare($query);
             $stmt->execute($params);
@@ -47,6 +67,10 @@ class Database {
      * Execute an INSERT query
      */
     public function insert($table, $data) {
+        if (!$this->isConnected()) {
+            error_log("Cannot execute query: Database not connected");
+            return false;
+        }
         try {
             $columns = array_keys($data);
             $placeholders = ':' . implode(', :', $columns);
@@ -72,6 +96,10 @@ class Database {
      * Execute an UPDATE query
      */
     public function update($table, $data, $where, $whereParams = []) {
+        if (!$this->isConnected()) {
+            error_log("Cannot execute query: Database not connected");
+            return false;
+        }
         try {
             $setClause = [];
             foreach (array_keys($data) as $column) {
@@ -96,6 +124,10 @@ class Database {
      * Execute a DELETE query
      */
     public function delete($table, $where, $params = []) {
+        if (!$this->isConnected()) {
+            error_log("Cannot execute query: Database not connected");
+            return false;
+        }
         try {
             $query = "DELETE FROM {$table} WHERE {$where}";
             $stmt = $this->pdo->prepare($query);
