@@ -1,10 +1,8 @@
 services:
   - type: web
     name: gel-stock-api
-    env: php
+    runtime: php
     plan: free
-    buildCommand: |
-      php -r "echo 'GEL-STOCK API Ready'; exit(0);"
     startCommand: php -S 0.0.0.0:$PORT
     healthCheckPath: /api/test.php
     envVars:
@@ -16,10 +14,6 @@ services:
         value: "true"
       - key: API_MODE
         value: production
-    disk:
-      name: gel-stock-storage
-      mountPath: /storage
-      sizeGB: 1
 
 databases:
   - name: gel-stock-db
@@ -27,4 +21,3 @@ databases:
     version: "15"
     plan: free
     databaseName: gel_stock
-    preDeployCommand: php /opt/render/project/api/setup.php
