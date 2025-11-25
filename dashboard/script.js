@@ -1,191 +1,189 @@
-// GEL-STOCK - Business Management System
+// J'MONIC ENTERPRISE - Business Management System
 class NaturalHairBusinessManager {
     constructor() {
-        // API path - works for both local development and production
-        // Local: ../api/ (relative path)
-        // Production (gel-stock.me): /api/ (served from same domain)
-        // Cloud (Render.com): https://gel-stock.me/api/ (from GitHub Pages)
-        
-        // Detect environment
-        const isProduction = window.location.hostname === 'gel-stock.me' || 
-                           window.location.hostname === 'gelchrist-coder.github.io';
-        const isLocalhost = window.location.hostname === 'localhost' || 
-                           window.location.hostname === '127.0.0.1';
-        
-        if (isProduction) {
-            // Production: use same-origin API
-            this.apiBase = '/api/';
-            this.apiURL = 'https://gel-stock.me/api/';
-        } else if (isLocalhost) {
-            // Local development: use relative path
-            this.apiBase = '../api/';
-            this.apiURL = 'http://localhost:9000/api/';
-        } else {
-            // GitHub Pages or other: use full URL
-            this.apiBase = 'https://gel-stock.me/api/';
-            this.apiURL = 'https://gel-stock.me/api/';
-        }
-        
+        // Fix API path - should be relative to current location
+        this.apiBase = '../api/';
         this.products = [];
         this.sales = [];
         this.currentTransactionFilter = 'all'; // Initialize transaction filter
         this.isLoggedIn = false;
         this.isDemoMode = false;
         this.currentUser = null;
-        this.userId = 'demo_mode'; // Initialize with default user ID
         
         this.initializeAuthSystem();
     }
     
     // Authentication System
     initializeAuthSystem() {
-        // Check for existing session token (for cross-device login)
-        const sessionToken = sessionStorage.getItem('gel_session_token') || localStorage.getItem('gel_session_token');
+        // Check if user is already logged in (session storage - current session)
         const sessionUser = sessionStorage.getItem('gel_user');
-        const savedUser = localStorage.getItem('gel_user_data');
+        const sessionToken = sessionStorage.getItem('gel_session_token');
+        
+        // Also check localStorage for "remember me" cross-device login
+        const rememberUser = localStorage.getItem('gel_user_remember');
+        const rememberToken = localStorage.getItem('gel_session_token');
+        
         const demoMode = sessionStorage.getItem('gel_demo_mode');
         
-        if (sessionToken && savedUser) {
-            // Have both token and user data - try to verify with backend first
-            this.verifySessionToken(sessionToken, savedUser);
-        } else if (sessionUser) {
-            // User has session storage data
+        // Priority: 1) Current session 2) Remembered session 3) Demo mode 4) Login screen
+        if (sessionUser && sessionToken) {
+            // Current session exists
             this.isLoggedIn = true;
             this.currentUser = JSON.parse(sessionUser);
-            // Set unique user ID for data storage
-            this.userId = this.currentUser.phone || this.currentUser.email || 'user_' + Date.now();
-            this.businessId = this.userId;
             this.showDashboard();
             this.initializeSystem();
-        } else if (savedUser) {
-            // Have saved user data in localStorage (cross-device login)
-            const userData = JSON.parse(savedUser);
+        } else if (rememberUser && rememberToken) {
+            // Cross-device login detected (remembered session)
             this.isLoggedIn = true;
-            this.currentUser = userData;
-            this.userId = this.currentUser.phone || this.currentUser.email || 'user_' + Date.now();
-            this.businessId = this.userId;
+            this.currentUser = JSON.parse(rememberUser);
             
-            // Restore to session storage
-            sessionStorage.setItem('gel_user', JSON.stringify(this.currentUser));
-            if (sessionToken) {
-                sessionStorage.setItem('gel_session_token', sessionToken);
-            }
+            // Restore session to sessionStorage for current session
+            sessionStorage.setItem('gel_user', rememberUser);
+            sessionStorage.setItem('gel_session_token', rememberToken);
             
-            console.log('✅ User restored from localStorage - cross-device login');
+            this.verifySessionToken(rememberToken);
             this.showDashboard();
             this.initializeSystem();
         } else if (demoMode === 'true') {
+            // Demo mode
             this.isDemoMode = true;
             this.currentUser = { name: 'demo', email: 'demo@gel-stock.com', role: 'demo', businessId: 'demo_mode' };
-            this.userId = 'demo_mode';
             this.businessId = 'demo_mode';
-            // Store demo user in sessionStorage for consistency with role-based navigation
             sessionStorage.setItem('gel_user', JSON.stringify(this.currentUser));
             sessionStorage.setItem('gel_demo_mode', 'true');
-            // Always clear old demo products and transactions
-            localStorage.removeItem('gel_stock_products');
-            localStorage.removeItem('jmonic_products');
-            localStorage.removeItem('inventoryTransactions');
-            console.log('Demo mode: cleared cached products and transactions');
-            // Load fresh demo products (currently empty)
-            this.loadDemoSampleProducts();
+            
+            // Auto-load sample products for demo mode
+            const existingProducts = JSON.parse(localStorage.getItem('jmonic_products') || '[]');
+            if (existingProducts.length === 0) {
+                this.loadDemoSampleProducts();
+            }
             this.showDashboard();
             this.initializeSystem();
         } else {
+            // No session - show login screen
             this.showLoginScreen();
         }
     }
     
     /**
      * Verify session token with backend
-     * Allows cross-device login - user can access from phone after registering on desktop
-     * Falls back to localStorage data if backend is unavailable
+     * Ensures cross-device sessions are still valid
      */
-    async verifySessionToken(token, fallbackUserData) {
+    async verifySessionToken(token) {
         try {
-            const response = await fetch(this.apiBase + 'auth.php?token=' + encodeURIComponent(token), {
-                timeout: 3000 // 3 second timeout
-            });
+            const response = await fetch('../api/auth.php?token=' + token);
             const result = await response.json();
             
-            if (result.success) {
-                // Token is valid - restore user session with fresh backend data
-                this.isLoggedIn = true;
-                this.currentUser = result.data.user;
-                this.userId = this.currentUser.phone || this.currentUser.email || 'user_' + Date.now();
-                this.businessId = this.userId;
-                
-                // Update both storages
-                sessionStorage.setItem('gel_user', JSON.stringify(this.currentUser));
-                sessionStorage.setItem('gel_session_token', token);
-                localStorage.setItem('gel_user_data', JSON.stringify(this.currentUser));
-                
-                console.log('✅ Session verified from backend token');
-                this.showDashboard();
-                this.initializeSystem();
-            } else {
-                // Token invalid - try fallback to localStorage
-                this.useLocalStorageFallback(fallbackUserData, token);
+            if (!result.success) {
+                // Token expired or invalid - clear session
+                this.logout();
+                return false;
             }
+            
+            return true;
         } catch (error) {
-            // Backend unreachable - use localStorage fallback
-            console.warn('⚠️ Backend verification failed, using localStorage fallback:', error.message);
-            this.useLocalStorageFallback(fallbackUserData, token);
+            console.error('Token verification failed:', error);
+            // Continue anyway - might be offline
+            return true;
         }
     }
     
     /**
-     * Fallback to localStorage for cross-device login when backend is unavailable
+     * Logout user and clear session
      */
-    useLocalStorageFallback(userData, token) {
-        if (userData) {
-            try {
-                const userObj = typeof userData === 'string' ? JSON.parse(userData) : userData;
-                this.isLoggedIn = true;
-                this.currentUser = userObj;
-                this.userId = this.currentUser.phone || this.currentUser.email || 'user_' + Date.now();
-                this.businessId = this.userId;
-                
-                // Restore to session storage
-                sessionStorage.setItem('gel_user', JSON.stringify(this.currentUser));
-                if (token) {
-                    sessionStorage.setItem('gel_session_token', token);
-                }
-                
-                console.log('✅ User restored from localStorage (offline mode) - cross-device login working');
-                this.showDashboard();
-                this.initializeSystem();
-            } catch (e) {
-                console.error('Failed to parse user data:', e);
-                this.showLoginScreen();
-            }
-        } else {
-            // No fallback data available
-            this.showLoginScreen();
-        }
-    }
-    
-    /**
-     * Get localStorage key for user data
-     * @param {string} dataType - Type of data (products, sales, etc.)
-     * @returns {string} - Unique key for user's data
-     */
-    getStorageKey(dataType) {
-        const userId = this.userId || 'demo_mode';
-        return `${userId}_${dataType}`;
+    logout() {
+        // Clear session storage
+        sessionStorage.removeItem('gel_user');
+        sessionStorage.removeItem('gel_session_token');
+        sessionStorage.removeItem('gel_demo_mode');
+        
+        // Clear localStorage (remember me)
+        localStorage.removeItem('gel_user_remember');
+        localStorage.removeItem('gel_session_token');
+        
+        // Reset state
+        this.isLoggedIn = false;
+        this.isDemoMode = false;
+        this.currentUser = null;
+        
+        // Redirect to login
+        window.location.reload();
     }
 
     /**
      * Load sample products for demo mode
      */
     loadDemoSampleProducts() {
-        const sampleProducts = [];
-        const storageKey = this.getStorageKey('products');
-        localStorage.setItem(storageKey, JSON.stringify(sampleProducts));
-        console.log('✅ Demo sample products loaded:', sampleProducts.length, sampleProducts);
-        // Verify they're saved
-        const savedProducts = JSON.parse(localStorage.getItem(storageKey) || '[]');
-        console.log('✅ Verified saved products:', savedProducts.length);
+        const sampleProducts = [
+            {
+                id: 'prod-oil-001',
+                sku: 'OIL-001',
+                name: 'Hair Oil Premium',
+                description: 'Premium hair oil treatment',
+                category: 'Feeds',
+                selling_price: 50,
+                price: 50,
+                cost_price: 30,
+                stock_quantity: 25,
+                reorder_level: 10,
+                created_at: new Date().toISOString()
+            },
+            {
+                id: 'prod-oil-002',
+                sku: 'OIL-002',
+                name: 'Hair Oil Regular',
+                description: 'Regular hair oil treatment',
+                category: 'Feeds',
+                selling_price: 35,
+                price: 35,
+                cost_price: 20,
+                stock_quantity: 15,
+                reorder_level: 8,
+                created_at: new Date().toISOString()
+            },
+            {
+                id: 'prod-shampoo-001',
+                sku: 'SHP-001',
+                name: 'Natural Hair Shampoo',
+                description: 'Gentle shampoo for natural hair',
+                category: 'Shampoos',
+                selling_price: 45,
+                price: 45,
+                cost_price: 25,
+                stock_quantity: 20,
+                reorder_level: 10,
+                created_at: new Date().toISOString()
+            },
+            {
+                id: 'prod-conditioner-001',
+                sku: 'COND-001',
+                name: 'Deep Conditioner',
+                description: 'Deep conditioning treatment',
+                category: 'Conditioners',
+                selling_price: 60,
+                price: 60,
+                cost_price: 35,
+                stock_quantity: 12,
+                reorder_level: 5,
+                created_at: new Date().toISOString()
+            },
+            {
+                id: 'prod-gel-001',
+                sku: 'GEL-001',
+                name: 'Hair Gel Strong Hold',
+                description: 'Strong hold hair gel',
+                category: 'Gels',
+                selling_price: 40,
+                price: 40,
+                cost_price: 22,
+                stock_quantity: 30,
+                reorder_level: 15,
+                created_at: new Date().toISOString()
+            }
+        ];
+        
+        localStorage.setItem('jmonic_products', JSON.stringify(sampleProducts));
+        console.log('✅ Demo sample products loaded:', sampleProducts.length);
     }
     
     showLoginScreen() {
@@ -211,22 +209,11 @@ class NaturalHairBusinessManager {
     }
     
     logout() {
-        // Clear all storage to logout from all devices
         sessionStorage.removeItem('gel_user');
-        sessionStorage.removeItem('gel_session_token');
-        sessionStorage.removeItem('gel_session_expires');
         sessionStorage.removeItem('gel_demo_mode');
-        
-        // Also clear localStorage for complete logout
-        localStorage.removeItem('gel_user_data');
-        localStorage.removeItem('gel_session_token');
-        localStorage.removeItem('gel_session_expires');
-        
         this.isLoggedIn = false;
         this.isDemoMode = false;
         this.currentUser = null;
-        
-        console.log('✅ User logged out from all devices');
         window.location.reload();
     }
     
@@ -253,13 +240,6 @@ class NaturalHairBusinessManager {
             const testResult = await this.apiCall('test.php');
             console.log('✅ API Connection successful:', testResult.data);
             
-            // If logged in (not demo), load data from backend
-            if (this.isLoggedIn && !this.isDemoMode) {
-                console.log('Loading user data from backend...');
-                await this.loadFromBackend();
-                this.initializePeriodicSync();
-            }
-            
             // If connection works, load dashboard data
             await this.loadDashboardData();
             console.log('System Ready - J\'MONIC ENTERPRISE Dashboard Loaded!');
@@ -272,7 +252,7 @@ class NaturalHairBusinessManager {
 
     migrateProductsWithoutCategory() {
         try {
-            const products = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
+            const products = JSON.parse(localStorage.getItem('jmonic_products') || '[]');
             let needsMigration = false;
 
             // Check if any products are missing the category field
@@ -285,113 +265,12 @@ class NaturalHairBusinessManager {
 
             // Save migrated products if needed
             if (needsMigration) {
-                localStorage.setItem('gel_stock_products', JSON.stringify(products));
+                localStorage.setItem('jmonic_products', JSON.stringify(products));
                 console.log('✅ Products migrated to include category field');
             }
         } catch (error) {
             console.error('Error migrating products:', error);
         }
-    }
-
-    /**
-     * Sync user data to backend database for cross-device access
-     * Called automatically when user adds/updates products or sales
-     */
-    async syncToBackend(dataType = 'all') {
-        if (this.isDemoMode || !this.isLoggedIn) {
-            return; // Don't sync demo mode or when not logged in
-        }
-        
-        try {
-            let dataToSync = {};
-            
-            if (dataType === 'all' || dataType === 'products') {
-                dataToSync.products = JSON.parse(localStorage.getItem(this.getStorageKey('products')) || '[]');
-            }
-            
-            if (dataType === 'all' || dataType === 'sales') {
-                dataToSync.sales = JSON.parse(localStorage.getItem(this.getStorageKey('sales')) || '[]');
-            }
-            
-            if (dataType === 'all' || dataType === 'settings') {
-                dataToSync.settings = JSON.parse(localStorage.getItem(this.getStorageKey('settings')) || '{}');
-            }
-            
-            const syncPayload = {
-                userId: this.userId,
-                dataType: dataType,
-                ...dataToSync
-            };
-            
-            const response = await this.apiCall('user_data.php', 'POST', syncPayload);
-            console.log(`✅ Data synced to backend (${dataType}):`, response);
-            
-        } catch (error) {
-            console.warn(`⚠️ Failed to sync data to backend (${dataType}):`, error.message);
-            // Continue working offline even if sync fails
-        }
-    }
-
-    /**
-     * Load user data from backend database
-     * Called when user logs in to restore their data on new device
-     */
-    async loadFromBackend() {
-        if (this.isDemoMode || !this.isLoggedIn) {
-            return; // Don't load for demo mode or when not logged in
-        }
-        
-        try {
-            const response = await this.apiCall('user_data.php', 'GET', { 
-                userId: this.userId,
-                dataType: 'all'
-            });
-            
-            if (response.success && response.data) {
-                // Load products from backend
-                if (response.data.products && response.data.products.length > 0) {
-                    localStorage.setItem(this.getStorageKey('products'), JSON.stringify(response.data.products));
-                    console.log('✅ Loaded', response.data.products.length, 'products from backend');
-                }
-                
-                // Load sales from backend
-                if (response.data.sales && response.data.sales.length > 0) {
-                    localStorage.setItem(this.getStorageKey('sales'), JSON.stringify(response.data.sales));
-                    console.log('✅ Loaded', response.data.sales.length, 'sales from backend');
-                }
-                
-                // Load settings from backend
-                if (response.data.settings) {
-                    localStorage.setItem(this.getStorageKey('settings'), JSON.stringify(response.data.settings));
-                    console.log('✅ Loaded settings from backend');
-                }
-                
-                return true;
-            }
-            
-            return false;
-            
-        } catch (error) {
-            console.warn('⚠️ Failed to load data from backend:', error.message);
-            // Continue with local data even if sync fails
-            return false;
-        }
-    }
-
-    /**
-     * Set up periodic sync - syncs data every 5 minutes
-     */
-    initializePeriodicSync() {
-        if (this.isDemoMode || !this.isLoggedIn) {
-            return; // Don't sync demo mode
-        }
-        
-        // Sync every 5 minutes
-        setInterval(() => {
-            this.syncToBackend('all');
-        }, 5 * 60 * 1000); // 5 minutes
-        
-        console.log('📡 Periodic sync initialized (every 5 minutes)');
     }
 
     
@@ -455,7 +334,7 @@ class NaturalHairBusinessManager {
     }
     
     handleProductsAPI(method, data) {
-        const products = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
+        const products = JSON.parse(localStorage.getItem('jmonic_products') || '[]');
         
         if (method === 'POST') {
             // Add new product or update existing if SKU exists
@@ -537,7 +416,7 @@ class NaturalHairBusinessManager {
                     'fa-plus-circle'
                 );
             }
-            localStorage.setItem('gel_stock_products', JSON.stringify(products));
+            localStorage.setItem('jmonic_products', JSON.stringify(products));
             
             // Log initial stock as inventory transaction for new products only
             if (existingProductIndex === -1) {
@@ -579,13 +458,13 @@ class NaturalHairBusinessManager {
     }
     
     handleSalesAPI(method, data) {
-        const sales = JSON.parse(localStorage.getItem('gel_stock_sales') || '[]');
+        const sales = JSON.parse(localStorage.getItem('jmonic_sales') || '[]');
         
         if (method === 'POST') {
             console.log('Processing sale data:', data);
             
             // Get current products for inventory management and cost calculation
-            const products = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
+            const products = JSON.parse(localStorage.getItem('jmonic_products') || '[]');
             
             // Validate data
             if (!data.products || !Array.isArray(data.products) || data.products.length === 0) {
@@ -654,7 +533,7 @@ class NaturalHairBusinessManager {
             });
             
             // Save updated products back to localStorage
-            localStorage.setItem('gel_stock_products', JSON.stringify(products));
+            localStorage.setItem('jmonic_products', JSON.stringify(products));
             
             // Update product stats if on products page
             setTimeout(() => {
@@ -682,7 +561,7 @@ class NaturalHairBusinessManager {
             };
             
             sales.push(newSale);
-            localStorage.setItem('gel_stock_sales', JSON.stringify(sales));
+            localStorage.setItem('jmonic_sales', JSON.stringify(sales));
             console.log('Sale saved with inventory update:', newSale);
             
             // Flag that charts need updating
@@ -695,7 +574,7 @@ class NaturalHairBusinessManager {
                 this.updateInventoryReports(); // Update inventory reports
                 
                 // Update sales targets with new data
-                const updatedSales = JSON.parse(localStorage.getItem('gel_stock_sales') || '[]');
+                const updatedSales = JSON.parse(localStorage.getItem('jmonic_sales') || '[]');
                 this.updateSalesTargets(updatedSales);
             }, 100);
             
@@ -707,8 +586,8 @@ class NaturalHairBusinessManager {
     }
     
     handleDashboardAPI() {
-        const products = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
-        const sales = JSON.parse(localStorage.getItem('gel_stock_sales') || '[]');
+        const products = JSON.parse(localStorage.getItem('jmonic_products') || '[]');
+        const sales = JSON.parse(localStorage.getItem('jmonic_sales') || '[]');
         
         const today = new Date().toDateString();
         const todaySales = sales.filter(sale => 
@@ -760,8 +639,8 @@ class NaturalHairBusinessManager {
             console.error('Failed to load dashboard data:', error);
             
             // Set default values if dashboard loading fails, but calculate from localStorage
-            const products = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
-            const sales = JSON.parse(localStorage.getItem('gel_stock_sales') || '[]');
+            const products = JSON.parse(localStorage.getItem('jmonic_products') || '[]');
+            const sales = JSON.parse(localStorage.getItem('jmonic_sales') || '[]');
             
             const lowStockCount = products.filter(p => {
                 const stock = p.stock_quantity || 0;
@@ -794,14 +673,12 @@ class NaturalHairBusinessManager {
         // Load recent sales for dashboard
         this.loadRecentSalesTable();
         
-        // Update payment methods breakdown
-        this.updatePaymentMethodsBreakdown();
         // Update sales targets with real data
-        const allSales = JSON.parse(localStorage.getItem('gel_stock_sales') || '[]');
+        const allSales = JSON.parse(localStorage.getItem('jmonic_sales') || '[]');
         this.updateSalesTargets(allSales);
         
         // Update product stats and refresh inventory data if products exist
-        const products = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
+        const products = JSON.parse(localStorage.getItem('jmonic_products') || '[]');
         if (products.length > 0) {
             this.updateProductStats(products);
             this.refreshLowStockData();
@@ -812,13 +689,11 @@ class NaturalHairBusinessManager {
         
         // Update inventory reports and transaction log
         this.updateInventoryReports();
-        
-        // Dashboard data loading complete
     }
     
     // Refresh low stock data across the dashboard
     refreshLowStockData() {
-        const products = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
+        const products = JSON.parse(localStorage.getItem('jmonic_products') || '[]');
         
         // Calculate low stock count
         const lowStockCount = products.filter(p => {
@@ -907,7 +782,7 @@ class NaturalHairBusinessManager {
     async updateProduct(productId, productData) {
         try {
             // Get existing products
-            const products = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
+            const products = JSON.parse(localStorage.getItem('jmonic_products') || '[]');
             
             // Find and update the product
             const productIndex = products.findIndex(p => p.id == productId);
@@ -949,7 +824,7 @@ class NaturalHairBusinessManager {
             }
             
             products[productIndex] = updatedProduct;
-            localStorage.setItem('gel_stock_products', JSON.stringify(products));
+            localStorage.setItem('jmonic_products', JSON.stringify(products));
             
             this.showNotification('Product updated successfully!', 'success');
             
@@ -1112,7 +987,7 @@ class NaturalHairBusinessManager {
             }
             
             // Get all products
-            const products = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
+            const products = JSON.parse(localStorage.getItem('jmonic_products') || '[]');
             
             // Filter products by selected categories
             const categoryProducts = products.filter(p => 
@@ -1569,138 +1444,6 @@ class NaturalHairBusinessManager {
         console.log('Product extraction complete. Final products array:', saleData.products);
         console.log('Final sale data:', JSON.stringify(saleData, null, 2));
         
-        // Show confirmation dialog before recording sale
-        this.showSaleConfirmation(saleData);
-    }
-
-    // Show confirmation dialog for sale
-    showSaleConfirmation(saleData) {
-        const modal = document.createElement('div');
-        modal.className = 'modal';
-        modal.id = 'saleConfirmationModal';
-        modal.style.display = 'flex';
-
-        // Format payment method display
-        const paymentMethodDisplay = {
-            'cash': 'Cash',
-            'transfer': 'Bank Transfer',
-            'mobile_money': 'Mobile Money',
-            'credit': 'Credit'
-        };
-
-        const paymentLabel = paymentMethodDisplay[saleData.paymentMethod] || saleData.paymentMethod;
-        const customerName = saleData.customerName || 'Not specified';
-        const saleDate = new Date(saleData.date).toLocaleDateString();
-
-        let productsList = saleData.products.map((p, idx) => `
-            <tr style="border-bottom: 1px solid #e5e7eb;">
-                <td style="padding: 0.75rem; text-align: left;">${p.name}</td>
-                <td style="padding: 0.75rem; text-align: center;">${p.quantity}</td>
-                <td style="padding: 0.75rem; text-align: right;">GHS ${p.price.toFixed(2)}</td>
-                <td style="padding: 0.75rem; text-align: right; font-weight: 600;">GHS ${p.subtotal.toFixed(2)}</td>
-            </tr>
-        `).join('');
-
-        let creditInfo = '';
-        if (saleData.paymentMethod === 'credit') {
-            creditInfo = `
-                <div style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 1rem; border-radius: 6px; margin-top: 1rem;">
-                    <p style="margin: 0.5rem 0; font-size: 0.95rem; color: #92400e;">
-                        <strong>Credit Customer:</strong> ${saleData.creditCustomerName}
-                    </p>
-                    <p style="margin: 0.5rem 0; font-size: 0.95rem; color: #92400e;">
-                        <strong>Amount Paid:</strong> GHS ${saleData.creditAmountPaid.toFixed(2)}
-                    </p>
-                    <p style="margin: 0.5rem 0; font-size: 0.95rem; color: #92400e;">
-                        <strong>Outstanding:</strong> GHS ${saleData.creditAmountOutstanding.toFixed(2)}
-                    </p>
-                    <p style="margin: 0.5rem 0; font-size: 0.95rem; color: #92400e;">
-                        <strong>Due Date:</strong> ${saleData.creditDueDate || 'Not set'}
-                    </p>
-                </div>
-            `;
-        }
-
-        modal.innerHTML = `
-            <div class="modal-content" style="max-width: 600px;">
-                <div class="modal-header" style="border-bottom: 2px solid #e5e7eb;">
-                    <h2 style="margin: 0; color: #1f2937;">
-                        <i class="fas fa-clipboard-check"></i> Confirm Sale
-                    </h2>
-                    <button class="close-modal" onclick="document.getElementById('saleConfirmationModal').remove()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #666;">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-
-                <div style="padding: 1.5rem; color: #374151;">
-                    <!-- Sale Details -->
-                    <div style="margin-bottom: 1.5rem;">
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
-                            <div>
-                                <p style="margin: 0 0 0.25rem 0; font-size: 0.85rem; color: #6b7280; text-transform: uppercase; font-weight: 600;">Sale Date</p>
-                                <p style="margin: 0; font-size: 1rem; color: #1f2937;">${saleDate}</p>
-                            </div>
-                            <div>
-                                <p style="margin: 0 0 0.25rem 0; font-size: 0.85rem; color: #6b7280; text-transform: uppercase; font-weight: 600;">Payment Method</p>
-                                <p style="margin: 0; font-size: 1rem; color: #1f2937; font-weight: 500;">${paymentLabel}</p>
-                            </div>
-                            <div style="grid-column: 1 / -1;">
-                                <p style="margin: 0 0 0.25rem 0; font-size: 0.85rem; color: #6b7280; text-transform: uppercase; font-weight: 600;">Customer</p>
-                                <p style="margin: 0; font-size: 1rem; color: #1f2937;">${customerName}</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Products Table -->
-                    <div style="margin-bottom: 1.5rem; border-radius: 8px; overflow: hidden; border: 1px solid #e5e7eb;">
-                        <table style="width: 100%; border-collapse: collapse;">
-                            <thead style="background: #f9fafb; border-bottom: 2px solid #e5e7eb;">
-                                <tr>
-                                    <th style="padding: 0.75rem; text-align: left; font-weight: 600; color: #6b7280;">Product</th>
-                                    <th style="padding: 0.75rem; text-align: center; font-weight: 600; color: #6b7280;">Qty</th>
-                                    <th style="padding: 0.75rem; text-align: right; font-weight: 600; color: #6b7280;">Price</th>
-                                    <th style="padding: 0.75rem; text-align: right; font-weight: 600; color: #6b7280;">Subtotal</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${productsList}
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <!-- Total Amount -->
-                    <div style="background: #ecfdf5; border: 2px solid #10b981; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <span style="font-weight: 600; color: #047857; font-size: 1.1rem;">Total Amount:</span>
-                            <span style="font-size: 1.5rem; font-weight: 700; color: #047857;">GHS ${saleData.totalAmount.toFixed(2)}</span>
-                        </div>
-                    </div>
-
-                    <!-- Credit Info if applicable -->
-                    ${creditInfo}
-
-                    <!-- Action Buttons -->
-                    <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
-                        <button class="btn-secondary" onclick="document.getElementById('saleConfirmationModal').remove()" style="flex: 1; padding: 0.75rem; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">
-                            <i class="fas fa-times"></i> Cancel Sale
-                        </button>
-                        <button class="btn-primary" onclick="businessManager.recordSaleConfirmed(${JSON.stringify(saleData).replace(/"/g, '&quot;')})" style="flex: 1; padding: 0.75rem; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; background: #10b981; color: white;">
-                            <i class="fas fa-check"></i> Confirm & Record Sale
-                        </button>
-                    </div>
-                </div>
-            </div>
-        `;
-
-        document.body.appendChild(modal);
-    }
-
-    // Record the sale after confirmation
-    async recordSaleConfirmed(saleData) {
-        // Remove confirmation modal
-        const confirmModal = document.getElementById('saleConfirmationModal');
-        if (confirmModal) confirmModal.remove();
-
         try {
             const result = await this.apiCall('sales.php', 'POST', {
                 ...saleData,
@@ -1713,7 +1456,7 @@ class NaturalHairBusinessManager {
             if (result && result.success) {
                 console.log('Sale recorded successfully');
                 // Store credit data in localStorage if credit sale
-                if (saleData.paymentMethod === 'credit') {
+                if (paymentMethod === 'credit') {
                     this.saveCreditSale(saleData);
                 }
                 
@@ -1737,46 +1480,33 @@ class NaturalHairBusinessManager {
                 // Reset credit section
                 this.handlePaymentMethodChange();
                 
+                // Refresh dashboard data to show updated inventory and revenue
                 await this.loadDashboardData();
+                
+                // Refresh products inventory if on products page
+                const currentSection = document.querySelector('.content-section.active');
+                if (currentSection && currentSection.id === 'products') {
+                    await this.loadProductsInventory();
+                }
+                
+                // Update notification badge for low stock alerts
+                if (typeof updateNotificationBadge === 'function') {
+                    updateNotificationBadge();
+                }
             } else {
-                this.showNotification('Failed to record sale. Please try again.', 'error');
+                console.error('API returned success=false or invalid response:', result);
+                this.showNotification(`Failed to record sale: ${result?.message || 'Unknown error'}`, 'error');
             }
         } catch (error) {
-            console.error('Failed to record sale:', error);
-            this.showNotification('Error recording sale: ' + error.message, 'error');
-        }
-    }
-
-    async recordSale(saleData) {
-        try {
-            // Add user information to the sale
-            saleData.recorded_by = this.currentUser?.name || 'System User';
-            saleData.recorded_by_email = this.currentUser?.email || 'N/A';
-            saleData.recorded_at = new Date().toLocaleString();
-            
-            const result = await this.apiCall('sales.php', 'POST', saleData);
-            this.showNotification('Sale recorded successfully!', 'success');
-            
-            // Show live notification for sale with user info
-            const totalAmount = parseFloat(saleData.total_amount || 0);
-            this.showLiveNotification(
-                'Sale Recorded!', 
-                `Sale completed for GHS ${totalAmount.toFixed(2)} by ${saleData.recorded_by}`, 
-                'success', 
-                'fa-shopping-cart'
-            );
-            
-            await this.loadDashboardData(); // Refresh dashboard
-            return result.data;
-        } catch (error) {
-            console.error('Failed to record sale:', error);
-            return null;
+            console.error('Exception in submitSale:', error);
+            console.error('Error stack:', error.stack);
+            this.showNotification(`Failed to record sale: ${error.message}`, 'error');
         }
     }
 
     saveCreditSale(saleData) {
         try {
-            let credits = JSON.parse(localStorage.getItem('gel_stock_credits') || '[]');
+            let credits = JSON.parse(localStorage.getItem('jmonic_credits') || '[]');
             
             const creditRecord = {
                 id: `CREDIT-${Date.now()}`,
@@ -1807,7 +1537,7 @@ class NaturalHairBusinessManager {
             }
             
             credits.push(creditRecord);
-            localStorage.setItem('gel_stock_credits', JSON.stringify(credits));
+            localStorage.setItem('jmonic_credits', JSON.stringify(credits));
             
             // Update the credit sales display
             this.updateCreditSalesDisplay();
@@ -1821,7 +1551,7 @@ class NaturalHairBusinessManager {
     // Load and display creditors
     loadCreditors() {
         try {
-            const credits = JSON.parse(localStorage.getItem('gel_stock_credits') || '[]');
+            const credits = JSON.parse(localStorage.getItem('jmonic_credits') || '[]');
             this.displayCreditors(credits);
             this.updateCreditorStats(credits);
         } catch (error) {
@@ -1941,7 +1671,7 @@ class NaturalHairBusinessManager {
     }
 
     filterCreditorsByStatus(status) {
-        const credits = JSON.parse(localStorage.getItem('gel_stock_credits') || '[]');
+        const credits = JSON.parse(localStorage.getItem('jmonic_credits') || '[]');
         this.displayCreditors(credits, status);
 
         // Update filter buttons
@@ -1952,7 +1682,7 @@ class NaturalHairBusinessManager {
     }
 
     recordCreditPayment(creditId) {
-        const credits = JSON.parse(localStorage.getItem('gel_stock_credits') || '[]');
+        const credits = JSON.parse(localStorage.getItem('jmonic_credits') || '[]');
         const credit = credits.find(c => c.id === creditId);
 
         if (!credit) {
@@ -1991,7 +1721,7 @@ class NaturalHairBusinessManager {
         });
 
         // Save updated credits
-        localStorage.setItem('gel_stock_credits', JSON.stringify(credits));
+        localStorage.setItem('jmonic_credits', JSON.stringify(credits));
 
         this.showNotification(`Payment of GHS ${amount.toFixed(2)} recorded successfully!`, 'success');
         
@@ -2002,7 +1732,7 @@ class NaturalHairBusinessManager {
     }
 
     viewCreditDetails(creditId) {
-        const credits = JSON.parse(localStorage.getItem('gel_stock_credits') || '[]');
+        const credits = JSON.parse(localStorage.getItem('jmonic_credits') || '[]');
         const credit = credits.find(c => c.id === creditId);
 
         if (!credit) {
@@ -2036,7 +1766,7 @@ ${credit.payments ? credit.payments.map(p => `
     }
 
     exportCreditors() {
-        const credits = JSON.parse(localStorage.getItem('gel_stock_credits') || '[]');
+        const credits = JSON.parse(localStorage.getItem('jmonic_credits') || '[]');
 
         if (credits.length === 0) {
             this.showNotification('No creditors to export', 'warning');
@@ -2064,7 +1794,7 @@ ${credit.payments ? credit.payments.map(p => `
 
     // Credit Sales Analytics - Calculate metrics for revenue dashboard
     calculateCreditSalesMetrics() {
-        const credits = JSON.parse(localStorage.getItem('gel_stock_credits') || '[]');
+        const credits = JSON.parse(localStorage.getItem('jmonic_credits') || '[]');
         
         let totalCreditRevenue = 0;
         let totalCreditPaid = 0;
@@ -2183,7 +1913,7 @@ ${credit.payments ? credit.payments.map(p => `
     
     // Inventory integration methods
     getProductInventoryStatus(productId) {
-        const products = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
+        const products = JSON.parse(localStorage.getItem('jmonic_products') || '[]');
         const product = products.find(p => p.id == productId);
         
         if (!product) return { status: 'not-found', message: 'Product not found' };
@@ -2198,14 +1928,14 @@ ${credit.payments ? credit.payments.map(p => `
     }
     
     getInventoryValue() {
-        const products = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
+        const products = JSON.parse(localStorage.getItem('jmonic_products') || '[]');
         return products.reduce((total, product) => {
             return total + (product.stock_quantity * (product.cost_price || 0));
         }, 0);
     }
     
     getInventoryRevenuePotential() {
-        const products = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
+        const products = JSON.parse(localStorage.getItem('jmonic_products') || '[]');
         return products.reduce((total, product) => {
             return total + (product.stock_quantity * (product.selling_price || 0));
         }, 0);
@@ -2213,7 +1943,7 @@ ${credit.payments ? credit.payments.map(p => `
 
     // Calculate payment method breakdown for all sales or filtered sales
     calculatePaymentMethodAmounts(filterDate = null) {
-        const sales = JSON.parse(localStorage.getItem('gel_stock_sales') || '[]');
+        const sales = JSON.parse(localStorage.getItem('jmonic_sales') || '[]');
         
         const paymentBreakdown = {
             cash: { total: 0, count: 0, percentage: 0 },
@@ -2275,7 +2005,7 @@ ${credit.payments ? credit.payments.map(p => `
 
     // Get payment method amounts for a date range
     getPaymentMethodsByDateRange(startDate, endDate) {
-        const sales = JSON.parse(localStorage.getItem('gel_stock_sales') || '[]');
+        const sales = JSON.parse(localStorage.getItem('jmonic_sales') || '[]');
         const start = new Date(startDate).toDateString();
         const end = new Date(endDate).toDateString();
         
@@ -2339,8 +2069,8 @@ ${credit.payments ? credit.payments.map(p => `
         // Stock cards now on dashboard - will be calculated below
         
         // Calculate additional metrics
-        const sales = JSON.parse(localStorage.getItem('gel_stock_sales') || '[]');
-        const products = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
+        const sales = JSON.parse(localStorage.getItem('jmonic_sales') || '[]');
+        const products = JSON.parse(localStorage.getItem('jmonic_products') || '[]');
         
         const today = new Date().toDateString();
         const todaySales = sales.filter(sale => 
@@ -2417,8 +2147,8 @@ ${credit.payments ? credit.payments.map(p => `
     // Sales Dashboard Methods
     async loadSalesDashboard() {
         try {
-            const sales = JSON.parse(localStorage.getItem('gel_stock_sales') || '[]');
-            const products = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
+            const sales = JSON.parse(localStorage.getItem('jmonic_sales') || '[]');
+            const products = JSON.parse(localStorage.getItem('jmonic_products') || '[]');
             
             // Calculate today's metrics
             const today = new Date().toDateString();
@@ -2578,12 +2308,12 @@ ${credit.payments ? credit.payments.map(p => `
             quarterly: 1500000,
             annual: 6000000
         };
-        const saved = localStorage.getItem('gel_stock_sales_targets');
+        const saved = localStorage.getItem('jmonic_sales_targets');
         return saved ? JSON.parse(saved) : defaultTargets;
     }
 
     setSalesTargets(targets) {
-        localStorage.setItem('gel_stock_sales_targets', JSON.stringify(targets));
+        localStorage.setItem('jmonic_sales_targets', JSON.stringify(targets));
     }
 
     updateSalesTargets(sales) {
@@ -2734,7 +2464,7 @@ ${credit.payments ? credit.payments.map(p => `
             actionsDiv.style.display = 'none';
             
             // Update targets display
-            const sales = JSON.parse(localStorage.getItem('gel_stock_sales') || '[]');
+            const sales = JSON.parse(localStorage.getItem('jmonic_sales') || '[]');
             this.updateSalesTargets(sales);
             
             // Show success message
@@ -2759,7 +2489,7 @@ ${credit.payments ? credit.payments.map(p => `
     }
 
     populateWeeklySalesTable() {
-        const sales = JSON.parse(localStorage.getItem('gel_stock_sales') || '[]');
+        const sales = JSON.parse(localStorage.getItem('jmonic_sales') || '[]');
         const tbody = document.querySelector('#weeklySalesTable tbody');
         
         if (!tbody) return;
@@ -2813,8 +2543,8 @@ ${credit.payments ? credit.payments.map(p => `
     }
 
     populateRevenueTargetTable() {
-        const sales = JSON.parse(localStorage.getItem('gel_stock_sales') || '[]');
-        const settings = JSON.parse(localStorage.getItem('gel_stock_business_settings') || '{}');
+        const sales = JSON.parse(localStorage.getItem('jmonic_sales') || '[]');
+        const settings = JSON.parse(localStorage.getItem('jmonic_business_settings') || '{}');
         
         // Calculate this week's revenue
         const today = new Date();
@@ -2901,7 +2631,7 @@ ${credit.payments ? credit.payments.map(p => `
             this.salesTrendChart.destroy();
         }
         
-        const sales = JSON.parse(localStorage.getItem('gel_stock_sales') || '[]');
+        const sales = JSON.parse(localStorage.getItem('jmonic_sales') || '[]');
         const last7Days = this.getLast7DaysData(sales);
         
         // Simple overview - just show total sales for the week
@@ -2981,7 +2711,7 @@ ${credit.payments ? credit.payments.map(p => `
             this.revenueBreakdownChart.destroy();
         }
         
-        const sales = JSON.parse(localStorage.getItem('gel_stock_sales') || '[]');
+        const sales = JSON.parse(localStorage.getItem('jmonic_sales') || '[]');
         
         // Simple revenue calculation - just show total vs target
         const totalRevenue = sales.reduce((sum, sale) => sum + parseFloat(sale.total_amount || 0), 0);
@@ -3050,7 +2780,7 @@ ${credit.payments ? credit.payments.map(p => `
     
     // Sale action methods
     viewSaleDetails(saleId) {
-        const sales = JSON.parse(localStorage.getItem('gel_stock_sales') || '[]');
+        const sales = JSON.parse(localStorage.getItem('jmonic_sales') || '[]');
         const sale = sales.find(s => s.id == saleId || `S-${Date.now().toString().slice(-5)}-${sales.indexOf(s)}` === saleId);
         
         if (!sale) {
@@ -3090,7 +2820,7 @@ ${credit.payments ? credit.payments.map(p => `
     }
     
     printReceipt(saleId) {
-        const sales = JSON.parse(localStorage.getItem('gel_stock_sales') || '[]');
+        const sales = JSON.parse(localStorage.getItem('jmonic_sales') || '[]');
         const sale = sales.find(s => s.id == saleId || `S-${Date.now().toString().slice(-5)}-${sales.indexOf(s)}` === saleId);
         
         if (!sale) {
@@ -3102,7 +2832,7 @@ ${credit.payments ? credit.payments.map(p => `
         let receipt = `
             <div style="max-width: 300px; margin: 20px auto; font-family: monospace; font-size: 12px;">
                 <div style="text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 10px;">
-                    <h2>GEL-STOCK</h2>
+                    <h2>J'MONIC ENTERPRISE</h2>
                     <p>Products</p>
                     <p>Receipt #${saleId}</p>
                 </div>
@@ -3209,7 +2939,7 @@ ${credit.payments ? credit.payments.map(p => `
         if (!tbody) return;
         
         // Get sales from localStorage
-        const sales = JSON.parse(localStorage.getItem('gel_stock_sales') || '[]');
+        const sales = JSON.parse(localStorage.getItem('jmonic_sales') || '[]');
         
         if (sales.length === 0) {
             tbody.innerHTML = '<tr><td colspan="9" class="no-data">No recent sales</td></tr>';
@@ -3290,7 +3020,7 @@ ${credit.payments ? credit.payments.map(p => `
     
     viewSaleDetails(saleId) {
         // Find the sale by ID
-        const sales = JSON.parse(localStorage.getItem('gel_stock_sales') || '[]');
+        const sales = JSON.parse(localStorage.getItem('jmonic_sales') || '[]');
         const sale = sales.find(s => (s.sale_id || s.id || `#S-${Date.now().toString().slice(-5)}`) === saleId);
         
         if (sale) {
@@ -3318,7 +3048,7 @@ ${credit.payments ? credit.payments.map(p => `
     
     exportRecentSales() {
         try {
-            const sales = JSON.parse(localStorage.getItem('gel_stock_sales') || '[]');
+            const sales = JSON.parse(localStorage.getItem('jmonic_sales') || '[]');
             console.log('Export: Found', sales.length, 'sales records');
             
             if (sales.length === 0) {
@@ -3422,7 +3152,7 @@ ${credit.payments ? credit.payments.map(p => `
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `gel-stock-recent-sales-${new Date().toISOString().split('T')[0]}.csv`;
+            a.download = `jmonic-recent-sales-${new Date().toISOString().split('T')[0]}.csv`;
             a.style.display = 'none';
             document.body.appendChild(a);
             a.click();
@@ -3721,7 +3451,7 @@ ${credit.payments ? credit.payments.map(p => `
         }
         
         // Get low stock products
-        const products = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
+        const products = JSON.parse(localStorage.getItem('jmonic_products') || '[]');
         console.log('📦 Products found:', products.length);
         
         const lowStockProducts = products.filter(p => {
@@ -3772,7 +3502,7 @@ ${credit.payments ? credit.payments.map(p => `
         });
         
         // Add recent sales notifications (last 24 hours)
-        const sales = JSON.parse(localStorage.getItem('gel_stock_sales') || '[]');
+        const sales = JSON.parse(localStorage.getItem('jmonic_sales') || '[]');
         const recentSales = sales.filter(sale => {
             const saleDate = new Date(sale.date || sale.created_at);
             const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
@@ -3975,7 +3705,7 @@ ${credit.payments ? credit.payments.map(p => `
     }
     
     updateHeaderNotificationBadge() {
-        const products = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
+        const products = JSON.parse(localStorage.getItem('jmonic_products') || '[]');
         const lowStockCount = products.filter(p => {
             const stock = p.stock_quantity || 0;
             const reorderLevel = p.reorderLevel || p.min_stock_level || 5;
@@ -4245,7 +3975,7 @@ ${credit.payments ? credit.payments.map(p => `
     }
     
     loadSettings() {
-        const settings = JSON.parse(localStorage.getItem('gel_stock_settings') || '{}');
+        const settings = JSON.parse(localStorage.getItem('jmonic_settings') || '{}');
         
         // Load theme settings for both selectors
         const themeRadios = document.querySelectorAll('input[name="theme"], input[name="theme-dash"]');
@@ -4322,7 +4052,7 @@ ${credit.payments ? credit.payments.map(p => `
             autoBackup: (document.getElementById('autoBackup')?.checked || document.getElementById('autoBackup-dash')?.checked) !== false
         };
         
-        localStorage.setItem('gel_stock_settings', JSON.stringify(settings));
+        localStorage.setItem('jmonic_settings', JSON.stringify(settings));
         this.applySettings(settings);
         this.showNotification('Settings saved successfully!', 'success');
         
@@ -4671,7 +4401,7 @@ ${credit.payments ? credit.payments.map(p => `
         }
         
         // Save settings and apply
-        localStorage.setItem('gel_stock_settings', JSON.stringify(defaultSettings));
+        localStorage.setItem('jmonic_settings', JSON.stringify(defaultSettings));
         this.applySettings(defaultSettings);
         
         this.showNotification('Settings reset to default successfully!', 'success');
@@ -4740,7 +4470,7 @@ ${credit.payments ? credit.payments.map(p => `
         }, 500);
         
         // Store theme preference
-        localStorage.setItem('gel_stock_theme', theme);
+        localStorage.setItem('jmonic_theme', theme);
         
         // Update theme preview in theme cards
         this.updateThemePreview(theme);
@@ -4786,7 +4516,7 @@ ${credit.payments ? credit.payments.map(p => `
         
         // Listen for system theme changes when in auto mode
         window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-            const currentTheme = localStorage.getItem('gel_stock_theme') || 'light';
+            const currentTheme = localStorage.getItem('jmonic_theme') || 'light';
             if (currentTheme === 'auto') {
                 this.applyTheme('auto');
             }
@@ -4849,7 +4579,7 @@ ${credit.payments ? credit.payments.map(p => `
 
     showPrintReceipt(saleData, products) {
         // Get business name from settings or user profile
-        const settings = JSON.parse(localStorage.getItem('gel_stock_business_settings') || '{}');
+        const settings = JSON.parse(localStorage.getItem('jmonic_business_settings') || '{}');
         const businessName = settings.businessName || this.currentUser?.businessName || 'GEL-STOCK';
         const businessPhone = settings.businessPhone || this.currentUser?.phone || '';
         const businessEmail = settings.businessEmail || this.currentUser?.email || '';
@@ -5010,7 +4740,7 @@ ${credit.payments ? credit.payments.map(p => `
                 return;
             }
             
-            const products = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
+            const products = JSON.parse(localStorage.getItem('jmonic_products') || '[]');
             
             salesTableBody.innerHTML = sales.map((sale, index) => {
                 // Calculate totals and costs
@@ -5176,8 +4906,8 @@ ${credit.payments ? credit.payments.map(p => `
 
     async loadCategoryAnalytics() {
         try {
-            const products = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
-            const sales = JSON.parse(localStorage.getItem('gel_stock_sales') || '[]');
+            const products = JSON.parse(localStorage.getItem('jmonic_products') || '[]');
+            const sales = JSON.parse(localStorage.getItem('jmonic_sales') || '[]');
             
             if (products.length === 0) {
                 this.showCategoryAnalyticsEmpty();
@@ -5389,7 +5119,7 @@ ${credit.payments ? credit.payments.map(p => `
     }
 
     updateInventoryOverview() {
-        const products = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
+        const products = JSON.parse(localStorage.getItem('jmonic_products') || '[]');
         let totalValue = 0;
         let revenuePotential = 0;
         let inStock = 0;
@@ -5429,7 +5159,7 @@ ${credit.payments ? credit.payments.map(p => `
         }
 
         // Calculate turnover rate
-        const sales = JSON.parse(localStorage.getItem('gel_stock_sales') || '[]');
+        const sales = JSON.parse(localStorage.getItem('jmonic_sales') || '[]');
         const currentMonth = new Date();
         const monthlyRevenue = sales
             .filter(sale => {
@@ -5446,7 +5176,7 @@ ${credit.payments ? credit.payments.map(p => `
     }
 
     loadLowStockAlerts() {
-        const products = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
+        const products = JSON.parse(localStorage.getItem('jmonic_products') || '[]');
         const lowStockProducts = products.filter(product => {
             const stock = product.stock_quantity || 0;
             const reorderLevel = product.reorder_level || product.reorderLevel || product.min_stock_level || 5;
@@ -5531,7 +5261,7 @@ ${credit.payments ? credit.payments.map(p => `
         }
         
         // If we have products but no valid transactions, create sample data
-        const products = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
+        const products = JSON.parse(localStorage.getItem('jmonic_products') || '[]');
         if (products.length > 0 && transactions.length === 0) {
             console.log('📦 Regenerating sample inventory transactions...');
             this.createSampleInventoryTransactions();
@@ -5669,8 +5399,8 @@ ${credit.payments ? credit.payments.map(p => `
     }
 
     calculateProductSalesVelocity() {
-        const sales = JSON.parse(localStorage.getItem('gel_stock_sales') || '[]');
-        const products = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
+        const sales = JSON.parse(localStorage.getItem('jmonic_sales') || '[]');
+        const products = JSON.parse(localStorage.getItem('jmonic_products') || '[]');
         
         // Calculate total quantity sold for each product
         const salesByProduct = {};
@@ -5724,7 +5454,7 @@ ${credit.payments ? credit.payments.map(p => `
         if (!ctx) return;
 
         // Simple overview - show total products in stock vs low stock
-        const products = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
+        const products = JSON.parse(localStorage.getItem('jmonic_products') || '[]');
         const totalProducts = products.length;
         const lowStockProducts = products.filter(p => {
             const stock = p.stock_quantity || 0;
@@ -5801,9 +5531,6 @@ ${credit.payments ? credit.payments.map(p => `
     }
 
     refreshInventory() {
-        console.log('🔄 Refreshing inventory...');
-        const products = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
-        console.log('Products found:', products.length, products);
         this.initializeInventoryTracking();
         this.showNotification('Inventory data refreshed', 'success');
     }
@@ -5896,44 +5623,6 @@ ${credit.payments ? credit.payments.map(p => `
                 categoriesIndicator.className = 'stat-change positive';
             }
         }
-    }
-
-    // Update payment methods breakdown on dashboard
-    updatePaymentMethodsBreakdown() {
-        const breakdown = this.calculatePaymentMethodAmounts();
-        
-        // Update Cash
-        const cashTotal = document.getElementById('cashTotal');
-        const cashCount = document.getElementById('cashCount');
-        const cashPercentage = document.getElementById('cashPercentage');
-        const cashBar = document.getElementById('cashBar');
-        
-        if (cashTotal) cashTotal.textContent = `GHS ${breakdown.cash.total.toFixed(2)}`;
-        if (cashCount) cashCount.textContent = `${breakdown.cash.count} transaction${breakdown.cash.count !== 1 ? 's' : ''}`;
-        if (cashPercentage) cashPercentage.textContent = `${breakdown.cash.percentage.toFixed(1)}%`;
-        if (cashBar) cashBar.style.width = `${breakdown.cash.percentage}%`;
-        
-        // Update Mobile Money
-        const mobilemoneyTotal = document.getElementById('mobilemoneyTotal');
-        const mobilemoneyCount = document.getElementById('mobilemoneyCount');
-        const mobilemoneyPercentage = document.getElementById('mobilemoneyPercentage');
-        const mobilemoneyBar = document.getElementById('mobilemoneyBar');
-        
-        if (mobilemoneyTotal) mobilemoneyTotal.textContent = `GHS ${breakdown.mobile_money.total.toFixed(2)}`;
-        if (mobilemoneyCount) mobilemoneyCount.textContent = `${breakdown.mobile_money.count} transaction${breakdown.mobile_money.count !== 1 ? 's' : ''}`;
-        if (mobilemoneyPercentage) mobilemoneyPercentage.textContent = `${breakdown.mobile_money.percentage.toFixed(1)}%`;
-        if (mobilemoneyBar) mobilemoneyBar.style.width = `${breakdown.mobile_money.percentage}%`;
-        
-        // Update Bank Transfer
-        const transferTotal = document.getElementById('transferTotal');
-        const transferCount = document.getElementById('transferCount');
-        const transferPercentage = document.getElementById('transferPercentage');
-        const transferBar = document.getElementById('transferBar');
-        
-        if (transferTotal) transferTotal.textContent = `GHS ${breakdown.transfer.total.toFixed(2)}`;
-        if (transferCount) transferCount.textContent = `${breakdown.transfer.count} transaction${breakdown.transfer.count !== 1 ? 's' : ''}`;
-        if (transferPercentage) transferPercentage.textContent = `${breakdown.transfer.percentage.toFixed(1)}%`;
-        if (transferBar) transferBar.style.width = `${breakdown.transfer.percentage}%`;
     }
 
     // Clear all data function
@@ -6246,24 +5935,24 @@ ${credit.payments ? credit.payments.map(p => `
 
             console.log('🔥 About to clear localStorage items...');
             
-            // Get all keys to ensure we clear everything GEL-STOCK related
+            // Get all keys to ensure we clear everything J'MONIC related
             const allKeys = Object.keys(localStorage);
-            const gelStockKeys = allKeys.filter(key => key.startsWith('gel_stock_') || key.includes('gel_stock'));
+            const jmonicKeys = allKeys.filter(key => key.startsWith('jmonic_') || key.includes('jmonic'));
             
-            console.log('🔥 Found GEL-STOCK keys to clear:', gelStockKeys);
+            console.log('🔥 Found J\'MONIC keys to clear:', jmonicKeys);
             
             // Clear all localStorage data (comprehensive clearing)
-            localStorage.removeItem('gel_stock_products');
-            localStorage.removeItem('gel_stock_sales'); 
-            localStorage.removeItem('gel_stock_purchases');
+            localStorage.removeItem('jmonic_products');
+            localStorage.removeItem('jmonic_sales'); 
+            localStorage.removeItem('jmonic_purchases');
             localStorage.removeItem('inventoryTransactions');
-            localStorage.removeItem('gel_stock_settings');
-            localStorage.removeItem('gel_stock_theme');
-            localStorage.removeItem('gel_stock_notifications');
-            localStorage.removeItem('gel_stock_analytics');
+            localStorage.removeItem('jmonic_settings');
+            localStorage.removeItem('jmonic_theme');
+            localStorage.removeItem('jmonic_notifications');
+            localStorage.removeItem('jmonic_analytics');
             
-            // Clear any additional GEL-STOCK keys that might exist
-            gelStockKeys.forEach(key => {
+            // Clear any additional J'MONIC keys that might exist
+            jmonicKeys.forEach(key => {
                 console.log(`🔥 Clearing additional key: ${key}`);
                 localStorage.removeItem(key);
             });
@@ -6310,9 +5999,8 @@ ${credit.payments ? credit.payments.map(p => `
     }
 
     updateInventoryStats() {
-        const sales = JSON.parse(localStorage.getItem('gel_stock_sales') || '[]');
-        const products = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
-        console.log('updateInventoryStats - Products from localStorage:', products.length, products);
+        const sales = JSON.parse(localStorage.getItem('jmonic_sales') || '[]');
+        const products = JSON.parse(localStorage.getItem('jmonic_products') || '[]');
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         // Calculate total stock left and product count
@@ -6347,8 +6035,61 @@ ${credit.payments ? credit.payments.map(p => `
         if (totalTransactionsElement) totalTransactionsElement.textContent = totalTransactions;
         if (stockAlertsElement) stockAlertsElement.textContent = lowStockProducts.length;
         
+        // Update stock by products table
+        this.updateStockByProductsTable(products);
     }
     
+    updateStockByProductsTable(products) {
+        const tableBody = document.getElementById('stockByProductsTable');
+        if (!tableBody) return;
+        
+        tableBody.innerHTML = '';
+        
+        if (products.length === 0) {
+            tableBody.innerHTML = '<div class="table-row empty"><span>No products found</span></div>';
+            return;
+        }
+        
+        // Sort products by stock quantity (highest first)
+        const sortedProducts = [...products].sort((a, b) => 
+            (b.stock_quantity || 0) - (a.stock_quantity || 0)
+        );
+        
+        sortedProducts.forEach(product => {
+            const stock = parseInt(product.stock_quantity) || 0;
+            const reorderLevel = parseInt(product.reorder_level) || 5;
+            const costPrice = parseFloat(product.cost_price) || 0;
+            const inventoryValue = stock * costPrice;
+            
+            // Determine status
+            let status = 'In Stock';
+            let statusClass = 'status-in-stock';
+            if (stock === 0) {
+                status = 'Out of Stock';
+                statusClass = 'status-out-of-stock';
+            } else if (stock <= reorderLevel) {
+                status = 'Low Stock';
+                statusClass = 'status-low-stock';
+            }
+            
+            const row = document.createElement('div');
+            row.className = 'table-row';
+            row.innerHTML = `
+                <div class="col-product">
+                    <div class="product-name">${product.name || 'N/A'}</div>
+                </div>
+                <div class="col-sku">${product.sku || 'N/A'}</div>
+                <div class="col-stock">
+                    <span class="stock-badge">${stock}</span>
+                </div>
+                <div class="col-value">GHS ${inventoryValue.toFixed(2)}</div>
+                <div class="col-status">
+                    <span class="status-badge ${statusClass}">${status}</span>
+                </div>
+            `;
+            tableBody.appendChild(row);
+        });
+    }
 
     updateTransactionLog() {
         const transactions = JSON.parse(localStorage.getItem('inventoryTransactions') || '[]');
@@ -6514,7 +6255,7 @@ ${credit.payments ? credit.payments.map(p => `
         const dateStr = now.toISOString().split('T')[0];
         const timeStr = now.toTimeString().split(' ')[0].replace(/:/g, '-');
         const filterStr = this.currentTransactionFilter && this.currentTransactionFilter !== 'all' ? `_${this.currentTransactionFilter}` : '';
-        a.download = `gel_stock_transactions_${dateStr}_${timeStr}${filterStr}.csv`;
+        a.download = `jmonic_transactions_${dateStr}_${timeStr}${filterStr}.csv`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -6606,7 +6347,7 @@ ${credit.payments ? credit.payments.map(p => `
         const dateStr = now.toISOString().split('T')[0];
         const timeStr = now.toTimeString().split(' ')[0].replace(/:/g, '-');
         const filterStr = this.currentTransactionFilter && this.currentTransactionFilter !== 'all' ? `_${this.currentTransactionFilter}` : '';
-        a.download = `gel_stock_transactions_detailed_${dateStr}_${timeStr}${filterStr}.csv`;
+        a.download = `jmonic_transactions_detailed_${dateStr}_${timeStr}${filterStr}.csv`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -6655,7 +6396,7 @@ ${credit.payments ? credit.payments.map(p => `
 
     // Create sample inventory transactions for demonstration
     createSampleInventoryTransactions() {
-        const products = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
+        const products = JSON.parse(localStorage.getItem('jmonic_products') || '[]');
         if (products.length === 0) return;
 
         const transactions = JSON.parse(localStorage.getItem('inventoryTransactions') || '[]');
@@ -6731,58 +6472,10 @@ ${credit.payments ? credit.payments.map(p => `
 // Initialize the system
 let businessManager;
 
-// Create localStorage wrapper to handle per-user data storage
-function initializeUserStorageWrapper() {
-    const originalGetItem = localStorage.getItem;
-    const originalSetItem = localStorage.setItem;
-    const originalRemoveItem = localStorage.removeItem;
-    
-    // Get current user ID from businessManager or fallback to demo_mode
-    const getUserId = () => {
-        if (businessManager && businessManager.userId) {
-            return businessManager.userId;
-        }
-        return 'demo_mode';
-    };
-    
-    // Override getItem for gel_stock_* keys
-    localStorage.getItem = function(key) {
-        if (key.startsWith('gel_stock_')) {
-            const userId = getUserId();
-            const userKey = `${userId}_${key}`;
-            return originalGetItem.call(this, userKey);
-        }
-        return originalGetItem.call(this, key);
-    };
-    
-    // Override setItem for gel_stock_* keys
-    localStorage.setItem = function(key, value) {
-        if (key.startsWith('gel_stock_')) {
-            const userId = getUserId();
-            const userKey = `${userId}_${key}`;
-            return originalSetItem.call(this, userKey, value);
-        }
-        return originalSetItem.call(this, key, value);
-    };
-    
-    // Override removeItem for gel_stock_* keys
-    localStorage.removeItem = function(key) {
-        if (key.startsWith('gel_stock_')) {
-            const userId = getUserId();
-            const userKey = `${userId}_${key}`;
-            return originalRemoveItem.call(this, userKey);
-        }
-        return originalRemoveItem.call(this, key);
-    };
-}
-
 // DOM Ready
 document.addEventListener('DOMContentLoaded', function() {
     console.log('DOM loaded, initializing business manager...');
     businessManager = new NaturalHairBusinessManager();
-    
-    // Initialize per-user storage wrapper
-    initializeUserStorageWrapper();
     
     // Initialize theme immediately
     initializeTheme();
@@ -6874,11 +6567,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 const confirmClear = confirm('⚠️ DANGER: This will permanently delete ALL your business data.\n\nThis action CANNOT be undone.\n\nAre you absolutely sure?');
                 if (confirmClear) {
                     try {
-                        localStorage.removeItem('gel_stock_products');
-                        localStorage.removeItem('gel_stock_sales');
-                        localStorage.removeItem('gel_stock_purchases');
+                        localStorage.removeItem('jmonic_products');
+                        localStorage.removeItem('jmonic_sales');
+                        localStorage.removeItem('jmonic_purchases');
                         localStorage.removeItem('inventoryTransactions');
-                        localStorage.removeItem('gel_stock_settings');
+                        localStorage.removeItem('jmonic_settings');
                         
                         // Reset flag before reload
                         window.clearDataInProgress = false;
@@ -6923,11 +6616,11 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             if (confirm('EMERGENCY: Clear all business data immediately?')) {
                 console.log('🚨 User confirmed emergency clear');
-                localStorage.removeItem('gel_stock_products');
-                localStorage.removeItem('gel_stock_sales');
-                localStorage.removeItem('gel_stock_purchases');
+                localStorage.removeItem('jmonic_products');
+                localStorage.removeItem('jmonic_sales');
+                localStorage.removeItem('jmonic_purchases');
                 localStorage.removeItem('inventoryTransactions');
-                localStorage.removeItem('gel_stock_settings');
+                localStorage.removeItem('jmonic_settings');
                 alert('✅ Emergency clear complete! Page will refresh.');
                 location.reload();
             }
@@ -6986,7 +6679,7 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('🚨 Emergency clear data called');
         try {
             if (confirm('EMERGENCY CLEAR: Delete all business data?')) {
-                ['gel_stock_products', 'gel_stock_sales', 'gel_stock_purchases', 'inventoryTransactions', 'gel_stock_settings']
+                ['jmonic_products', 'jmonic_sales', 'jmonic_purchases', 'inventoryTransactions', 'jmonic_settings']
                     .forEach(key => localStorage.removeItem(key));
                 alert('Data cleared via emergency function');
                 location.reload();
@@ -7022,7 +6715,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Initialize product stats on page load
-    const products = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
+    const products = JSON.parse(localStorage.getItem('jmonic_products') || '[]');
     if (businessManager && document.querySelector('#products')) {
         businessManager.updateProductStats(products);
     }
@@ -7117,7 +6810,7 @@ function showSection(sectionName) {
     } else if (sectionName === 'products' && businessManager) {
         businessManager.loadProductsInventory();
         // Also update product stats
-        const products = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
+        const products = JSON.parse(localStorage.getItem('jmonic_products') || '[]');
         businessManager.updateProductStats(products);
     } else if (sectionName === 'inventory' && businessManager) {
         businessManager.initializeInventoryTracking();
@@ -7223,7 +6916,7 @@ function openModal(modalId) {
                 dateInput.value = new Date().toISOString().split('T')[0];
             }
             // Update business name in header
-            const settings = JSON.parse(localStorage.getItem('gel_stock_business_settings') || '{}');
+            const settings = JSON.parse(localStorage.getItem('jmonic_business_settings') || '{}');
             const businessName = settings.businessName || 'GEL-STOCK';
             const businessHeader = document.getElementById('saleBusinessHeader');
             if (businessHeader) {
@@ -7279,7 +6972,7 @@ function toggleBusinessInfoMode() {
         businessInfoEdit.style.display = 'flex';
         
         // Populate edit fields with current display values
-        const settings = JSON.parse(localStorage.getItem('gel_stock_settings') || '{}');
+        const settings = JSON.parse(localStorage.getItem('jmonic_settings') || '{}');
         
         const businessNameInput = document.getElementById('businessName');
         const ownerNameInput = document.getElementById('ownerName');
@@ -7339,7 +7032,7 @@ function saveBusinessInfo() {
     }
     
     // Get current settings
-    const settings = JSON.parse(localStorage.getItem('gel_stock_settings') || '{}');
+    const settings = JSON.parse(localStorage.getItem('jmonic_settings') || '{}');
     
     // Update with new values
     settings.businessName = businessNameInput?.value || 'J\'MONIC ENTERPRISE';
@@ -7349,7 +7042,7 @@ function saveBusinessInfo() {
     settings.businessAddress = businessAddressInput?.value || '';
     
     // Save to localStorage
-    localStorage.setItem('gel_stock_settings', JSON.stringify(settings));
+    localStorage.setItem('jmonic_settings', JSON.stringify(settings));
     
     // Update display
     if (businessManager) {
@@ -7395,15 +7088,6 @@ function switchProductTab(tabName) {
         // Hide any suggestion panel
         const sugg = document.getElementById('searchSuggestions');
         if (sugg) { sugg.innerHTML = ''; sugg.style.display = 'none'; }
-        // Populate category filter for search tab
-        setTimeout(() => {
-            populateSearchCategoryFilter();
-        }, 50);
-    } else if (tabName === 'new') {
-        // Populate categories when switching to "Create New" tab
-        setTimeout(() => {
-            populateCategories();
-        }, 50);
     }
 }
 
@@ -7429,7 +7113,7 @@ function suggestProducts() {
         return;
     }
 
-    const products = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
+    const products = JSON.parse(localStorage.getItem('jmonic_products') || '[]');
     const matches = products.filter(p => {
         const name = (p.name || '').toLowerCase();
         const sku = (p.sku || '').toLowerCase();
@@ -7457,7 +7141,7 @@ function suggestProducts() {
 
 // Handle click on suggestion item
 function onSuggestionClick(productId) {
-    const products = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
+    const products = JSON.parse(localStorage.getItem('jmonic_products') || '[]');
     const product = products.find(p => p.id === productId);
     if (!product) return;
 
@@ -7498,7 +7182,7 @@ function searchProductBySKU() {
         return;
     }
     
-    const products = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
+    const products = JSON.parse(localStorage.getItem('jmonic_products') || '[]');
     const searchTerm = skuInput.toLowerCase();
     
     // Search by SKU (exact or partial match)
@@ -7589,7 +7273,7 @@ async function addExistingProduct() {
     
     try {
         // Get current products
-        const products = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
+        const products = JSON.parse(localStorage.getItem('jmonic_products') || '[]');
         // Convert selectedProductData.id to number for comparison (may come as string from HTML)
         const selectedId = typeof window.selectedProductData.id === 'string' 
             ? parseFloat(window.selectedProductData.id) 
@@ -7643,7 +7327,7 @@ async function addExistingProduct() {
         }
         
         // Save updated products
-        localStorage.setItem('gel_stock_products', JSON.stringify(products));
+        localStorage.setItem('jmonic_products', JSON.stringify(products));
         
         // Build success message
         let successMsg = `Added ${quantityToAdd} units to ${window.selectedProductData.name}. New stock: ${products[productIndex].stock_quantity} units`;
@@ -7789,9 +7473,6 @@ async function handleAddProductSubmit(e) {
             await businessManager.loadProductsInventory();
             businessManager.refreshLowStockData();
             
-            // Sync products to backend
-            await businessManager.syncToBackend('products');
-            
             // Refresh dashboard KPI cards to show updated stock-in
             businessManager.loadDashboardData();
         }
@@ -7873,191 +7554,14 @@ function openAddProductModal() {
     // Populate dropdown when modal opens
     setTimeout(() => {
         populateSKUDropdown();
-        populateCategories();
     }, 100);
-}
-
-// Populate product categories from user's registered categories
-function populateCategories() {
-    const categorySelect = document.getElementById('productCategorySelect');
-    if (!categorySelect) {
-        console.log('Category select not found');
-        return;
-    }
-    
-    // Get user info from session
-    const userJson = sessionStorage.getItem('gel_user');
-    const user = userJson ? JSON.parse(userJson) : null;
-    
-    console.log('User from session:', user);
-    
-    // Get categories from localStorage
-    let categories = [];
-    if (user) {
-        // Try to get categories associated with the user's business
-        const businessId = user.businessId || user.userId || user.phone;
-        console.log('Looking for categories with key:', `gel_stock_categories_${businessId}`);
-        const storedCategories = localStorage.getItem(`gel_stock_categories_${businessId}`);
-        console.log('Stored categories:', storedCategories);
-        if (storedCategories) {
-            try {
-                categories = JSON.parse(storedCategories);
-            } catch (e) {
-                console.error('Error parsing categories:', e);
-            }
-        }
-    }
-    
-    console.log('Categories to populate:', categories);
-    
-    // Clear existing options except the first one
-    while (categorySelect.options.length > 1) {
-        categorySelect.remove(1);
-    }
-    
-    // Add categories as options
-    if (categories.length > 0) {
-        categories.forEach(category => {
-            const option = document.createElement('option');
-            option.value = category;
-            option.textContent = category;
-            categorySelect.appendChild(option);
-        });
-        console.log('Added', categories.length, 'categories to dropdown');
-    } else {
-        console.log('No categories found to populate');
-    }
-}
-
-// Auto-populate SKU prefix based on selected category
-function autoPopulateSKU() {
-    const categorySelect = document.getElementById('productCategorySelect');
-    const skuInput = document.querySelector('input[name="sku"]');
-    
-    if (!categorySelect || !skuInput) return;
-    
-    const selectedCategory = categorySelect.value;
-    
-    if (!selectedCategory) {
-        // Clear SKU if no category selected
-        skuInput.placeholder = 'Enter unique SKU (e.g., PROD-001)';
-        return;
-    }
-    
-    // Get first letter of category
-    const firstLetter = selectedCategory.charAt(0).toUpperCase();
-    
-    // Set placeholder to show the expected format
-    skuInput.placeholder = `${firstLetter}-0001`;
-    
-    // If SKU is empty, start with the prefix
-    if (!skuInput.value) {
-        skuInput.value = `${firstLetter}-`;
-    } else if (!skuInput.value.startsWith(firstLetter)) {
-        // Replace prefix if it's different
-        const match = skuInput.value.match(/^[A-Z]?-(.*)$/);
-        if (match) {
-            skuInput.value = `${firstLetter}-${match[1]}`;
-        } else {
-            skuInput.value = `${firstLetter}-${skuInput.value}`;
-        }
-    }
-    
-    // Focus on the input and position cursor after the hyphen
-    skuInput.focus();
-    const prefixLength = firstLetter.length + 1; // Letter + hyphen
-    skuInput.setSelectionRange(prefixLength, skuInput.value.length);
-}
-
-// Populate search category filter dropdown
-function populateSearchCategoryFilter() {
-    const filterSelect = document.getElementById('searchCategoryFilter');
-    if (!filterSelect) {
-        console.log('Search category filter not found');
-        return;
-    }
-    
-    // Get products from localStorage
-    const products = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
-    
-    // Extract unique categories from products
-    const categoriesSet = new Set();
-    products.forEach(product => {
-        if (product.category && product.category.trim()) {
-            categoriesSet.add(product.category.trim());
-        }
-    });
-    
-    const categories = Array.from(categoriesSet).sort();
-    console.log('Found categories in products:', categories);
-    
-    // Clear existing options except the first one
-    while (filterSelect.options.length > 1) {
-        filterSelect.remove(1);
-    }
-    
-    // Add categories as options
-    if (categories.length > 0) {
-        categories.forEach(category => {
-            const option = document.createElement('option');
-            option.value = category;
-            option.textContent = category;
-            filterSelect.appendChild(option);
-        });
-        console.log('Added', categories.length, 'categories to search filter');
-    }
-}
-
-// Filter products by selected category in search tab
-function filterProductsByCategory() {
-    const filterSelect = document.getElementById('searchCategoryFilter');
-    const selectedCategory = filterSelect ? filterSelect.value : '';
-    
-    console.log('Filtering by category:', selectedCategory);
-    
-    // Get all products
-    const products = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
-    
-    // Filter products by selected category
-    let filtered = products;
-    if (selectedCategory) {
-        filtered = products.filter(p => p.category && p.category.trim() === selectedCategory);
-    }
-    
-    // Display filtered products
-    const resultsDiv = document.getElementById('searchResults');
-    if (!resultsDiv) return;
-    
-    if (filtered.length === 0) {
-        resultsDiv.innerHTML = `<div class="search-no-results"><i class="fas fa-inbox"></i><p>No products found in category: ${selectedCategory || 'All'}</p></div>`;
-        return;
-    }
-    
-    // Build product list HTML
-    resultsDiv.innerHTML = filtered.map(p => {
-        return `
-            <div class="product-result-item" onclick="onSuggestionClick('${p.id}')" style="cursor: pointer; padding: 1rem; border: 1px solid #e5e7eb; border-radius: 6px; margin-bottom: 0.5rem; transition: all 0.2s;">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <div>
-                        <strong>${escapeHtml(p.sku || '')}</strong> — ${escapeHtml(p.name || '')}
-                        <br>
-                        <small style="color: #666;">${escapeHtml(p.category || 'Uncategorized')}</small>
-                    </div>
-                    <div style="text-align: right;">
-                        <div style="color: #10b981; font-weight: bold;">GHS ${parseFloat(p.selling_price || 0).toFixed(2)}</div>
-                        <small style="color: #666;">Stock: ${p.stock_quantity || 0}</small>
-                    </div>
-                </div>
-            </div>
-        `;
-    }).join('');
 }
 
 function editProduct(productId) {
     console.log('Editing product:', productId);
     
     // Get products from localStorage
-    const products = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
+    const products = JSON.parse(localStorage.getItem('jmonic_products') || '[]');
     const product = products.find(p => p.id == productId);
     
     if (!product) {
@@ -8111,13 +7615,13 @@ function deleteProduct(productId) {
         
         try {
             // Get products from localStorage
-            const products = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
+            const products = JSON.parse(localStorage.getItem('jmonic_products') || '[]');
             
             // Filter out the product to delete
             const updatedProducts = products.filter(p => p.id != productId);
             
             // Save back to localStorage
-            localStorage.setItem('gel_stock_products', JSON.stringify(updatedProducts));
+            localStorage.setItem('jmonic_products', JSON.stringify(updatedProducts));
             
             // Show success message
             if (window.businessManager) {
@@ -8197,8 +7701,8 @@ function handleGlobalSearch() {
     }
     
     // Search through products and sales
-    const products = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
-    const sales = JSON.parse(localStorage.getItem('gel_stock_sales') || '[]');
+    const products = JSON.parse(localStorage.getItem('jmonic_products') || '[]');
+    const sales = JSON.parse(localStorage.getItem('jmonic_sales') || '[]');
     
     const productResults = products
         .filter(product => 
@@ -8249,7 +7753,7 @@ function handleGlobalSearch() {
 }
 
 function showNotifications() {
-    const products = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
+    const products = JSON.parse(localStorage.getItem('jmonic_products') || '[]');
     const lowStockProducts = products.filter(p => p.stock_quantity <= (p.reorder_level || 10));
     
     let notificationContent = '<div class="notification-popup">';
@@ -8306,7 +7810,7 @@ function showNotifications() {
 }
 
 function updateNotificationBadge() {
-    const products = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
+    const products = JSON.parse(localStorage.getItem('jmonic_products') || '[]');
     const lowStockCount = products.filter(p => p.stock_quantity <= (p.reorder_level || 10)).length;
     
     const badge = document.querySelector('.notification-badge');
@@ -8364,8 +7868,8 @@ class RevenueAnalytics {
     
     async loadRevenueAnalytics() {
         try {
-            const sales = JSON.parse(localStorage.getItem('gel_stock_sales') || '[]');
-            const products = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
+            const sales = JSON.parse(localStorage.getItem('jmonic_sales') || '[]');
+            const products = JSON.parse(localStorage.getItem('jmonic_products') || '[]');
             
             // Calculate comprehensive revenue metrics
             const metrics = this.calculateRevenueMetrics(sales, products);
@@ -8678,7 +8182,7 @@ function toggleSettings() {
 // Theme Management Functions
 function initializeTheme() {
     // Get saved theme or default to light
-    const savedTheme = localStorage.getItem('gel_stock_theme') || 'light';
+    const savedTheme = localStorage.getItem('jmonic_theme') || 'light';
     
     // Apply theme immediately
     applyThemeGlobal(savedTheme);
@@ -8688,7 +8192,7 @@ function initializeTheme() {
     
     // Listen for system theme changes
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-        const currentTheme = localStorage.getItem('gel_stock_theme') || 'light';
+        const currentTheme = localStorage.getItem('jmonic_theme') || 'light';
         if (currentTheme === 'auto') {
             applyThemeGlobal('auto');
         }
@@ -8733,7 +8237,7 @@ function applyThemeGlobal(theme) {
     }, 500);
     
     // Store theme preference
-    localStorage.setItem('gel_stock_theme', theme);
+    localStorage.setItem('jmonic_theme', theme);
     
     // Update all theme selectors
     updateThemeSelectors(theme);
@@ -8972,9 +8476,9 @@ function addTestDataForNotifications() {
     ];
     
     // Store in localStorage
-    const existingProducts = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
+    const existingProducts = JSON.parse(localStorage.getItem('jmonic_products') || '[]');
     const updatedProducts = [...existingProducts, ...testProducts];
-    localStorage.setItem('gel_stock_products', JSON.stringify(updatedProducts));
+    localStorage.setItem('jmonic_products', JSON.stringify(updatedProducts));
     
     // Add a recent sale
     const testSale = {
@@ -8989,9 +8493,9 @@ function addTestDataForNotifications() {
         ]
     };
     
-    const existingSales = JSON.parse(localStorage.getItem('gel_stock_sales') || '[]');
+    const existingSales = JSON.parse(localStorage.getItem('jmonic_sales') || '[]');
     existingSales.push(testSale);
-    localStorage.setItem('gel_stock_sales', JSON.stringify(existingSales));
+    localStorage.setItem('jmonic_sales', JSON.stringify(existingSales));
     
     console.log('✅ Test data added for notifications');
     
@@ -9197,7 +8701,7 @@ function testNotificationSystem() {
         }
     ];
     
-    localStorage.setItem('gel_stock_products', JSON.stringify(testProducts));
+    localStorage.setItem('jmonic_products', JSON.stringify(testProducts));
     console.log('📦 Added test product with low stock');
     
     // Test live notification
@@ -9232,8 +8736,8 @@ function testNotificationSystem() {
 // Function to clear test data and restore clean dashboard  
 function clearTestData() {
     console.log('🧹 Clearing test data...');
-    localStorage.removeItem('gel_stock_products');
-    localStorage.removeItem('gel_stock_sales');
+    localStorage.removeItem('jmonic_products');
+    localStorage.removeItem('jmonic_sales');
     localStorage.removeItem('inventoryTransactions');
     
     // Hide notification badge
@@ -9274,7 +8778,7 @@ function diagnoseNotificationSystem() {
     console.log('  - Has loadNotifications:', !!(window.businessManager && window.businessManager.loadNotifications));
     
     // Check data
-    const products = JSON.parse(localStorage.getItem('gel_stock_products') || '[]');
+    const products = JSON.parse(localStorage.getItem('jmonic_products') || '[]');
     console.log('📋 Data Check:');
     console.log('  - Products:', products.length, products);
     
@@ -9303,6 +8807,99 @@ function diagnoseNotificationSystem() {
 }
 
 // Function to add sample SKU products for testing dropdown
+function loadSampleProducts() {
+    console.log('📦 Loading sample products for dropdown...');
+    
+    const sampleProducts = [
+        {
+            id: 'prod-oil-001',
+            sku: 'OIL-001',
+            name: 'Hair Oil Premium',
+            description: 'Premium hair oil treatment',
+            selling_price: 50,
+            price: 50,
+            cost_price: 30,
+            stock_quantity: 25,
+            reorder_level: 10,
+            created_at: new Date().toISOString()
+        },
+        {
+            id: 'prod-oil-002',
+            sku: 'OIL-002',
+            name: 'Hair Oil Regular',
+            description: 'Regular hair oil treatment',
+            selling_price: 35,
+            price: 35,
+            cost_price: 20,
+            stock_quantity: 15,
+            reorder_level: 8,
+            created_at: new Date().toISOString()
+        },
+        {
+            id: 'prod-shampoo-001',
+            sku: 'SHP-001',
+            name: 'Natural Hair Shampoo',
+            description: 'Gentle shampoo for natural hair',
+            selling_price: 45,
+            price: 45,
+            cost_price: 25,
+            stock_quantity: 20,
+            reorder_level: 10,
+            created_at: new Date().toISOString()
+        },
+        {
+            id: 'prod-conditioner-001',
+            sku: 'COND-001',
+            name: 'Deep Conditioner',
+            description: 'Deep conditioning treatment',
+            selling_price: 60,
+            price: 60,
+            cost_price: 35,
+            stock_quantity: 12,
+            reorder_level: 5,
+            created_at: new Date().toISOString()
+        },
+        {
+            id: 'prod-gel-001',
+            sku: 'GEL-001',
+            name: 'Hair Gel Strong Hold',
+            description: 'Strong hold hair gel',
+            selling_price: 40,
+            price: 40,
+            cost_price: 22,
+            stock_quantity: 30,
+            reorder_level: 15,
+            created_at: new Date().toISOString()
+        }
+    ];
+    
+    console.log('💾 Saving to localStorage...');
+    localStorage.setItem('jmonic_products', JSON.stringify(sampleProducts));
+    console.log('✅ Sample products saved! Total:', sampleProducts.length);
+    console.log('✅ Products:', sampleProducts.map(p => `${p.sku} - ${p.name}`).join(', '));
+    
+    // Verify data was saved
+    const saved = JSON.parse(localStorage.getItem('jmonic_products') || '[]');
+    console.log('🔍 Verification - Products in localStorage:', saved.length);
+    
+    // If dropdown exists, refresh it
+    const dropdown = document.getElementById('skuDropdown');
+    console.log('🎯 Dropdown element found:', !!dropdown);
+    
+    if (dropdown) {
+        console.log('📝 Calling populateSKUDropdown()...');
+        populateSKUDropdown();
+        console.log('✅ Dropdown refreshed!');
+    } else {
+        console.warn('⚠️ Dropdown not found yet (modal may not be open)');
+        console.log('💡 Tip: Open the Add Product modal first, then run loadSampleProducts() again');
+    }
+    
+    console.log('✅ loadSampleProducts complete!');
+    return sampleProducts;
+}
+
+
 // ===== REMOVED PHONE AUTHENTICATION SYSTEM =====
 // Phone-based authentication has been disabled
 // All users have direct access to the dashboard
@@ -9311,6 +8908,7 @@ function diagnoseNotificationSystem() {
 window.testNotificationSystem = testNotificationSystem;
 window.diagnoseNotificationSystem = diagnoseNotificationSystem;
 window.clearTestData = clearTestData;
+window.loadSampleProducts = loadSampleProducts;
 
 /* ===== LOGIN & AUTHENTICATION FUNCTIONS ===== */
 
@@ -9398,18 +8996,15 @@ function switchToLogin(event) {
  * Handle registration form submission
  * @param {Event} event - Form submission event
  */
-function handleRegistration(event) {
+async function handleRegistration(event) {
     event.preventDefault();
     
     const businessName = document.getElementById('businessName').value.trim();
-    const businessType = document.getElementById('businessType').value.trim();
-    const categoriesInput = document.getElementById('categoriesInput').value.trim();
     const ownerName = document.getElementById('ownerName').value.trim();
+    const email = document.getElementById('registerEmail').value.trim();
     const phone = document.getElementById('registerPhone').value.trim();
     const password = document.getElementById('registerPassword').value;
     const confirmPassword = document.getElementById('confirmPassword').value;
-    const securityQuestion = document.getElementById('securityQuestionReg').value.trim();
-    const securityAnswer = document.getElementById('securityAnswerReg').value.trim();
     const agreeTerms = document.getElementById('agreeTerms').checked;
     const errorDiv = document.getElementById('registrationError');
     
@@ -9419,11 +9014,6 @@ function handleRegistration(event) {
     // Validation checks
     if (!businessName) {
         showRegistrationError('Please enter your business name');
-        return;
-    }
-
-    if (!businessType) {
-        showRegistrationError('Please select your business type');
         return;
     }
     
@@ -9452,72 +9042,82 @@ function handleRegistration(event) {
         return;
     }
     
-    if (!securityQuestion) {
-        showRegistrationError('Please select a security question');
-        return;
-    }
-    
-    if (!securityAnswer) {
-        showRegistrationError('Please provide an answer to the security question');
-        return;
-    }
-    
     if (!agreeTerms) {
         showRegistrationError('Please agree to the Terms of Service and Privacy Policy');
         return;
     }
     
-    // Parse categories from comma-separated input
-    let categories = [];
-    if (categoriesInput) {
-        categories = categoriesInput.split(',').map(cat => cat.trim()).filter(cat => cat.length > 0);
+    try {
+        // Show loading state
+        const regBtn = document.querySelector('.register-btn');
+        const originalText = regBtn.innerHTML;
+        regBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating Account...';
+        regBtn.disabled = true;
+        
+        // Format phone number
+        const formattedPhone = formatGhanaPhone(phone);
+        
+        // Call backend registration API
+        const response = await fetch('../api/auth.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                action: 'register',
+                username: ownerName,
+                email: email || null,
+                first_name: ownerName.split(' ')[0],
+                last_name: ownerName.split(' ').slice(1).join(' ') || ownerName,
+                phone: formattedPhone,
+                password: password,
+                business_name: businessName,
+                device_name: getDeviceName(),
+                device_type: getDeviceType()
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success && result.data) {
+            // Create user session from backend response
+            const user = {
+                id: result.data.user_id,
+                name: result.data.first_name + ' ' + result.data.last_name,
+                phone: result.data.phone,
+                email: result.data.email,
+                role: result.data.role,
+                businessName: result.data.business_name,
+                registrationTime: new Date().toISOString(),
+                sessionToken: result.data.session_token
+            };
+            
+            // Store in session storage
+            sessionStorage.setItem('gel_user', JSON.stringify(user));
+            sessionStorage.setItem('gel_session_token', result.data.session_token);
+            
+            // Also store in localStorage for cross-device access
+            localStorage.setItem('gel_user_remember', JSON.stringify(user));
+            localStorage.setItem('gel_session_token', result.data.session_token);
+            
+            // Show success animation
+            showRegistrationSuccess();
+            
+            // Reload page to show dashboard with new user
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        } else {
+            // Show error from backend
+            showRegistrationError(result.message || 'Registration failed. Please try again.');
+            regBtn.innerHTML = originalText;
+            regBtn.disabled = false;
+        }
+    } catch (error) {
+        console.error('Registration error:', error);
+        showRegistrationError('Connection error. Please check your internet and try again.');
+        const regBtn = document.querySelector('.register-btn');
+        regBtn.innerHTML = originalText;
+        regBtn.disabled = false;
     }
-    
-    // Create new user account
-    const formattedPhone = formatGhanaPhone(phone);
-    
-    const newUser = {
-        businessName: businessName,
-        businessType: businessType,
-        categories: categories,
-        name: ownerName,
-        phone: formattedPhone,
-        role: 'owner',
-        registrationTime: new Date().toISOString(),
-        userId: formattedPhone // Use phone as unique user ID
-    };
-    
-    // Store user in session storage
-    sessionStorage.setItem('gel_user', JSON.stringify(newUser));
-    
-    // ALSO store user data in localStorage for cross-device login
-    localStorage.setItem('gel_user_data', JSON.stringify(newUser));
-    
-    // Optional: Store business info for dashboard
-    sessionStorage.setItem('gel_business_name', businessName);
-    sessionStorage.setItem('gel_business_type', businessType);
-    localStorage.setItem('gel_business_name', businessName);
-    localStorage.setItem('gel_business_type', businessType);
-    
-    // Store categories in localStorage for product form
-    if (categories.length > 0) {
-        localStorage.setItem(`gel_stock_categories_${formattedPhone}`, JSON.stringify(categories));
-    }
-    
-    // Clear any demo data from localStorage to ensure clean start for new user
-    localStorage.removeItem('demo_mode_products');
-    localStorage.removeItem('demo_mode_sales');
-    localStorage.removeItem('demo_mode_credits');
-    
-    console.log('✅ User registered - Data saved for cross-device access');
-    
-    // Show success animation
-    showRegistrationSuccess();
-    
-    // Reload page to show dashboard with new user
-    setTimeout(() => {
-        window.location.reload();
-    }, 1000);
 }
 
 /**
@@ -9577,20 +9177,23 @@ async function handleLogin(event) {
         return;
     }
     
+    // Format phone number to standard +233 format
+    const formattedPhone = formatGhanaPhone(phone);
+    
     try {
-        // Disable login button during request
+        // Show loading state
         const loginBtn = document.querySelector('.login-btn');
+        const originalText = loginBtn.innerHTML;
+        loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging in...';
         loginBtn.disabled = true;
         
-        // Send login request to auth API
-        const response = await fetch('../api/auth_fallback.php', {
+        // Call backend authentication API
+        const response = await fetch('../api/auth.php', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 action: 'login',
-                phone: phone,
+                phone: formattedPhone,
                 password: password,
                 device_name: getDeviceName(),
                 device_type: getDeviceType()
@@ -9599,27 +9202,28 @@ async function handleLogin(event) {
         
         const result = await response.json();
         
-        if (result.success) {
-            // Store session token and user data
-            const sessionData = {
-                session_token: result.data.session_token,
-                user: result.data.user,
-                expires_at: result.data.expires_at,
-                loginTime: new Date().toISOString()
+        if (result.success && result.data) {
+            // Create user session from backend response
+            const user = {
+                id: result.data.user_id,
+                name: result.data.first_name + ' ' + result.data.last_name,
+                phone: result.data.phone,
+                email: result.data.email,
+                role: result.data.role,
+                businessName: result.data.business_name,
+                loginTime: new Date().toISOString(),
+                sessionToken: result.data.session_token
             };
             
-            // Store in session storage (cleared when browser closes)
-            sessionStorage.setItem('gel_user', JSON.stringify(sessionData.user));
+            // Store in session storage (persists while tab is open)
+            sessionStorage.setItem('gel_user', JSON.stringify(user));
             sessionStorage.setItem('gel_session_token', result.data.session_token);
-            sessionStorage.setItem('gel_session_expires', result.data.expires_at);
             
-            // ALWAYS store user data in localStorage for cross-device login
-            // This allows user to access from other devices after logging in
-            localStorage.setItem('gel_user_data', JSON.stringify(sessionData.user));
-            localStorage.setItem('gel_session_token', result.data.session_token);
-            localStorage.setItem('gel_session_expires', result.data.expires_at);
-            
-            console.log('✅ Login successful - User data saved for cross-device access');
+            // If remember me is checked, also store in localStorage for cross-device persistence
+            if (rememberMe) {
+                localStorage.setItem('gel_user_remember', JSON.stringify(user));
+                localStorage.setItem('gel_session_token', result.data.session_token);
+            }
             
             // Show success animation
             showLoginSuccess();
@@ -9629,42 +9233,45 @@ async function handleLogin(event) {
                 window.location.reload();
             }, 1000);
         } else {
+            // Show error from backend
+            showLoginError(result.message || 'Login failed. Please try again.');
+            loginBtn.innerHTML = originalText;
             loginBtn.disabled = false;
-            showLoginError(result.message || 'Login failed');
         }
     } catch (error) {
+        console.error('Login error:', error);
+        showLoginError('Connection error. Please check your internet and try again.');
         const loginBtn = document.querySelector('.login-btn');
+        loginBtn.innerHTML = originalText;
         loginBtn.disabled = false;
-        showLoginError('Network error: ' + error.message);
     }
 }
 
 /**
- * Get device name for session tracking
+ * Get device name for cross-device tracking
  */
 function getDeviceName() {
-    const userAgent = navigator.userAgent;
-    let deviceName = 'Unknown';
-    
-    if (userAgent.match(/iPhone/i)) deviceName = 'iPhone';
-    else if (userAgent.match(/iPad/i)) deviceName = 'iPad';
-    else if (userAgent.match(/Android/i)) deviceName = 'Android Device';
-    else if (userAgent.match(/Chrome/i)) deviceName = 'Chrome Browser';
-    else if (userAgent.match(/Safari/i)) deviceName = 'Safari Browser';
-    else if (userAgent.match(/Firefox/i)) deviceName = 'Firefox Browser';
-    
-    return deviceName;
+    const ua = navigator.userAgent;
+    if (ua.includes('Windows')) return 'Windows Desktop';
+    if (ua.includes('Mac')) return 'Mac Desktop';
+    if (ua.includes('Linux')) return 'Linux Desktop';
+    if (ua.includes('iPhone')) return 'iPhone';
+    if (ua.includes('iPad')) return 'iPad';
+    if (ua.includes('Android')) return 'Android Phone';
+    return 'Unknown Device';
 }
 
 /**
- * Get device type for session tracking
+ * Get device type (web, mobile, tablet)
  */
 function getDeviceType() {
-    const userAgent = navigator.userAgent;
-    
-    if (userAgent.match(/mobile|android|iphone|ipod|windows phone/i)) return 'mobile';
-    if (userAgent.match(/tablet|ipad/i)) return 'tablet';
-    
+    const ua = navigator.userAgent;
+    if (/(tablet|ipad|playbook|silk)|(android(?!.*mobi))/i.test(ua)) {
+        return 'tablet';
+    }
+    if (/Mobile|Android|iP(hone|od)|IEMobile|BlackBerry|Kindle|Silk-Accelerated|(hpwOS)/.test(ua)) {
+        return 'mobile';
+    }
     return 'web';
 }
 
