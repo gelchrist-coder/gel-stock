@@ -2,25 +2,29 @@ services:
   - type: web
     name: gel-stock-api
     env: php
-    buildCommand: echo "GEL-STOCK API"
-    startCommand: cd api && php -S 0.0.0.0:10000
+    plan: free
+    buildCommand: |
+      php -r "echo 'GEL-STOCK API Ready'; exit(0);"
+    startCommand: php -S 0.0.0.0:$PORT
+    healthCheckPath: /api/test.php
     envVars:
-      - key: DB_HOST
-        value: dpg-d4ictcjqkflc73b4e3b0-a.oregon-postgres.render.com
-      - key: DB_PORT
-        value: "5432"
-      - key: DB_NAME
-        value: gelstockdb
-      - key: DB_USER
-        value: gelstockdb_user
-      - key: DB_PASS
-        value: 4y8yiyVYLXlWRtDHj107hE2xgRe0Qe3A
+      - key: DATABASE_URL
+        fromDatabase:
+          name: gel-stock-db
+          property: connectionString
       - key: CORS_ENABLED
         value: "true"
       - key: API_MODE
         value: production
+    disk:
+      name: gel-stock-storage
+      mountPath: /storage
+      sizeGB: 1
 
 databases:
   - name: gel-stock-db
     engine: postgresql
     version: "15"
+    plan: free
+    databaseName: gel_stock
+    preDeployCommand: php /opt/render/project/api/setup.php

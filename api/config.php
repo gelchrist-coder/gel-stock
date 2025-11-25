@@ -14,13 +14,24 @@ ini_set('display_errors', 1);
 date_default_timezone_set('Africa/Accra');
 
 // Database Configuration for PostgreSQL (Render.com Hosted)
-define('DB_HOST', 'dpg-d4ictcjqkflc73b4e3b0-a.oregon-postgres.render.com');
-define('DB_PORT', 5432);                          // PostgreSQL default port
-define('DB_NAME', 'gelstockdb');
-define('DB_USER', 'gelstockdb_user');             // Render.com database user
-define('DB_PASS', '4y8yiyVYLXlWRtDHj107hE2xgRe0Qe3A');  // Render.com database password
+// Parse DATABASE_URL from Render.com environment variable
+if (getenv('DATABASE_URL')) {
+    $parsed_url = parse_url(getenv('DATABASE_URL'));
+    define('DB_HOST', $parsed_url['host'] ?? 'localhost');
+    define('DB_PORT', $parsed_url['port'] ?? 5432);
+    define('DB_NAME', ltrim($parsed_url['path'] ?? '/gel_stock', '/'));
+    define('DB_USER', $parsed_url['user'] ?? 'postgres');
+    define('DB_PASS', $parsed_url['pass'] ?? '');
+} else {
+    // Fallback for local development
+    define('DB_HOST', getenv('DB_HOST') ?? 'localhost');
+    define('DB_PORT', getenv('DB_PORT') ?? 5432);
+    define('DB_NAME', getenv('DB_NAME') ?? 'gel_stock');
+    define('DB_USER', getenv('DB_USER') ?? 'postgres');
+    define('DB_PASS', getenv('DB_PASS') ?? '');
+}
 define('DB_CHARSET', 'UTF8');
-define('DB_SSL', true);                           // Render.com requires SSL
+define('DB_SSL', getenv('DATABASE_URL') ? true : false); // SSL for Render.com, optional for local
 
 // API Configuration
 define('API_VERSION', '1.0');
