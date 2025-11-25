@@ -1,1 +1,1 @@
-web: bash startup.sh
+web: php -S 0.0.0.0:$PORT -t .
