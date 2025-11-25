@@ -1,1 +1,1 @@
-web: php -S 0.0.0.0:$PORT -t .
+web: /app/.heroku/php/bin/php -S 0.0.0.0:$PORT -t .
