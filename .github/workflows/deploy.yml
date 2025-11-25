@@ -18,7 +18,7 @@ jobs:
         username: ${{ secrets.FTP_USERNAME }}
         password: ${{ secrets.FTP_PASSWORD }}
         local-dir: ./
-        server-dir: /public_html/  # Adjust this path to your hosting directory
+        server-dir: /public_html/
         dangerous-delete-include-files: |
           .gitignore
           .github/**

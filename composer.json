@@ -1,0 +1,14 @@
+{
+  "name": "gel-stock/api",
+  "description": "GEL-STOCK Business Management System API",
+  "type": "project",
+  "require": {
+    "php": "^7.4 || ^8.0"
+  },
+  "require-dev": [],
+  "autoload": {
+    "files": [
+      "api/config.php"
+    ]
+  }
+}

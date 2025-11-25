@@ -1,0 +1,25 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+    
+    # Skip existing files and directories
+    RewriteCond %{REQUEST_FILENAME} -f
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+    
+    # Route all requests to index
+    RewriteRule ^(.*)$ index.php [QSA,L]
+</IfModule>
+
+# Allow direct access to API files
+<FilesMatch "\.php$">
+    Order allow,deny
+    Allow from all
+</FilesMatch>
+
+# Set proper headers
+<IfModule mod_headers.c>
+    Header set Access-Control-Allow-Origin "*"
+    Header set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
+    Header set Access-Control-Allow-Headers "Content-Type, Authorization"
+</IfModule>
