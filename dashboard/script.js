@@ -9057,17 +9057,53 @@ async function handleRegistration(event) {
         // Format phone number
         const formattedPhone = formatGhanaPhone(phone);
         
-        // Call backend registration API
+        // PRIORITY 1: Try backend registration (PostgreSQL)
+        const apiSuccess = await attemptBackendRegistration(
+            ownerName, email, formattedPhone, password, businessName, regBtn, originalText
+        );
+        if (apiSuccess) {
+            return; // Backend handled everything
+        }
+        
+        // PRIORITY 2: Fallback to local offline registration
+        const offlineSuccess = attemptOfflineRegistration(
+            ownerName, email, formattedPhone, password, businessName
+        );
+        
+        if (offlineSuccess) {
+            showRegistrationSuccess();
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        } else {
+            showRegistrationError('Registration failed. Please try again.');
+            regBtn.innerHTML = originalText;
+            regBtn.disabled = false;
+        }
+        
+    } catch (error) {
+        console.error('Registration error:', error);
+        showRegistrationError('Error during registration. Please try again.');
+        const regBtn = document.querySelector('.register-btn');
+        regBtn.innerHTML = originalText;
+        regBtn.disabled = false;
+    }
+}
+
+/**
+ * Attempt registration via backend API
+ */
+async function attemptBackendRegistration(firstName, email, phone, password, businessName, btn, originalText) {
+    try {
         const response = await fetch('../api/auth.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 action: 'register',
-                username: ownerName,
+                first_name: firstName.split(' ')[0],
+                last_name: firstName.split(' ').slice(1).join(' ') || firstName,
                 email: email || null,
-                first_name: ownerName.split(' ')[0],
-                last_name: ownerName.split(' ').slice(1).join(' ') || ownerName,
-                phone: formattedPhone,
+                phone: phone,
                 password: password,
                 business_name: businessName,
                 device_name: getDeviceName(),
@@ -9078,45 +9114,99 @@ async function handleRegistration(event) {
         const result = await response.json();
         
         if (result.success && result.data) {
-            // Create user session from backend response
+            // Backend registration successful
+            const userData = result.data.user || result.data;
             const user = {
-                id: result.data.user_id,
-                name: result.data.first_name + ' ' + result.data.last_name,
-                phone: result.data.phone,
-                email: result.data.email,
-                role: result.data.role,
-                businessName: result.data.business_name,
+                id: userData.id || userData.user_id,
+                name: firstName,
+                phone: userData.phone,
+                email: userData.email || email,
+                role: userData.role || 'owner',
+                businessName: businessName,
                 registrationTime: new Date().toISOString(),
-                sessionToken: result.data.session_token
+                sessionToken: result.data.session_token,
+                source: 'backend'
             };
             
-            // Store in session storage
+            // Store in session and local storage
             sessionStorage.setItem('gel_user', JSON.stringify(user));
             sessionStorage.setItem('gel_session_token', result.data.session_token);
-            
-            // Also store in localStorage for cross-device access
             localStorage.setItem('gel_user_remember', JSON.stringify(user));
             localStorage.setItem('gel_session_token', result.data.session_token);
             
-            // Show success animation
+            console.log('✅ Backend registration successful');
             showRegistrationSuccess();
-            
-            // Reload page to show dashboard with new user
             setTimeout(() => {
                 window.location.reload();
             }, 1000);
-        } else {
-            // Show error from backend
-            showRegistrationError(result.message || 'Registration failed. Please try again.');
-            regBtn.innerHTML = originalText;
-            regBtn.disabled = false;
+            
+            return true;
         }
+        
+        console.warn('⚠️ Backend registration failed:', result.message);
+        return false;
+        
     } catch (error) {
-        console.error('Registration error:', error);
-        showRegistrationError('Connection error. Please check your internet and try again.');
-        const regBtn = document.querySelector('.register-btn');
-        regBtn.innerHTML = originalText;
-        regBtn.disabled = false;
+        console.warn('⚠️ Backend API unavailable:', error.message);
+        return false;
+    }
+}
+
+/**
+ * Fallback offline registration
+ */
+function attemptOfflineRegistration(name, email, phone, password, businessName) {
+    try {
+        // Get existing offline users
+        const offlineUsers = JSON.parse(localStorage.getItem('gel_offline_users') || '[]');
+        
+        // Check if phone already registered
+        if (offlineUsers.some(u => u.phone === phone)) {
+            showRegistrationError('This phone number is already registered');
+            return false;
+        }
+        
+        // Create new offline user
+        const newUser = {
+            id: 'offline_' + Date.now(),
+            name: name,
+            phone: phone,
+            email: email || null,
+            password: password, // Simple plaintext for offline mode
+            role: 'owner',
+            businessName: businessName,
+            registrationTime: new Date().toISOString()
+        };
+        
+        // Save to offline users list
+        offlineUsers.push(newUser);
+        localStorage.setItem('gel_offline_users', JSON.stringify(offlineUsers));
+        
+        // Create session
+        const sessionUser = {
+            id: newUser.id,
+            name: newUser.name,
+            phone: newUser.phone,
+            email: newUser.email,
+            role: newUser.role,
+            businessName: newUser.businessName,
+            loginTime: new Date().toISOString(),
+            sessionToken: 'offline_' + Date.now(),
+            source: 'offline'
+        };
+        
+        // Store session
+        sessionStorage.setItem('gel_user', JSON.stringify(sessionUser));
+        sessionStorage.setItem('gel_session_token', sessionUser.sessionToken);
+        localStorage.setItem('gel_user_remember', JSON.stringify(sessionUser));
+        localStorage.setItem('gel_session_token', sessionUser.sessionToken);
+        
+        console.log('✅ Offline registration successful');
+        return true;
+        
+    } catch (error) {
+        console.error('Offline registration error:', error);
+        return false;
     }
 }
 
@@ -9187,13 +9277,49 @@ async function handleLogin(event) {
         loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging in...';
         loginBtn.disabled = true;
         
-        // Call backend authentication API
+        // PRIORITY 1: Try backend authentication (PostgreSQL)
+        const apiSuccess = await attemptBackendLogin(formattedPhone, password, rememberMe);
+        if (apiSuccess) {
+            loginBtn.innerHTML = originalText;
+            loginBtn.disabled = false;
+            return;
+        }
+        
+        // PRIORITY 2: Fallback to local offline authentication
+        const offlineSuccess = attemptOfflineLogin(formattedPhone, password, rememberMe);
+        if (offlineSuccess) {
+            showLoginSuccess();
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+            return;
+        }
+        
+        // No authentication method worked
+        showLoginError('Invalid phone or password. Please try again or register a new account.');
+        loginBtn.innerHTML = originalText;
+        loginBtn.disabled = false;
+        
+    } catch (error) {
+        console.error('Login error:', error);
+        showLoginError('Connection error. Trying offline mode...');
+        const loginBtn = document.querySelector('.login-btn');
+        loginBtn.innerHTML = originalText;
+        loginBtn.disabled = false;
+    }
+}
+
+/**
+ * Attempt login via backend API (PostgreSQL)
+ */
+async function attemptBackendLogin(phone, password, rememberMe) {
+    try {
         const response = await fetch('../api/auth.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 action: 'login',
-                phone: formattedPhone,
+                phone: phone,
                 password: password,
                 device_name: getDeviceName(),
                 device_type: getDeviceType()
@@ -9203,47 +9329,101 @@ async function handleLogin(event) {
         const result = await response.json();
         
         if (result.success && result.data) {
-            // Create user session from backend response
+            // Backend authentication successful
+            const userData = result.data.user || result.data;
             const user = {
-                id: result.data.user_id,
-                name: result.data.first_name + ' ' + result.data.last_name,
-                phone: result.data.phone,
-                email: result.data.email,
-                role: result.data.role,
-                businessName: result.data.business_name,
+                id: userData.id || userData.user_id,
+                name: (userData.first_name || '') + ' ' + (userData.last_name || ''),
+                phone: userData.phone,
+                email: userData.email,
+                role: userData.role || 'owner',
+                businessName: userData.business_name,
                 loginTime: new Date().toISOString(),
-                sessionToken: result.data.session_token
+                sessionToken: result.data.session_token,
+                source: 'backend' // Track source for debugging
             };
             
-            // Store in session storage (persists while tab is open)
+            // Store in session storage
             sessionStorage.setItem('gel_user', JSON.stringify(user));
             sessionStorage.setItem('gel_session_token', result.data.session_token);
             
-            // If remember me is checked, also store in localStorage for cross-device persistence
+            // If remember me is checked, also store in localStorage
             if (rememberMe) {
                 localStorage.setItem('gel_user_remember', JSON.stringify(user));
                 localStorage.setItem('gel_session_token', result.data.session_token);
             }
             
-            // Show success animation
+            console.log('✅ Backend login successful');
             showLoginSuccess();
-            
-            // Reload page to reinitialize with user logged in
             setTimeout(() => {
                 window.location.reload();
             }, 1000);
-        } else {
-            // Show error from backend
-            showLoginError(result.message || 'Login failed. Please try again.');
-            loginBtn.innerHTML = originalText;
-            loginBtn.disabled = false;
+            
+            return true;
         }
+        
+        console.warn('⚠️ Backend login failed:', result.message);
+        return false;
+        
     } catch (error) {
-        console.error('Login error:', error);
-        showLoginError('Connection error. Please check your internet and try again.');
-        const loginBtn = document.querySelector('.login-btn');
-        loginBtn.innerHTML = originalText;
-        loginBtn.disabled = false;
+        console.warn('⚠️ Backend API unavailable:', error.message);
+        return false;
+    }
+}
+
+/**
+ * Fallback offline authentication using localStorage
+ */
+function attemptOfflineLogin(phone, password, rememberMe) {
+    try {
+        // Get all registered offline users
+        const offlineUsers = JSON.parse(localStorage.getItem('gel_offline_users') || '[]');
+        
+        // Find user by phone
+        const user = offlineUsers.find(u => u.phone === phone);
+        
+        if (!user) {
+            console.log('❌ User not found in offline mode');
+            return false;
+        }
+        
+        // Simple password comparison (in offline mode)
+        // NOTE: Passwords stored as plaintext in offline mode for simplicity
+        // In production, should use bcrypt even for offline storage
+        if (user.password !== password) {
+            console.log('❌ Offline password mismatch');
+            return false;
+        }
+        
+        // Create session from offline user data
+        const sessionUser = {
+            id: user.id,
+            name: user.name,
+            phone: user.phone,
+            email: user.email,
+            role: user.role || 'owner',
+            businessName: user.businessName,
+            loginTime: new Date().toISOString(),
+            sessionToken: 'offline_' + Date.now(),
+            source: 'offline' // Track source for debugging
+        };
+        
+        // Store in session storage
+        sessionStorage.setItem('gel_user', JSON.stringify(sessionUser));
+        sessionStorage.setItem('gel_session_token', sessionUser.sessionToken);
+        
+        // If remember me, also store in localStorage
+        if (rememberMe) {
+            localStorage.setItem('gel_user_remember', JSON.stringify(sessionUser));
+            localStorage.setItem('gel_session_token', sessionUser.sessionToken);
+        }
+        
+        console.log('✅ Offline login successful');
+        return true;
+        
+    } catch (error) {
+        console.error('Offline login error:', error);
+        return false;
     }
 }
 
