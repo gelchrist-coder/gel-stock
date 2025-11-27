@@ -13,7 +13,7 @@ class NaturalHairBusinessManager {
         this.initializeAuthSystem();
     }
     
-    // Authentication System
+    // Authentication System - Render.com PostgreSQL Only (Production Mode)
     initializeAuthSystem() {
         // Check if user is already logged in (session storage - current session)
         const sessionUser = sessionStorage.getItem('gel_user');
@@ -23,9 +23,8 @@ class NaturalHairBusinessManager {
         const rememberUser = localStorage.getItem('gel_user_remember');
         const rememberToken = localStorage.getItem('gel_session_token');
         
-        const demoMode = sessionStorage.getItem('gel_demo_mode');
-        
-        // Priority: 1) Current session 2) Remembered session 3) Demo mode 4) Login screen
+        // Production mode: No demo mode, only Render.com database authentication
+        // Priority: 1) Current session 2) Remembered session 3) Login screen
         if (sessionUser && sessionToken) {
             // Current session exists
             this.isLoggedIn = true;
@@ -44,23 +43,8 @@ class NaturalHairBusinessManager {
             this.verifySessionToken(rememberToken);
             this.showDashboard();
             this.initializeSystem();
-        } else if (demoMode === 'true') {
-            // Demo mode
-            this.isDemoMode = true;
-            this.currentUser = { name: 'demo', email: 'demo@gel-stock.com', role: 'demo', businessId: 'demo_mode' };
-            this.businessId = 'demo_mode';
-            sessionStorage.setItem('gel_user', JSON.stringify(this.currentUser));
-            sessionStorage.setItem('gel_demo_mode', 'true');
-            
-            // Auto-load sample products for demo mode
-            const existingProducts = JSON.parse(localStorage.getItem('jmonic_products') || '[]');
-            if (existingProducts.length === 0) {
-                this.loadDemoSampleProducts();
-            }
-            this.showDashboard();
-            this.initializeSystem();
         } else {
-            // No session - show login screen
+            // No session - show login screen (Render.com PostgreSQL backend required)
             this.showLoginScreen();
         }
     }
@@ -294,17 +278,17 @@ class NaturalHairBusinessManager {
             kpiCards[3].textContent = '0';
         }
         
-        // Show help message in alerts
+        // Show help message in alerts (Production Mode - Render.com PostgreSQL Required)
         const alertsList = document.querySelector('.alert-list');
         if (alertsList) {
             alertsList.innerHTML = `
                 <div class="alert-item">
                     <div class="alert-icon">
-                        <i class="fas fa-info-circle"></i>
+                        <i class="fas fa-cloud"></i>
                     </div>
                     <div class="alert-content">
-                        <p>Server connection issue detected</p>
-                        <span class="alert-action">Please ensure your web server is running and database is configured</span>
+                        <p>Production Mode: Render.com PostgreSQL Backend</p>
+                        <span class="alert-action">Ensure Render.com Web Service is running and DATABASE_URL is set</span>
                     </div>
                 </div>
                 <div class="alert-item">
@@ -312,30 +296,41 @@ class NaturalHairBusinessManager {
                         <i class="fas fa-database"></i>
                     </div>
                     <div class="alert-content">
-                        <p>Check BACKEND_SETUP.md for setup instructions</p>
-                        <span class="alert-action">Import database and update config.php</span>
+                        <p>Backend Connection Required</p>
+                        <span class="alert-action">This application requires a live connection to Render.com PostgreSQL</span>
                     </div>
                 </div>
             `;
         }
     }
 
-    // API Methods
+    // API Methods - Production Mode (Render.com PostgreSQL Only)
     async apiCall(endpoint, method = 'GET', data = null) {
-        // Temporary localStorage-based solution until PHP backend is set up
+        // Production mode: All requests go to Render.com PostgreSQL backend
         try {
-            console.log('Using localStorage backend for:', endpoint, method);
+            console.log('API Call:', endpoint, method);
             
-            if (endpoint === 'products.php') {
-                return this.handleProductsAPI(method, data);
-            } else if (endpoint === 'sales.php') {
-                return this.handleSalesAPI(method, data);
-            } else if (endpoint === 'dashboard.php') {
-                return this.handleDashboardAPI();
+            const url = this.apiBase + endpoint;
+            const options = {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            };
+            
+            if (data) {
+                options.body = JSON.stringify(data);
             }
             
-            // Fallback for unknown endpoints
-            return { success: true, data: [], message: 'Backend not configured' };
+            const response = await fetch(url, options);
+            const result = await response.json();
+            
+            if (!response.ok) {
+                console.error('API Error:', result);
+                throw new Error(result.message || `API Error: ${response.status}`);
+            }
+            
+            return result;
         } catch (error) {
             console.error('API call failed:', error);
             this.showNotification(`Error: ${error.message}`, 'error');

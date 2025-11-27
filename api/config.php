@@ -13,25 +13,21 @@ ini_set('display_errors', 1);
 // Set the default timezone
 date_default_timezone_set('Africa/Accra');
 
-// Database Configuration for PostgreSQL (Render.com Hosted)
-// Parse DATABASE_URL from Render.com environment variable
-if (getenv('DATABASE_URL')) {
-    $parsed_url = parse_url(getenv('DATABASE_URL'));
-    define('DB_HOST', $parsed_url['host'] ?? 'localhost');
-    define('DB_PORT', $parsed_url['port'] ?? 5432);
-    define('DB_NAME', ltrim($parsed_url['path'] ?? '/gel_stock', '/'));
-    define('DB_USER', $parsed_url['user'] ?? 'postgres');
-    define('DB_PASS', $parsed_url['pass'] ?? '');
-} else {
-    // Fallback for local development
-    define('DB_HOST', getenv('DB_HOST') ?? 'localhost');
-    define('DB_PORT', getenv('DB_PORT') ?? 5432);
-    define('DB_NAME', getenv('DB_NAME') ?? 'gel_stock');
-    define('DB_USER', getenv('DB_USER') ?? 'postgres');
-    define('DB_PASS', getenv('DB_PASS') ?? '');
+// Database Configuration for PostgreSQL (Render.com Only)
+// PRODUCTION MODE: DATABASE_URL is REQUIRED (no fallback to local development)
+if (!getenv('DATABASE_URL')) {
+    // DATABASE_URL must be set on Render.com
+    error_log('WARNING: DATABASE_URL not set. Please set DATABASE_URL in Render.com environment variables.');
 }
+
+$parsed_url = parse_url(getenv('DATABASE_URL'));
+define('DB_HOST', $parsed_url['host'] ?? null);
+define('DB_PORT', $parsed_url['port'] ?? 5432);
+define('DB_NAME', ltrim($parsed_url['path'] ?? '/gel_stock', '/'));
+define('DB_USER', $parsed_url['user'] ?? null);
+define('DB_PASS', $parsed_url['pass'] ?? '');
 define('DB_CHARSET', 'UTF8');
-define('DB_SSL', getenv('DATABASE_URL') ? true : false); // SSL for Render.com, optional for local
+define('DB_SSL', true); // Always use SSL for Render.com PostgreSQL
 
 // API Configuration
 define('API_VERSION', '1.0');
