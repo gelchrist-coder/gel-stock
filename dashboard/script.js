@@ -209,11 +209,21 @@ class NaturalHairBusinessManager {
     }
     
     logout() {
+        // Clear all session data
         sessionStorage.removeItem('gel_user');
+        sessionStorage.removeItem('gel_session_token');
         sessionStorage.removeItem('gel_demo_mode');
+        
+        // Clear remember me (cross-device) data
+        localStorage.removeItem('gel_user_remember');
+        localStorage.removeItem('gel_session_token');
+        
+        // Reset state
         this.isLoggedIn = false;
         this.isDemoMode = false;
         this.currentUser = null;
+        
+        // Reload to show login screen
         window.location.reload();
     }
     
@@ -2006,11 +2016,8 @@ ${credit.payments ? credit.payments.map(p => `
     // Get payment method amounts for a date range
     getPaymentMethodsByDateRange(startDate, endDate) {
         const sales = JSON.parse(localStorage.getItem('jmonic_sales') || '[]');
-        const start = new Date(startDate).toDateString();
-        const end = new Date(endDate).toDateString();
         
         const filteredSales = sales.filter(sale => {
-            const saleDate = new Date(sale.date || sale.created_at).toDateString();
             const saleDateObj = new Date(sale.date || sale.created_at);
             return saleDateObj >= new Date(startDate) && saleDateObj <= new Date(endDate);
         });
