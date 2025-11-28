@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: gel-stock-api
+    runtime: php
+    runtimeVersion: 8.2
+    buildCommand: echo "No build needed"
+    startCommand: php -S 0.0.0.0:$PORT -t .
