@@ -13690,3 +13690,84 @@ body {
         font-size: 0.9rem;
     }
 }
+
+/* ===== RECORD SALE QUICK STATS ===== */
+.recordsale-quick-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+    padding: 1.2rem;
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+}
+
+.recordsale-quick-stats .stat-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+.recordsale-quick-stats .stat-item:hover {
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.1);
+    transform: translateY(-2px);
+}
+
+.recordsale-quick-stats .stat-item i {
+    font-size: 1.5rem;
+    color: #2563eb;
+    min-width: 30px;
+    text-align: center;
+}
+
+.recordsale-quick-stats .stat-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.recordsale-quick-stats .stat-label {
+    font-size: 0.85rem;
+    color: #6b7280;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.recordsale-quick-stats .stat-value {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #1f2937;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+    .recordsale-quick-stats {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+        padding: 0.8rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .recordsale-quick-stats .stat-item {
+        padding: 0.5rem;
+    }
+
+    .recordsale-quick-stats .stat-label {
+        font-size: 0.75rem;
+    }
+
+    .recordsale-quick-stats .stat-value {
+        font-size: 0.95rem;
+    }
+
+    .recordsale-quick-stats .stat-item i {
+        font-size: 1.2rem;
+    }
+}

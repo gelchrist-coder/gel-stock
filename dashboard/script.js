@@ -1431,6 +1431,48 @@ class NaturalHairBusinessManager {
         console.log('Updated sale total:', total.toFixed(2));
     }
 
+    // Update quick stats on Record Sale page
+    updateRecordSaleQuickStats() {
+        try {
+            const todaySales = this.sales.filter(sale => {
+                const saleDate = sale.date ? new Date(sale.date).toDateString() : null;
+                const today = new Date().toDateString();
+                return saleDate === today;
+            });
+
+            // Update stats
+            const todayCount = document.getElementById('todaySalesCount');
+            if (todayCount) {
+                todayCount.textContent = todaySales.length;
+            }
+
+            let todayRevenue = 0;
+            todaySales.forEach(sale => {
+                todayRevenue += sale.totalAmount || 0;
+            });
+
+            const revenueEl = document.getElementById('todayQuickRevenue');
+            if (revenueEl) {
+                revenueEl.textContent = `GHS ${todayRevenue.toFixed(2)}`;
+            }
+
+            const avgEl = document.getElementById('avgSaleValue');
+            if (avgEl) {
+                const avg = todaySales.length > 0 ? todayRevenue / todaySales.length : 0;
+                avgEl.textContent = `GHS ${avg.toFixed(2)}`;
+            }
+
+            const lastEl = document.getElementById('lastSaleTime');
+            if (lastEl && todaySales.length > 0) {
+                const lastSale = todaySales[todaySales.length - 1];
+                const saleTime = lastSale.date ? new Date(lastSale.date).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) : 'Unknown';
+                lastEl.textContent = saleTime;
+            }
+        } catch (error) {
+            console.log('Stats update skipped:', error.message);
+        }
+    }
+
     handlePaymentMethodChange() {
         const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
         const creditSection = document.getElementById('creditPaymentSection');
@@ -1663,6 +1705,9 @@ class NaturalHairBusinessManager {
                 if (typeof updateNotificationBadge === 'function') {
                     updateNotificationBadge();
                 }
+                
+                // Update quick stats on record sale page if visible
+                this.updateRecordSaleQuickStats();
             } else {
                 console.error('API returned success=false or invalid response:', result);
                 this.showNotification(`Failed to record sale: ${result?.message || 'Unknown error'}`, 'error');
@@ -7007,6 +7052,7 @@ function showSection(sectionName) {
     } else if (sectionName === 'recordsale' && businessManager) {
         // Initialize record sale form
         businessManager.loadProductsForSale();
+        businessManager.updateRecordSaleQuickStats();
         // Reset form
         const form = document.getElementById('simpleSaleForm');
         if (form) {
