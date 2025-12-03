@@ -262,9 +262,100 @@ class NaturalHairBusinessManager {
                 localStorage.setItem('jmonic_products', JSON.stringify(products));
                 console.log('✅ Products migrated to include category field');
             }
+            
+            // Initialize sample data if no products exist
+            if (products.length === 0) {
+                this.initializeSampleProducts();
+            }
         } catch (error) {
             console.error('Error migrating products:', error);
         }
+    }
+
+    initializeSampleProducts() {
+        const sampleProducts = [
+            {
+                id: '1',
+                sku: 'HAIR-OIL-001',
+                name: 'Premium Hair Oil',
+                category: 'Hair Care',
+                description: 'Professional grade hair conditioning oil',
+                selling_price: 45.00,
+                cost_price: 20.00,
+                stock_quantity: 50,
+                reorder_level: 10,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+            },
+            {
+                id: '2',
+                sku: 'HAIR-GEL-001',
+                name: 'Styling Hair Gel',
+                category: 'Hair Care',
+                description: 'Strong hold styling gel for natural hair',
+                selling_price: 35.00,
+                cost_price: 15.00,
+                stock_quantity: 75,
+                reorder_level: 15,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+            },
+            {
+                id: '3',
+                sku: 'HAIR-CREAM-001',
+                name: 'Moisturizing Cream',
+                category: 'Hair Care',
+                description: 'Deep moisturizing treatment for dry hair',
+                selling_price: 55.00,
+                cost_price: 25.00,
+                stock_quantity: 40,
+                reorder_level: 8,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+            },
+            {
+                id: '4',
+                sku: 'SHAMPOO-001',
+                name: 'Natural Shampoo',
+                category: 'Hair Wash',
+                description: 'Gentle cleansing shampoo for natural hair',
+                selling_price: 25.00,
+                cost_price: 10.00,
+                stock_quantity: 100,
+                reorder_level: 20,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+            },
+            {
+                id: '5',
+                sku: 'CONDITIONER-001',
+                name: 'Hair Conditioner',
+                category: 'Hair Wash',
+                description: 'Hydrating conditioner for natural hair',
+                selling_price: 30.00,
+                cost_price: 12.00,
+                stock_quantity: 80,
+                reorder_level: 15,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+            },
+            {
+                id: '6',
+                sku: 'EXTENSION-001',
+                name: 'Hair Extensions Bundle',
+                category: 'Extensions',
+                description: '18 inch premium human hair extensions',
+                selling_price: 150.00,
+                cost_price: 70.00,
+                stock_quantity: 25,
+                reorder_level: 5,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+            }
+        ];
+        
+        localStorage.setItem('jmonic_products', JSON.stringify(sampleProducts));
+        console.log('✅ Sample products initialized:', sampleProducts.length);
     }
 
     
@@ -917,59 +1008,129 @@ class NaturalHairBusinessManager {
     // Sales Methods
     async loadProductsForSale() {
         try {
-            console.log('Loading categories for sale...');
-            const response = await this.apiCall('products.php');
-            const products = response.data;
-            console.log('Products loaded:', products);
+            console.log('Loading products for sale form...');
+            let products = [];
             
-            const categoryCheckboxesContainer = document.getElementById('categoryCheckboxes');
-            
-            if (!categoryCheckboxesContainer) {
-                console.error('Category checkboxes container not found');
-                return;
+            try {
+                const response = await this.apiCall('products.php');
+                products = response.data || [];
+            } catch (apiError) {
+                console.warn('API failed, falling back to localStorage:', apiError);
+                // Fallback to localStorage
+                products = JSON.parse(localStorage.getItem('jmonic_products') || '[]');
+                if (products.length === 0) {
+                    console.warn('No products in localStorage either');
+                    this.showNotification('No products available. Please add products first.', 'warning');
+                    return;
+                }
             }
             
-            // Get unique categories
+            console.log('Products loaded for sale:', products.length);
+            
+            // Get unique categories from products
             const categories = new Set();
             products.forEach(product => {
                 const category = product.category || 'Uncategorized';
                 categories.add(category);
             });
             
-            // Clear existing checkboxes
-            categoryCheckboxesContainer.innerHTML = '';
-            
-            if (categories.size === 0) {
-                categoryCheckboxesContainer.innerHTML = '<p style="color: #94a3b8; font-size: 0.85rem; margin: 0;">No categories available</p>';
-                return;
+            // Populate category dropdown/filter
+            const categoryFilter = document.getElementById('searchCategoryFilter');
+            if (categoryFilter) {
+                const currentValue = categoryFilter.value;
+                categoryFilter.innerHTML = '<option value="">All Categories</option>';
+                Array.from(categories).sort().forEach(category => {
+                    const option = document.createElement('option');
+                    option.value = category;
+                    option.textContent = category;
+                    categoryFilter.appendChild(option);
+                });
+                categoryFilter.value = currentValue; // Restore previous selection
             }
             
-            // Add categories as checkboxes (sorted alphabetically)
-            Array.from(categories).sort().forEach(category => {
-                const checkboxDiv = document.createElement('div');
-                checkboxDiv.className = 'category-checkbox-item';
+            // Populate category checkboxes if they exist (alternative UI)
+            const categoryCheckboxesContainer = document.getElementById('categoryCheckboxes');
+            if (categoryCheckboxesContainer && categories.size > 0) {
+                categoryCheckboxesContainer.innerHTML = '';
                 
-                const checkbox = document.createElement('input');
-                checkbox.type = 'checkbox';
-                checkbox.id = `category-${category}`;
-                checkbox.value = category;
-                checkbox.className = 'category-checkbox';
-                checkbox.onchange = () => this.loadProductsByCategory();
+                Array.from(categories).sort().forEach(category => {
+                    const checkboxDiv = document.createElement('div');
+                    checkboxDiv.className = 'category-checkbox-item';
+                    
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.id = `category-${category}`;
+                    checkbox.value = category;
+                    checkbox.className = 'category-checkbox';
+                    checkbox.onchange = () => this.loadProductsByCategory();
+                    
+                    const label = document.createElement('label');
+                    label.htmlFor = `category-${category}`;
+                    label.textContent = `📦 ${category} (${products.filter(p => (p.category || 'Uncategorized') === category).length})`;
+                    
+                    checkboxDiv.appendChild(checkbox);
+                    checkboxDiv.appendChild(label);
+                    categoryCheckboxesContainer.appendChild(checkboxDiv);
+                });
+            }
+            
+            // Update product select with all products initially
+            this.updateSaleProductDropdown(products);
+            
+            console.log(`Loaded ${products.length} products across ${categories.size} categories`);
+        } catch (error) {
+            console.error('Failed to load products for sale:', error);
+            this.showNotification('Failed to load products. Please try again.', 'error');
+        }
+    }
+    
+    updateSaleProductDropdown(products) {
+        const productSelect = document.getElementById('productSelect');
+        if (!productSelect) return;
+        
+        // Clear existing options
+        productSelect.innerHTML = '<option value="">-- Select Product --</option>';
+        
+        // Group products by category for better organization
+        const productsByCategory = {};
+        products.forEach(product => {
+            const category = product.category || 'Uncategorized';
+            if (!productsByCategory[category]) {
+                productsByCategory[category] = [];
+            }
+            productsByCategory[category].push(product);
+        });
+        
+        // Add optgroups for each category
+        Object.keys(productsByCategory).sort().forEach(category => {
+            const optgroup = document.createElement('optgroup');
+            optgroup.label = `${category} (${productsByCategory[category].length})`;
+            
+            productsByCategory[category].forEach(product => {
+                const option = document.createElement('option');
+                option.value = product.id;
+                option.dataset.price = product.selling_price || 0;
+                option.dataset.stock = product.stock_quantity || 0;
+                option.dataset.name = product.name;
+                option.dataset.cost = product.cost_price || 0;
+                option.dataset.sku = product.sku || '';
+                option.dataset.category = product.category || 'Uncategorized';
                 
-                const label = document.createElement('label');
-                label.htmlFor = `category-${category}`;
-                label.textContent = `📦 ${category}`;
+                const stock = product.stock_quantity || 0;
+                const statusText = stock <= 0 ? '❌ OUT OF STOCK' : stock <= 5 ? '⚠️ LOW STOCK' : '✓ IN STOCK';
                 
-                checkboxDiv.appendChild(checkbox);
-                checkboxDiv.appendChild(label);
-                categoryCheckboxesContainer.appendChild(checkboxDiv);
+                option.textContent = `${product.name} - GHS ${parseFloat(product.selling_price || 0).toFixed(2)} (${statusText})`;
+                
+                if (stock <= 0) {
+                    option.disabled = true;
+                    option.style.color = '#ef4444';
+                }
+                
+                optgroup.appendChild(option);
             });
             
-            console.log(`Added ${categories.size} categories as checkboxes`);
-        } catch (error) {
-            console.error('Failed to load categories for sale:', error);
-            this.showNotification('Failed to load categories for sale', 'error');
-        }
+            productSelect.appendChild(optgroup);
+        });
     }
 
     loadProductsByCategory() {
@@ -984,10 +1145,10 @@ class NaturalHairBusinessManager {
             const selectedCategoryName = document.getElementById('selectedCategoryName');
             
             // Reset product dropdown
-            productSelect.innerHTML = '<option value="">Select Product</option>';
+            productSelect.innerHTML = '<option value="">-- Select Product --</option>';
             
             if (checkedCategories.length === 0) {
-                categoryInfo.style.display = 'none';
+                if (categoryInfo) categoryInfo.style.display = 'none';
                 return;
             }
             
@@ -1001,11 +1162,11 @@ class NaturalHairBusinessManager {
             
             if (categoryProducts.length === 0) {
                 productSelect.innerHTML += '<option value="" disabled>No products in selected categories</option>';
-                categoryInfo.style.display = 'none';
+                if (categoryInfo) categoryInfo.style.display = 'none';
                 return;
             }
             
-            // Add products to dropdown
+            // Add products to dropdown with stock indicators
             categoryProducts.forEach(product => {
                 const option = document.createElement('option');
                 option.value = product.id;
@@ -1016,15 +1177,17 @@ class NaturalHairBusinessManager {
                 option.dataset.sku = product.sku || '';
                 option.dataset.category = product.category || 'Uncategorized';
                 
-                if (product.stock_quantity <= 0) {
-                    option.textContent = `${product.name} - GHS ${product.selling_price} (OUT OF STOCK)`;
+                const stock = product.stock_quantity || 0;
+                const statusEmoji = stock <= 0 ? '❌' : stock <= 5 ? '⚠️' : '✓';
+                const statusText = stock <= 0 ? 'OUT OF STOCK' : stock <= 5 ? 'LOW STOCK' : 'IN STOCK';
+                
+                option.textContent = `${product.name} - GHS ${parseFloat(product.selling_price).toFixed(2)} (${statusEmoji} ${statusText}: ${stock})`;
+                
+                if (stock <= 0) {
                     option.disabled = true;
                     option.style.color = '#ef4444';
-                } else if (product.stock_quantity <= (product.reorder_level || 10)) {
-                    option.textContent = `${product.name} - GHS ${product.selling_price} (${product.stock_quantity} left - LOW STOCK)`;
+                } else if (stock <= 5) {
                     option.style.color = '#f59e0b';
-                } else {
-                    option.textContent = `${product.name} - GHS ${product.selling_price} (${product.stock_quantity} in stock)`;
                 }
                 
                 productSelect.appendChild(option);
@@ -1032,8 +1195,8 @@ class NaturalHairBusinessManager {
             
             // Show category info with selected categories
             const categoryNames = checkedCategories.join(', ');
-            selectedCategoryName.textContent = categoryNames;
-            categoryInfo.style.display = 'block';
+            if (selectedCategoryName) selectedCategoryName.textContent = categoryNames;
+            if (categoryInfo) categoryInfo.style.display = 'block';
             
             console.log(`Loaded ${categoryProducts.length} products for categories: ${categoryNames}`);
         } catch (error) {
@@ -1041,28 +1204,30 @@ class NaturalHairBusinessManager {
             this.showNotification('Failed to load products', 'error');
         }
     }
-
-    searchProducts() {
-        // This function is no longer needed - using dropdown instead
-    }
-
+    
     selectProductFromDropdown() {
         const productSelect = document.getElementById('productSelect');
         
         if (!productSelect.value) {
-            document.getElementById('selectedProductDisplay').style.display = 'none';
+            const selectedDisplay = document.getElementById('selectedProductDisplay');
+            if (selectedDisplay) selectedDisplay.style.display = 'none';
             return;
         }
         
         const selectedOption = productSelect.options[productSelect.selectedIndex];
         const productName = selectedOption.dataset.name;
         const sellingPrice = selectedOption.dataset.price;
+        const stock = selectedOption.dataset.stock;
         
-        // Update product display
+        // Update product display with stock info
         const selectedDisplay = document.getElementById('selectedProductDisplay');
         const selectedProductName = document.getElementById('selectedProductName');
-        selectedProductName.textContent = `✓ ${productName} (GHS ${parseFloat(sellingPrice).toFixed(2)})`;
-        selectedDisplay.style.display = 'inline-flex';
+        
+        if (selectedProductName && selectedDisplay) {
+            const stockStatus = stock <= 0 ? '(OUT OF STOCK)' : stock <= 5 ? `(${stock} LEFT - LOW STOCK!)` : `(${stock} available)`;
+            selectedProductName.innerHTML = `<strong>✓ ${productName}</strong> - GHS ${parseFloat(sellingPrice).toFixed(2)}<br><small style="color: ${stock <= 5 ? '#f59e0b' : '#10b981'};">${stockStatus}</small>`;
+            selectedDisplay.style.display = 'inline-flex';
+        }
     }
 
     addProductToSale() {
@@ -6789,6 +6954,7 @@ function showSection(sectionName) {
     // Update page title in header
     const pageTitleMap = {
         'overview': 'Dashboard',
+        'recordsale': 'Record New Sale',
         'products': 'Products Management',
         'sales': 'Sales Records',
         'revenue': 'Revenue Analytics',
@@ -6838,6 +7004,25 @@ function showSection(sectionName) {
     } else if (sectionName === 'employees' && businessManager) {
         // Load employee list when employees section is viewed
         businessManager.loadEmployeeList();
+    } else if (sectionName === 'recordsale' && businessManager) {
+        // Initialize record sale form
+        businessManager.loadProductsForSale();
+        // Reset form
+        const form = document.getElementById('simpleSaleForm');
+        if (form) {
+            form.reset();
+            document.getElementById('selectedProducts').innerHTML = '';
+            businessManager.updateSaleTotal();
+        }
+        // Auto-set today's date
+        const dateInput = document.getElementById('saleDateInput') || document.querySelector('input[name="saleDate"]');
+        if (dateInput) {
+            const today = new Date().toISOString().split('T')[0];
+            dateInput.value = today;
+            dateInput.setAttribute('disabled', 'disabled');
+            dateInput.style.cursor = 'not-allowed';
+            dateInput.style.background = '#f0f9ff';
+        }
     }
     
     // Update header title and subtitle
@@ -6876,25 +7061,56 @@ function updateNavigationBasedOnRole() {
  * Navigate to a section and check permissions
  */
 function navigateToSection(sectionName) {
+    console.log('Navigating to section:', sectionName);
+    
     const currentUser = JSON.parse(sessionStorage.getItem('gel_user') || '{}');
     const userRole = currentUser.role || 'employee';
     
-    // Find the menu item for this section
+    // Find the menu item for this section and check permissions
     const menuItem = document.querySelector(`[data-menu-item="${sectionName}"]`);
     if (menuItem) {
         const allowedRoles = menuItem.getAttribute('data-allowed-roles');
         if (allowedRoles) {
             const roles = allowedRoles.split(',').map(r => r.trim());
             if (!roles.includes(userRole)) {
-                // User doesn't have access to this section
                 console.warn(`User role "${userRole}" cannot access section "${sectionName}"`);
-                return;
+                return false;
             }
         }
     }
     
-    // Show the section
-    showSection(sectionName);
+    // Close mobile sidebar first
+    if (typeof closeMobileSidebar === 'function') {
+        closeMobileSidebar();
+    }
+    
+    // Update active states in desktop sidebar
+    const desktopMenuItems = document.querySelectorAll('.sidebar-menu li');
+    desktopMenuItems.forEach(item => {
+        if (item.getAttribute('data-menu-item') === sectionName) {
+            item.classList.add('active');
+        } else {
+            item.classList.remove('active');
+        }
+    });
+    
+    // Update active states in mobile sidebar
+    const mobileMenuItems = document.querySelectorAll('.mobile-sidebar-menu li');
+    mobileMenuItems.forEach(item => {
+        if (item.getAttribute('data-menu-item') === sectionName) {
+            item.classList.add('active');
+        } else {
+            item.classList.remove('active');
+        }
+    });
+    
+    // Show the selected section
+    if (typeof showSection === 'function') {
+        showSection(sectionName);
+    }
+    
+    console.log('Navigation completed to:', sectionName);
+    return false;
 }
 
 // Modal Functions  
@@ -7378,10 +7594,32 @@ function setupFormHandlers() {
         newProductForm.addEventListener('submit', handleAddProductSubmit);
     }
     
-    // Add Sale Form
+    // Record Sale Form (Full Page)
+    const simpleSaleForm = document.getElementById('simpleSaleForm');
+    if (simpleSaleForm) {
+        simpleSaleForm.addEventListener('submit', handleAddSaleSubmit);
+        
+        // Setup real-time form validation
+        setupSaleFormValidation(simpleSaleForm);
+        
+        // Auto-set sale date to today
+        const saleDateInput = simpleSaleForm.querySelector('input[name="saleDate"]');
+        if (saleDateInput) {
+            const today = new Date().toISOString().split('T')[0];
+            saleDateInput.value = today;
+            saleDateInput.setAttribute('disabled', 'disabled');
+            saleDateInput.style.cursor = 'not-allowed';
+            saleDateInput.style.background = '#f0f9ff';
+        }
+    }
+    
+    // Add Sale Form (Modal)
     const addSaleForm = document.querySelector('#addSaleModal form');
     if (addSaleForm) {
         addSaleForm.addEventListener('submit', handleAddSaleSubmit);
+        
+        // Setup real-time form validation
+        setupSaleFormValidation(addSaleForm);
     }
     
     // Credit Payment Event Listeners
@@ -7391,6 +7629,74 @@ function setupFormHandlers() {
             businessManager.updateCreditSummary();
         });
     }
+}
+
+// Real-time form validation for sales form
+function setupSaleFormValidation(form) {
+    // Sale Date validation
+    const saleDateInput = form.querySelector('input[name="saleDate"]');
+    if (saleDateInput) {
+        saleDateInput.addEventListener('change', (e) => {
+            const errorDisplay = document.getElementById('saleDateError') || createErrorDisplay('saleDateError', saleDateInput.parentElement);
+            
+            if (!e.target.value) {
+                errorDisplay.textContent = '⚠️ Sale date is required';
+                errorDisplay.style.display = 'block';
+                saleDateInput.style.borderColor = '#ef4444';
+            } else {
+                errorDisplay.style.display = 'none';
+                saleDateInput.style.borderColor = '';
+            }
+        });
+    }
+    
+    // Product selection validation
+    const productSelect = form.querySelector('#productSelect');
+    if (productSelect) {
+        productSelect.addEventListener('change', (e) => {
+            const errorDisplay = document.getElementById('productSelectError') || createErrorDisplay('productSelectError', productSelect.parentElement);
+            
+            const selectedProducts = document.querySelectorAll('#selectedProducts > div');
+            if (selectedProducts.length === 0) {
+                errorDisplay.textContent = '⚠️ Add at least one product to the sale';
+                errorDisplay.style.display = 'block';
+                productSelect.style.borderColor = '#ef4444';
+            } else {
+                errorDisplay.style.display = 'none';
+                productSelect.style.borderColor = '';
+            }
+        });
+    }
+    
+    // Credit customer name validation
+    const creditCustomerNameInput = form.querySelector('#creditCustomerName');
+    if (creditCustomerNameInput) {
+        creditCustomerNameInput.addEventListener('blur', (e) => {
+            const paymentMethod = form.querySelector('input[name="paymentMethod"]:checked')?.value;
+            
+            if (paymentMethod === 'credit' && !e.target.value.trim()) {
+                const errorDisplay = document.getElementById('creditCustomerNameError') || createErrorDisplay('creditCustomerNameError', creditCustomerNameInput.parentElement);
+                errorDisplay.textContent = '⚠️ Customer name required for credit sales';
+                errorDisplay.style.display = 'block';
+                creditCustomerNameInput.style.borderColor = '#ef4444';
+            } else {
+                const errorDisplay = document.getElementById('creditCustomerNameError');
+                if (errorDisplay) {
+                    errorDisplay.style.display = 'none';
+                    creditCustomerNameInput.style.borderColor = '';
+                }
+            }
+        });
+    }
+}
+
+// Helper function to create error display elements
+function createErrorDisplay(id, parentElement) {
+    const errorDiv = document.createElement('small');
+    errorDiv.id = id;
+    errorDiv.style.cssText = 'color: #ef4444; margin-top: 0.25rem; display: block;';
+    parentElement.appendChild(errorDiv);
+    return errorDiv;
 }
 
 // Form Submit Handlers
@@ -7826,13 +8132,17 @@ function updateNotificationBadge() {
 
 function updateHeaderTitle() {
     const currentSection = document.querySelector('.content-section.active')?.id || 'overview';
-    const pageTitle = document.getElementById('page-title');
+    const pageTitle = document.getElementById('pageTitle');
     const headerSubtitle = document.querySelector('.header-subtitle');
     
     const titles = {
         'overview': {
             title: 'Business Dashboard',
             subtitle: 'Manage your products and sales'
+        },
+        'recordsale': {
+            title: 'Record New Sale',
+            subtitle: 'Complete a new sale transaction'
         },
         'products': {
             title: 'Product Management',
@@ -8124,43 +8434,6 @@ function closeMobileSidebar() {
     }
 }
 
-function navigateToSection(sectionName) {
-    console.log('Navigating to section:', sectionName);
-    
-    // Close mobile sidebar first
-    closeMobileSidebar();
-    
-    // Update active states in mobile sidebar
-    const mobileMenuItems = document.querySelectorAll('.mobile-sidebar-menu li');
-    mobileMenuItems.forEach(item => {
-        const link = item.querySelector('a');
-        if (link && link.getAttribute('data-section') === sectionName) {
-            item.classList.add('active');
-        } else {
-            item.classList.remove('active');
-        }
-    });
-    
-    // Update active states in bottom navigation
-    const bottomNavItems = document.querySelectorAll('.sidebar.mobile .nav-item');
-    bottomNavItems.forEach(item => {
-        if (item.getAttribute('data-section') === sectionName) {
-            item.classList.add('active');
-        } else {
-            item.classList.remove('active');
-        }
-    });
-    
-    // Show the selected section
-    if (typeof showSection === 'function') {
-        showSection(sectionName);
-    }
-    
-    // Small delay to ensure smooth transition
-    setTimeout(() => {
-        console.log('Navigation completed to:', sectionName);
-    }, 300);
-}
 
 // Mobile dropdown toggle functions
 function toggleNotifications() {

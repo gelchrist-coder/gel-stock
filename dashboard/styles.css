@@ -13104,6 +13104,558 @@ body {
     color: #9ca3af;
 }
 
+/* ===== RECORD SALE FULL PAGE STYLES ===== */
+
+.recordsale-container {
+    padding: 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+    min-height: calc(100vh - 140px);
+}
+
+.recordsale-header {
+    margin-bottom: 2.5rem;
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%);
+    padding: 2rem;
+    border-radius: var(--radius-lg);
+    border-left: 5px solid var(--primary-color);
+}
+
+.recordsale-header h2 {
+    font-size: 2.2rem;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+    font-weight: 700;
+}
+
+.recordsale-subtitle {
+    color: var(--text-secondary);
+    font-size: 1rem;
+}
+
+.recordsale-form-wrapper {
+    background: var(--card-background);
+    border-radius: var(--radius-lg);
+    padding: 2.5rem;
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--border-color);
+}
+
+.recordsale-form-wrapper .form-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-bottom: 2rem;
+    align-items: start;
+}
+
+.recordsale-form-wrapper .form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.recordsale-form-wrapper .form-group label {
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.6rem;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.recordsale-form-wrapper .form-group label i {
+    color: var(--primary-color);
+    min-width: 20px;
+}
+
+.recordsale-form-wrapper .form-input,
+.recordsale-form-wrapper .form-select {
+    padding: 0.85rem 1.2rem;
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius);
+    font-size: 1rem;
+    color: var(--text-primary);
+    background: var(--card-background);
+    transition: all 0.3s ease;
+    font-family: inherit;
+}
+
+.recordsale-form-wrapper .form-input:focus,
+.recordsale-form-wrapper .form-select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
+}
+
+.recordsale-form-wrapper .form-input::placeholder {
+    color: #bfdbfe;
+}
+
+.recordsale-form-wrapper .category-checkboxes-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    max-height: 200px;
+    overflow-y: auto;
+    padding-right: 0.5rem;
+}
+
+.recordsale-form-wrapper .category-checkboxes-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.recordsale-form-wrapper .category-checkboxes-container::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 10px;
+}
+
+.recordsale-form-wrapper .category-checkboxes-container::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+}
+
+.recordsale-form-wrapper .category-checkboxes-container::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+.recordsale-form-wrapper .category-checkbox-item {
+    display: flex;
+    align-items: center;
+    padding: 0.6rem;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.recordsale-form-wrapper .category-checkbox-item:hover {
+    background: #f0f9ff;
+}
+
+.recordsale-form-wrapper .category-checkbox-item input[type="checkbox"] {
+    cursor: pointer;
+    margin-right: 0.75rem;
+    width: 18px;
+    height: 18px;
+    accent-color: var(--primary-color);
+}
+
+.recordsale-form-wrapper .category-checkbox-item label {
+    cursor: pointer;
+    margin: 0;
+    font-weight: 500;
+    font-size: 0.95rem;
+    color: var(--text-primary);
+}
+
+.recordsale-form-wrapper .selected-product-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+    border: 2px solid var(--success-color);
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius);
+    font-size: 0.95rem;
+    color: #047857;
+    font-weight: 500;
+    margin-top: 0.75rem;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.1);
+}
+
+.recordsale-form-wrapper .selected-product-badge i {
+    cursor: pointer;
+    font-size: 1.1rem;
+    transition: all 0.2s ease;
+}
+
+.recordsale-form-wrapper .selected-product-badge i:hover {
+    color: var(--danger-color);
+}
+
+.recordsale-form-wrapper .payment-methods-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 1.2rem;
+}
+
+.recordsale-form-wrapper .payment-method-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1.2rem;
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+    background: #f8fafc;
+}
+
+.recordsale-form-wrapper .payment-method-item:hover {
+    border-color: var(--primary-color);
+    background: #f0f9ff;
+    transform: translateY(-2px);
+}
+
+.recordsale-form-wrapper .payment-method-item input {
+    margin-bottom: 0.75rem;
+    cursor: pointer;
+    width: 20px;
+    height: 20px;
+    accent-color: var(--primary-color);
+}
+
+.recordsale-form-wrapper .payment-method-item label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    margin-bottom: 0;
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+.recordsale-form-wrapper .payment-method-item label i {
+    font-size: 1.8rem;
+    color: var(--text-secondary);
+    transition: all 0.3s ease;
+}
+
+.recordsale-form-wrapper .payment-method-item input:checked + label i {
+    color: var(--primary-color);
+    font-size: 2rem;
+}
+
+.recordsale-form-wrapper .payment-method-item input:checked ~ * {
+    color: var(--primary-color);
+}
+
+.recordsale-form-wrapper .payment-method-item:has(input:checked) {
+    border-color: var(--primary-color);
+    background: linear-gradient(135deg, #eff6ff 0%, #f0f9ff 100%);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.recordsale-form-wrapper .total-amount-display {
+    font-size: 1.4rem;
+    padding: 1.5rem;
+    background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+    border: 2px solid var(--success-color);
+    border-radius: var(--radius);
+    font-weight: 700;
+    color: #047857;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
+    letter-spacing: 0.5px;
+}
+
+.recordsale-form-wrapper .selected-products {
+    border: 2px dashed var(--border-color);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    background: #f8fafc;
+    margin: 2rem 0;
+}
+
+.recordsale-form-wrapper .selected-products:empty::after {
+    content: 'No products added yet. Select a product and click Add to begin.';
+    color: var(--text-secondary);
+    font-style: italic;
+    text-align: center;
+    display: block;
+    padding: 2rem;
+}
+
+.recordsale-form-wrapper .selected-product-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    padding: 1.2rem;
+    background: var(--card-background);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    margin-bottom: 0.8rem;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.recordsale-form-wrapper .selected-product-item:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateX(4px);
+}
+
+.recordsale-form-wrapper .product-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    flex: 1;
+}
+
+.recordsale-form-wrapper .product-name {
+    font-weight: 700;
+    color: var(--text-primary);
+    font-size: 1rem;
+}
+
+.recordsale-form-wrapper .product-price {
+    color: var(--success-color);
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.recordsale-form-wrapper .product-margin {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+}
+
+.recordsale-form-wrapper .stock-info {
+    color: var(--warning-color);
+    font-weight: 500;
+}
+
+.recordsale-form-wrapper .btn-remove {
+    background: #fee2e2;
+    border: none;
+    color: var(--danger-color);
+    cursor: pointer;
+    font-size: 1.3rem;
+    padding: 0.5rem;
+    transition: all 0.2s ease;
+    border-radius: 6px;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.recordsale-form-wrapper .btn-remove:hover {
+    background: var(--danger-color);
+    color: white;
+    transform: scale(1.1);
+}
+
+.recordsale-form-wrapper .credit-payment-section {
+    background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+    border-left: 5px solid var(--warning-color);
+    padding: 1.5rem;
+    border-radius: var(--radius);
+    margin-top: 2rem;
+}
+
+.recordsale-form-wrapper .credit-payment-section h4 {
+    color: #92400e;
+    font-size: 1.05rem;
+    margin-bottom: 0.5rem;
+}
+
+.recordsale-form-wrapper .credit-payment-section p {
+    color: #92400e;
+    font-size: 0.9rem;
+}
+
+.recordsale-form-wrapper .credit-summary {
+    background: linear-gradient(135deg, #fef3c7 0%, #fed7aa 100%);
+    border-left: 5px solid var(--warning-color);
+    padding: 1.2rem;
+    border-radius: var(--radius);
+    color: #92400e;
+    font-weight: 500;
+    margin-top: 1.5rem;
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15);
+}
+
+.recordsale-form-wrapper .sale-actions {
+    display: flex;
+    gap: 1.5rem;
+    margin-top: 2.5rem;
+    padding-top: 2rem;
+    border-top: 2px solid var(--border-color);
+}
+
+.recordsale-form-wrapper .btn-primary,
+.recordsale-form-wrapper .btn-secondary {
+    padding: 1rem 2rem;
+    font-size: 1.05rem;
+    font-weight: 700;
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.recordsale-form-wrapper .btn-primary {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
+    color: white;
+    flex: 1;
+    min-height: 50px;
+}
+
+.recordsale-form-wrapper .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(37, 99, 235, 0.3);
+}
+
+.recordsale-form-wrapper .btn-primary:active {
+    transform: translateY(0);
+}
+
+.recordsale-form-wrapper .btn-secondary {
+    background: #f3f4f6;
+    color: var(--text-primary);
+    flex: 1;
+    min-height: 50px;
+    border: 2px solid var(--border-color);
+}
+
+.recordsale-form-wrapper .btn-secondary:hover {
+    background: #e5e7eb;
+    transform: translateY(-2px);
+    border-color: var(--text-secondary);
+}
+
+/* Animations */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.recordsale-container {
+    animation: slideIn 0.4s ease-out;
+}
+
+.recordsale-form-wrapper .selected-product-item {
+    animation: slideIn 0.3s ease-out;
+}
+
+/* Mobile responsiveness for record sale */
+@media (max-width: 768px) {
+    .recordsale-container {
+        padding: 1rem;
+        min-height: calc(100vh - 100px);
+    }
+
+    .recordsale-header {
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .recordsale-header h2 {
+        font-size: 1.6rem;
+    }
+
+    .recordsale-form-wrapper {
+        padding: 1.5rem;
+        border-radius: 12px;
+    }
+
+    .recordsale-form-wrapper .form-row {
+        grid-template-columns: 1fr;
+        gap: 1.2rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .recordsale-form-wrapper .payment-methods-container {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.8rem;
+    }
+
+    .recordsale-form-wrapper .payment-method-item {
+        padding: 0.8rem;
+    }
+
+    .recordsale-form-wrapper .payment-method-item label {
+        font-size: 0.8rem;
+    }
+
+    .recordsale-form-wrapper .payment-method-item label i {
+        font-size: 1.4rem;
+    }
+
+    .recordsale-form-wrapper .payment-method-item input:checked + label i {
+        font-size: 1.6rem;
+    }
+
+    .recordsale-form-wrapper .sale-actions {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .recordsale-form-wrapper .btn-primary,
+    .recordsale-form-wrapper .btn-secondary {
+        padding: 0.9rem 1.5rem;
+        font-size: 0.95rem;
+        min-height: 45px;
+    }
+
+    .recordsale-form-wrapper .selected-product-item {
+        padding: 1rem;
+    }
+
+    .recordsale-form-wrapper .product-name {
+        font-size: 0.95rem;
+    }
+
+    .recordsale-form-wrapper .btn-remove {
+        width: 36px;
+        height: 36px;
+        font-size: 1.1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .recordsale-container {
+        padding: 0.8rem;
+    }
+
+    .recordsale-header {
+        padding: 1rem;
+        border-radius: 8px;
+    }
+
+    .recordsale-header h2 {
+        font-size: 1.4rem;
+    }
+
+    .recordsale-subtitle {
+        font-size: 0.9rem;
+    }
+
+    .recordsale-form-wrapper {
+        padding: 1.2rem;
+    }
+
+    .recordsale-form-wrapper .form-input,
+    .recordsale-form-wrapper .form-select {
+        padding: 0.75rem 1rem;
+        font-size: 0.95rem;
+    }
+
+    .recordsale-form-wrapper .total-amount-display {
+        font-size: 1.2rem;
+        padding: 1rem;
+    }
+
+    .recordsale-form-wrapper .payment-methods-container {
+        grid-template-columns: 1fr;
+    }
+}
+
+
 /* Mobile responsiveness */
 @media (max-width: 640px) {
     .forgot-password-container {
