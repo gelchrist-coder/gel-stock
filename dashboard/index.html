@@ -524,6 +524,12 @@
                         <span>Sales</span>
                     </a>
                 </li>
+                <li data-menu-item="recordsale" data-allowed-roles="owner,admin,manager,demo">
+                    <a href="#recordsale" data-section="recordsale" onclick="navigateToSection('recordsale'); return false;">
+                        <i class="fas fa-cash-register"></i>
+                        <span>Record Sale</span>
+                    </a>
+                </li>
                 <li data-menu-item="inventory" data-allowed-roles="owner,admin,manager,demo">
                     <a href="#inventory" data-section="inventory" onclick="navigateToSection('inventory'); return false;">
                         <i class="fas fa-boxes"></i>
@@ -599,6 +605,12 @@
                     <a href="#sales" data-section="sales">
                         <i class="fas fa-cash-register"></i>
                         <span>Sales</span>
+                    </a>
+                </li>
+                <li data-menu-item="recordsale" data-allowed-roles="owner,admin,manager,demo">
+                    <a href="#recordsale" data-section="recordsale">
+                        <i class="fas fa-plus-circle"></i>
+                        <span>Record Sale</span>
                     </a>
                 </li>
                 <li data-menu-item="revenue" data-allowed-roles="owner,admin,demo">
@@ -1039,7 +1051,7 @@
                 </section>
 
                 <!-- Record Sale Section (Full Page) -->
-                <section id="recordsale" class="content-section" data-allowed-roles="owner,admin,manager">
+                <section id="recordsale" class="content-section" data-allowed-roles="owner,admin,manager,demo">
                     <div class="recordsale-container">
                         <div class="recordsale-header">
                             <h2>Record New Sale</h2>
