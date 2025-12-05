@@ -282,7 +282,15 @@ class NaturalHairBusinessManager {
         this.loadSettings();
         this.initializeHeaderDropdowns();
         
-        // First test the connection
+        // In demo mode, skip API calls and load sample data
+        if (this.isDemoMode) {
+            console.log('🎮 Running in DEMO MODE - using sample data');
+            this.loadDemoDashboardData();
+            console.log('✅ Demo Dashboard Ready!');
+            return;
+        }
+        
+        // First test the connection (only in production mode)
         try {
             console.log('Testing API connection...');
             const testResult = await this.apiCall('test.php');
@@ -296,6 +304,33 @@ class NaturalHairBusinessManager {
             console.warn('System will work in offline mode.');
             this.showInitialHelpMessage();
         }
+    }
+    
+    /**
+     * Load demo dashboard data with sample products and sales
+     */
+    loadDemoDashboardData() {
+        // Initialize with sample products
+        this.products = [
+            { id: 1, sku: 'OIL-001', name: 'Hair Oil Premium', description: 'Premium hair oil treatment', selling_price: 50, cost_price: 30, stock_quantity: 25, reorder_level: 10 },
+            { id: 2, sku: 'OIL-002', name: 'Hair Oil Regular', description: 'Regular hair oil treatment', selling_price: 35, cost_price: 20, stock_quantity: 15, reorder_level: 8 },
+            { id: 3, sku: 'SHP-001', name: 'Natural Hair Shampoo', description: 'Gentle shampoo for natural hair', selling_price: 45, cost_price: 25, stock_quantity: 20, reorder_level: 10 },
+            { id: 4, sku: 'COND-001', name: 'Deep Conditioner', description: 'Deep conditioning treatment', selling_price: 60, cost_price: 35, stock_quantity: 12, reorder_level: 5 },
+            { id: 5, sku: 'GEL-001', name: 'Hair Gel Strong Hold', description: 'Strong hold hair gel', selling_price: 40, cost_price: 22, stock_quantity: 30, reorder_level: 15 }
+        ];
+        
+        // Add sample sales for demo
+        const today = new Date();
+        this.sales = [
+            { id: 1, items: [{ sku: 'OIL-001', quantity: 2, price: 50 }], totalAmount: 100, date: today.toISOString().split('T')[0], paymentMethod: 'cash' },
+            { id: 2, items: [{ sku: 'SHP-001', quantity: 1, price: 45 }], totalAmount: 45, date: today.toISOString().split('T')[0], paymentMethod: 'transfer' },
+            { id: 3, items: [{ sku: 'COND-001', quantity: 1, price: 60 }], totalAmount: 60, date: today.toISOString().split('T')[0], paymentMethod: 'mobile_money' }
+        ];
+        
+        // Update UI with demo data
+        this.loadProductsInventory();
+        this.loadSalesData();
+        this.updateDashboardKPIs();
     }
 
     migrateProductsWithoutCategory() {
@@ -5085,8 +5120,21 @@ ${credit.payments ? credit.payments.map(p => `
 
     async loadProductsInventory() {
         try {
-            const response = await this.apiCall('products.php');
-            const products = response.data;
+            // In demo mode, use sample products
+            let products;
+            if (this.isDemoMode) {
+                products = [
+                    { id: 1, sku: 'OIL-001', name: 'Hair Oil Premium', description: 'Premium hair oil treatment', selling_price: 50, cost_price: 30, stock_quantity: 25, min_stock_level: 10 },
+                    { id: 2, sku: 'OIL-002', name: 'Hair Oil Regular', description: 'Regular hair oil treatment', selling_price: 35, cost_price: 20, stock_quantity: 15, min_stock_level: 8 },
+                    { id: 3, sku: 'SHP-001', name: 'Natural Hair Shampoo', description: 'Gentle shampoo for natural hair', selling_price: 45, cost_price: 25, stock_quantity: 20, min_stock_level: 10 },
+                    { id: 4, sku: 'COND-001', name: 'Deep Conditioner', description: 'Deep conditioning treatment', selling_price: 60, cost_price: 35, stock_quantity: 12, min_stock_level: 5 },
+                    { id: 5, sku: 'GEL-001', name: 'Hair Gel Strong Hold', description: 'Strong hold hair gel', selling_price: 40, cost_price: 22, stock_quantity: 30, min_stock_level: 15 }
+                ];
+            } else {
+                const response = await this.apiCall('products.php');
+                products = response.data;
+            }
+            
             const productsTableBody = document.querySelector('#productsTableBody');
             
             if (!productsTableBody) return;
