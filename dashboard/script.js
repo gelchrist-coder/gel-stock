@@ -9964,12 +9964,9 @@ function toggleUserMenu() {
     const dropdown = document.getElementById('userDropdown');
     const btn = document.querySelector('.user-profile-btn');
     
-    if (dropdown && dropdown.style.display === 'none') {
-        dropdown.style.display = 'block';
-        btn.classList.add('active');
-    } else if (dropdown) {
-        dropdown.style.display = 'none';
-        btn.classList.remove('active');
+    if (dropdown) {
+        dropdown.classList.toggle('hidden');
+        btn.classList.toggle('active');
     }
 }
 
@@ -9981,8 +9978,8 @@ document.addEventListener('click', (e) => {
     if (userMenu && !userMenu.contains(e.target)) {
         const dropdown = document.getElementById('userDropdown');
         const btn = document.querySelector('.user-profile-btn');
-        if (dropdown) {
-            dropdown.style.display = 'none';
+        if (dropdown && !dropdown.classList.contains('hidden')) {
+            dropdown.classList.add('hidden');
             btn?.classList.remove('active');
         }
     }
