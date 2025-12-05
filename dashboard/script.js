@@ -15,32 +15,33 @@ class NaturalHairBusinessManager {
     
     // Authentication System - Render.com PostgreSQL Only (Production Mode)
     initializeAuthSystem() {
-        // Check if user is already logged in (session storage - current session)
+        // Multi-device login: Check localStorage first (persistent across devices)
+        const userMultiDevice = localStorage.getItem('gel_user');
+        const tokenMultiDevice = localStorage.getItem('gel_session_token');
+        
+        // Fallback: Check sessionStorage for current session
         const sessionUser = sessionStorage.getItem('gel_user');
         const sessionToken = sessionStorage.getItem('gel_session_token');
         
-        // Also check localStorage for "remember me" cross-device login
-        const rememberUser = localStorage.getItem('gel_user_remember');
-        const rememberToken = localStorage.getItem('gel_session_token');
-        
         // Production mode: No demo mode, only Render.com database authentication
-        // Priority: 1) Current session 2) Remembered session 3) Login screen
-        if (sessionUser && sessionToken) {
-            // Current session exists
+        // Priority: 1) Multi-device localStorage 2) Current session 3) Login screen
+        if (userMultiDevice && tokenMultiDevice) {
+            // Multi-device login exists - restore to current session
             this.isLoggedIn = true;
-            this.currentUser = JSON.parse(sessionUser);
+            this.currentUser = JSON.parse(userMultiDevice);
+            
+            // Restore to sessionStorage for current session
+            sessionStorage.setItem('gel_user', userMultiDevice);
+            sessionStorage.setItem('gel_session_token', tokenMultiDevice);
+            
+            // Verify session is still valid
+            this.verifySessionToken(tokenMultiDevice);
             this.showDashboard();
             this.initializeSystem();
-        } else if (rememberUser && rememberToken) {
-            // Cross-device login detected (remembered session)
+        } else if (sessionUser && sessionToken) {
+            // Current session exists (backup check)
             this.isLoggedIn = true;
-            this.currentUser = JSON.parse(rememberUser);
-            
-            // Restore session to sessionStorage for current session
-            sessionStorage.setItem('gel_user', rememberUser);
-            sessionStorage.setItem('gel_session_token', rememberToken);
-            
-            this.verifySessionToken(rememberToken);
+            this.currentUser = JSON.parse(sessionUser);
             this.showDashboard();
             this.initializeSystem();
         } else {
@@ -73,17 +74,21 @@ class NaturalHairBusinessManager {
     }
     
     /**
-     * Logout user and clear session
+     * Logout user and clear all sessions (multi-device safe)
      */
     logout() {
-        // Clear session storage
+        // Clear current session storage
         sessionStorage.removeItem('gel_user');
         sessionStorage.removeItem('gel_session_token');
         sessionStorage.removeItem('gel_demo_mode');
         
-        // Clear localStorage (remember me)
-        localStorage.removeItem('gel_user_remember');
+        // Clear multi-device persistent storage
+        localStorage.removeItem('gel_user');
         localStorage.removeItem('gel_session_token');
+        localStorage.removeItem('gel_user_remember');
+        localStorage.removeItem('gel_device_name');
+        localStorage.removeItem('gel_device_type');
+        localStorage.removeItem('gel_last_login');
         
         // Reset state
         this.isLoggedIn = false;
@@ -92,6 +97,28 @@ class NaturalHairBusinessManager {
         
         // Redirect to login
         window.location.reload();
+    }
+    
+    /**
+     * Setup cross-tab/cross-device synchronization
+     * When user logs in/out on another tab/device, sync here
+     */
+    setupCrossDeviceSync() {
+        window.addEventListener('storage', (e) => {
+            // When localStorage changes (from another tab/device)
+            if (e.key === 'gel_user' || e.key === 'gel_session_token') {
+                if (!e.newValue) {
+                    // User logged out in another tab
+                    console.log('🔄 User logged out in another device, syncing...');
+                    this.logout();
+                } else if (e.newValue !== sessionStorage.getItem(e.key)) {
+                    // Session changed in another tab (e.g., different user logged in)
+                    console.log('🔄 Session changed in another device, syncing...');
+                    sessionStorage.setItem(e.key, e.newValue);
+                    window.location.reload();
+                }
+            }
+        });
     }
 
     /**
@@ -215,6 +242,9 @@ class NaturalHairBusinessManager {
         console.log('J\'MONIC ENTERPRISE System Initializing...');
         console.log('API Base URL:', this.apiBase);
         console.log('User Role:', this.currentUser?.role);
+        
+        // Setup cross-device synchronization
+        this.setupCrossDeviceSync();
         
         // Update navigation based on user role
         if (typeof updateNavigationBasedOnRole === 'function') {
@@ -9664,17 +9694,18 @@ async function attemptBackendLogin(phone, password, rememberMe) {
                 source: 'backend' // Track source for debugging
             };
             
-            // Store in session storage
+            // Store in localStorage for multi-device support (persistent across devices)
+            localStorage.setItem('gel_user', JSON.stringify(user));
+            localStorage.setItem('gel_session_token', result.data.session_token);
+            localStorage.setItem('gel_device_name', getDeviceName());
+            localStorage.setItem('gel_device_type', getDeviceType());
+            localStorage.setItem('gel_last_login', new Date().toISOString());
+            
+            // Also store in sessionStorage for current session use
             sessionStorage.setItem('gel_user', JSON.stringify(user));
             sessionStorage.setItem('gel_session_token', result.data.session_token);
             
-            // If remember me is checked, also store in localStorage
-            if (rememberMe) {
-                localStorage.setItem('gel_user_remember', JSON.stringify(user));
-                localStorage.setItem('gel_session_token', result.data.session_token);
-            }
-            
-            console.log('✅ Backend login successful');
+            console.log('✅ Backend login successful - Multi-device enabled');
             showLoginSuccess();
             setTimeout(() => {
                 window.location.reload();
@@ -9729,17 +9760,18 @@ function attemptOfflineLogin(phone, password, rememberMe) {
             source: 'offline' // Track source for debugging
         };
         
-        // Store in session storage
+        // Store in localStorage for multi-device support (even in offline mode)
+        localStorage.setItem('gel_user', JSON.stringify(sessionUser));
+        localStorage.setItem('gel_session_token', sessionUser.sessionToken);
+        localStorage.setItem('gel_device_name', getDeviceName());
+        localStorage.setItem('gel_device_type', getDeviceType());
+        localStorage.setItem('gel_last_login', new Date().toISOString());
+        
+        // Also store in sessionStorage for current session use
         sessionStorage.setItem('gel_user', JSON.stringify(sessionUser));
         sessionStorage.setItem('gel_session_token', sessionUser.sessionToken);
         
-        // If remember me, also store in localStorage
-        if (rememberMe) {
-            localStorage.setItem('gel_user_remember', JSON.stringify(sessionUser));
-            localStorage.setItem('gel_session_token', sessionUser.sessionToken);
-        }
-        
-        console.log('✅ Offline login successful');
+        console.log('✅ Offline login successful - Multi-device enabled');
         return true;
         
     } catch (error) {
