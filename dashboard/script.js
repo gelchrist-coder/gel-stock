@@ -321,16 +321,25 @@ class NaturalHairBusinessManager {
         
         // Add sample sales for demo
         const today = new Date();
+        const todayStr = today.toISOString().split('T')[0];
         this.sales = [
-            { id: 1, items: [{ sku: 'OIL-001', quantity: 2, price: 50 }], totalAmount: 100, date: today.toISOString().split('T')[0], paymentMethod: 'cash' },
-            { id: 2, items: [{ sku: 'SHP-001', quantity: 1, price: 45 }], totalAmount: 45, date: today.toISOString().split('T')[0], paymentMethod: 'transfer' },
-            { id: 3, items: [{ sku: 'COND-001', quantity: 1, price: 60 }], totalAmount: 60, date: today.toISOString().split('T')[0], paymentMethod: 'mobile_money' }
+            { id: 1, items: [{ sku: 'OIL-001', quantity: 2, price: 50 }], totalAmount: 100, date: todayStr, paymentMethod: 'cash' },
+            { id: 2, items: [{ sku: 'SHP-001', quantity: 1, price: 45 }], totalAmount: 45, date: todayStr, paymentMethod: 'transfer' },
+            { id: 3, items: [{ sku: 'COND-001', quantity: 1, price: 60 }], totalAmount: 60, date: todayStr, paymentMethod: 'mobile_money' }
         ];
         
         // Update UI with demo data
         this.loadProductsInventory();
         this.loadSalesData();
-        this.updateDashboardKPIs();
+        
+        // Update KPI cards with demo statistics
+        const demoStats = {
+            totalProducts: this.products.length,
+            totalSales: this.sales.length,
+            totalRevenue: this.sales.reduce((sum, sale) => sum + sale.totalAmount, 0),
+            lowStockProducts: this.products.filter(p => p.stock_quantity <= p.reorder_level).length
+        };
+        this.updateKPICards(demoStats);
     }
 
     migrateProductsWithoutCategory() {
@@ -844,9 +853,6 @@ class NaturalHairBusinessManager {
                 total_products: products.length,
                 low_stock_count: lowStockCount
             });
-            
-            // Update debt display from creditors data even if API call fails
-            this.updateDebtDisplay();
         }
         
         // Initialize targets editing functionality
