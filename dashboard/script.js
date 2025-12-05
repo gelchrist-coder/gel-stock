@@ -9996,10 +9996,16 @@ function updateUserHeaderInfo() {
         const user = businessManager.currentUser;
         const userName = user.name || user.email?.split('@')[0] || 'User';
         
-        // Update header user name
+        // Update header user name (on the right)
         const headerUserName = document.getElementById('headerUserName');
         if (headerUserName) {
             headerUserName.textContent = userName;
+        }
+        
+        // Update business name in center of header
+        const headerBusinessName = document.getElementById('headerBusinessName');
+        if (headerBusinessName && user.businessName) {
+            headerBusinessName.textContent = user.businessName;
         }
         
         // Update dropdown user info
@@ -10007,18 +10013,23 @@ function updateUserHeaderInfo() {
         
         // Display phone or email depending on how user registered
         const contactInfo = user.phone || user.email || 'demo@gel-stock.com';
+        document.getElementById('dropdownUserPhone').textContent = contactInfo;
         document.getElementById('dropdownUserEmail').textContent = contactInfo;
         
-        // Show business name if available
+        // Show business name in dropdown
         if (user.businessName) {
-            const businessInfo = document.getElementById('businessInfo');
+            const businessInfo = document.getElementById('dropdownBusinessName');
             if (businessInfo) {
                 businessInfo.textContent = user.businessName;
             }
         }
         
         const roleDisplay = businessManager.isDemoMode ? 'Demo Mode' : (user.role || 'User');
-        document.getElementById('dropdownUserRole').textContent = roleDisplay;
+        // Note: dropdownUserRole might not exist, so check first
+        const roleElement = document.getElementById('dropdownUserRole');
+        if (roleElement) {
+            roleElement.textContent = roleDisplay;
+        }
     }
 }
 

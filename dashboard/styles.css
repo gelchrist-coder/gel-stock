@@ -879,6 +879,14 @@ body {
     min-width: 200px;
 }
 
+.header-business-name {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+    text-align: center;
+}
+
 .header-title-section {
     text-align: center;
 }
