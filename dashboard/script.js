@@ -5026,8 +5026,20 @@ ${credit.payments ? credit.payments.map(p => `
     // Product and Sales Management
     async loadSalesData() {
         try {
-            const response = await this.apiCall('sales.php');
-            const sales = response.data || [];
+            // In demo mode, use sample sales
+            let sales;
+            if (this.isDemoMode) {
+                const today = new Date().toISOString().split('T')[0];
+                sales = [
+                    { id: 1, items: [{ sku: 'OIL-001', quantity: 2, price: 50 }], totalAmount: 100, date: today, paymentMethod: 'cash', customer_name: 'John Appiah' },
+                    { id: 2, items: [{ sku: 'SHP-001', quantity: 1, price: 45 }], totalAmount: 45, date: today, paymentMethod: 'transfer', customer_name: 'Ama Boateng' },
+                    { id: 3, items: [{ sku: 'COND-001', quantity: 1, price: 60 }], totalAmount: 60, date: today, paymentMethod: 'mobile_money', customer_name: 'Kwesi Mensah' }
+                ];
+            } else {
+                const response = await this.apiCall('sales.php');
+                sales = response.data || [];
+            }
+            
             const salesTableBody = document.getElementById('salesTableBody');
             
             if (!salesTableBody) return;
