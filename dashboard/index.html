@@ -20,6 +20,27 @@
     <link rel="stylesheet" href="styles.css">
     <link href="assets/css/fontawesome.min.css" rel="stylesheet">
     <script src="assets/js/chart.min.js"></script>
+    
+    <!-- Early demo mode detection - before main scripts load -->
+    <script>
+        // Check for demo mode request
+        if (sessionStorage.getItem('gel_demo_mode') === 'true') {
+            // Pre-populate demo user before businessManager initializes
+            const demoUser = {
+                id: 'demo-user',
+                name: 'Demo User',
+                phone: '0241234567',
+                email: 'demo@gel-stock.com',
+                role: 'owner',
+                businessName: 'Demo Hair Business',
+                loginTime: new Date().toISOString(),
+                sessionToken: 'demo-token-' + Date.now(),
+                source: 'demo'
+            };
+            sessionStorage.setItem('gel_user', JSON.stringify(demoUser));
+            sessionStorage.setItem('gel_session_token', demoUser.sessionToken);
+        }
+    </script>
 </head>
 <body>
     <!-- Login Screen -->
