@@ -15,6 +15,30 @@ class NaturalHairBusinessManager {
     
     // Authentication System - Render.com PostgreSQL Only (Production Mode)
     initializeAuthSystem() {
+        // Check for demo mode first
+        const demoMode = sessionStorage.getItem('gel_demo_mode');
+        if (demoMode === 'true') {
+            // Demo mode requested - create a demo user
+            this.isDemoMode = true;
+            this.isLoggedIn = true;
+            this.currentUser = {
+                id: 'demo-user',
+                name: 'Demo User',
+                phone: '0241234567',
+                email: 'demo@gel-stock.com',
+                role: 'owner',
+                businessName: 'Demo Hair Business',
+                loginTime: new Date().toISOString(),
+                sessionToken: 'demo-token-' + Date.now(),
+                source: 'demo'
+            };
+            sessionStorage.setItem('gel_user', JSON.stringify(this.currentUser));
+            sessionStorage.setItem('gel_session_token', this.currentUser.sessionToken);
+            this.showDashboard();
+            this.initializeSystem();
+            return;
+        }
+        
         // Multi-device login: Check localStorage first (persistent across devices)
         const userMultiDevice = localStorage.getItem('gel_user');
         const tokenMultiDevice = localStorage.getItem('gel_session_token');
